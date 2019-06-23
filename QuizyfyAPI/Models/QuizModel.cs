@@ -8,5 +8,6 @@ namespace QuizyfyAPI.Models
     public class QuizModel
     {
         public string Name { get; set; }
+        public string DateAdded { get; set; }
     }
 }

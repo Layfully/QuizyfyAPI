@@ -40,7 +40,7 @@ namespace QuizyfyAPI.Data
 
         public async Task<Quiz[]> GetAllQuizzesAsync(bool includeQuestions = false)
         {
-            _logger.LogInformation($"Getting all Camps");
+            _logger.LogInformation($"Getting all quizzes");
 
             IQueryable<Quiz> query = _context.Quizzes;
 
@@ -52,11 +52,13 @@ namespace QuizyfyAPI.Data
             return await query.ToArrayAsync();
         }
 
-        public Task<Quiz> GetQuizAsync(string name, bool includeTalks = false)
+        public async Task<Quiz> GetQuizAsync(int id, bool includeTalks = false)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation($"Getting one quiz");
+
+            IQueryable<Quiz> query = _context.Quizzes.Where(quiz => quiz.Id == id);
+
+            return await query.FirstOrDefaultAsync();
         }
-
-
     }
 }

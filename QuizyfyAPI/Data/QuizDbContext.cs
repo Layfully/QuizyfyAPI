@@ -19,8 +19,9 @@ namespace QuizyfyAPI.Data
             bldr.Entity<Quiz>()
               .HasData(new
               {
-                 Id = 1,
-                  Name = "Quizzserser"
+                Id = 1,
+                Name = "Quizzserser",
+                DateAdded = DateTime.Now
               });
         }
     }

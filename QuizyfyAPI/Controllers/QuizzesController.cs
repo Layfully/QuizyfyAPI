@@ -37,7 +37,27 @@ namespace QuizyfyAPI.Controllers
             }
             catch (Exception)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<QuizModel>> Get(int id)
+        {
+            try
+            {
+                var result = await _repository.GetQuizAsync(id);
+
+                if(result == null)
+                {
+                    return NotFound();
+                }
+
+                return _mapper.Map<QuizModel>(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
             }
         }
     }

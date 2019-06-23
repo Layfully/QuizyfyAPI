@@ -15,7 +15,7 @@ namespace QuizyfyAPI.Data
 
         // Camps
         Task<Quiz[]> GetAllQuizzesAsync(bool includeTalks = false);
-        Task<Quiz> GetQuizAsync(string name, bool includeTalks = false);       
+        Task<Quiz> GetQuizAsync(int id, bool includeTalks = false);       
     }
 }
 
