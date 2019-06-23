@@ -47,16 +47,25 @@ namespace QuizyfyAPI.Data
             if (includeQuestions)
             {
                 _logger.LogInformation($"With questions");
+                query = query.Include(quiz => quiz.Questions).ThenInclude(question => question.Choices);
             }
 
             return await query.ToArrayAsync();
         }
 
-        public async Task<Quiz> GetQuizAsync(int id, bool includeTalks = false)
+        public async Task<Quiz> GetQuizAsync(int id, bool includeQuestions = false)
         {
             _logger.LogInformation($"Getting one quiz");
 
-            IQueryable<Quiz> query = _context.Quizzes.Where(quiz => quiz.Id == id);
+            IQueryable<Quiz> query = _context.Quizzes;
+
+            if (includeQuestions)
+            {
+                _logger.LogInformation($"With questions");
+                query = query.Include(quiz => quiz.Questions).ThenInclude(question => question.Choices);
+            }
+
+            query = query.Where(quiz => quiz.Id == id);
 
             return await query.FirstOrDefaultAsync();
         }

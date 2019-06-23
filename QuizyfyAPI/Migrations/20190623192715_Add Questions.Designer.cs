@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuizyfyAPI.Data;
 
 namespace QuizyfyAPI.Migrations
 {
     [DbContext(typeof(QuizDbContext))]
-    partial class QuizDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190623192715_Add Questions")]
+    partial class AddQuestions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -19,62 +21,13 @@ namespace QuizyfyAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Choice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool>("IsRight");
-
-                    b.Property<int?>("QuestionId");
-
-                    b.Property<string>("Text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuestionId");
-
-                    b.ToTable("Choice");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            IsRight = false,
-                            QuestionId = 1,
-                            Text = "Entity Framework From Scratch"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            IsRight = true,
-                            QuestionId = 1,
-                            Text = "Writing Sample Data Made Easy"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            IsRight = false,
-                            QuestionId = 2,
-                            Text = "Writing Sample Data Made Easy"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            IsRight = true,
-                            QuestionId = 2,
-                            Text = "ANSWER"
-                        });
-                });
-
             modelBuilder.Entity("QuizyfyAPI.Data.Question", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("QuizId");
+                    b.Property<int?>("QuizId");
 
                     b.Property<string>("Text");
 
@@ -88,13 +41,11 @@ namespace QuizyfyAPI.Migrations
                         new
                         {
                             Id = 1,
-                            QuizId = 1,
                             Text = "Entity Framework From Scratch"
                         },
                         new
                         {
                             Id = 2,
-                            QuizId = 1,
                             Text = "Writing Sample Data Made Easy"
                         });
                 });
@@ -117,24 +68,16 @@ namespace QuizyfyAPI.Migrations
                         new
                         {
                             Id = 1,
-                            DateAdded = new DateTime(2019, 6, 23, 22, 9, 5, 101, DateTimeKind.Local).AddTicks(9527),
+                            DateAdded = new DateTime(2019, 6, 23, 21, 27, 14, 764, DateTimeKind.Local).AddTicks(4164),
                             Name = "Quizzserser"
                         });
-                });
-
-            modelBuilder.Entity("QuizyfyAPI.Data.Choice", b =>
-                {
-                    b.HasOne("QuizyfyAPI.Data.Question")
-                        .WithMany("Choices")
-                        .HasForeignKey("QuestionId");
                 });
 
             modelBuilder.Entity("QuizyfyAPI.Data.Question", b =>
                 {
                     b.HasOne("QuizyfyAPI.Data.Quiz")
                         .WithMany("Questions")
-                        .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("QuizId");
                 });
 #pragma warning restore 612, 618
         }

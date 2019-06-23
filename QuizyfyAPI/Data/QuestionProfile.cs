@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Data
 {
-    public class QuizProfile : Profile
+    public class QuestionProfile : Profile
     {
-        public QuizProfile()
+        public QuestionProfile()
         {
-            CreateMap<Quiz, QuizModel>().ReverseMap();
+            CreateMap<Question, QuestionModel>();
         }
     }
 }

@@ -29,7 +29,7 @@ namespace QuizyfyAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<QuizDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("QuizyfyAPI")));
-            services.AddScoped<IQuizRepository, QuizRepository>();
+            services.AddTransient<IQuizRepository, QuizRepository>();
 
             services.AddAutoMapper();
 
