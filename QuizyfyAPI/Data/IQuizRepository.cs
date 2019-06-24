@@ -19,6 +19,9 @@ namespace QuizyfyAPI.Data
         Task<Question[]> GetQuestionsByIdAsync(int id, bool includeChoices = false);
         Task<Question> GetQuestionByIdAsync(int quizId, int id, bool includeChoices = false);
         Task<Choice[]> GetChoicesForQuestion(int questionId);
+        Task<User> GetUserById(int userId);
+        Task<User> GetUserByUsername(string username);
+        Task<User> Authenticate(string username, string password);
     }
 }
 
