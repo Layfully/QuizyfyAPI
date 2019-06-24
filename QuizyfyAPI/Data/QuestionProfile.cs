@@ -11,7 +11,10 @@ namespace QuizyfyAPI.Data
     {
         public QuestionProfile()
         {
-            CreateMap<Question, QuestionModel>();
+            CreateMap<Question, QuestionModel>()
+                .ReverseMap()
+                .ForMember(question => question.QuizId, opt => opt.Ignore())
+                .ForMember(question => question.Choices, opt => opt.Ignore());
         }
     }
 }

@@ -69,5 +69,51 @@ namespace QuizyfyAPI.Data
 
             return await query.FirstOrDefaultAsync();
         }
+
+        public async Task<Question[]> GetQuestionsByIdAsync(int id, bool includeChoices = false)
+        {
+            _logger.LogInformation($"Getting all Questions for a Quiz");
+
+            IQueryable<Question> query = _context.Questions;
+
+            if (includeChoices)
+            {
+                query = query.Include(question => question.Choices);
+            }
+
+            query = query
+              .Where(question => question.QuizId == id)
+              .OrderByDescending(question => question.Id);
+
+            return await query.ToArrayAsync();
+        }
+
+        public async Task<Question> GetQuestionByIdAsync(int quizId, int questionId, bool includeChoices = false)
+        {
+            _logger.LogInformation($"Getting one Question for a Quiz");
+
+            IQueryable<Question> query = _context.Questions;
+
+            if (includeChoices)
+            {
+                query = query.Include(question => question.Choices);
+            }
+
+            query = query
+              .Where(question => question.Id == questionId && question.QuizId == quizId);
+
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<Choice[]> GetChoicesForQuestion(int questionId)
+        {
+            _logger.LogInformation($"Getting all choices for a Question");
+
+            IQueryable<Choice> query = _context.Choices;
+
+            query = query.Where(choice => choice.QuestionId == questionId);
+
+            return await query.ToArrayAsync();
+        }
     }
 }
