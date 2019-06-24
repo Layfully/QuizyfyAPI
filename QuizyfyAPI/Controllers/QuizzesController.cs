@@ -27,57 +27,38 @@ namespace QuizyfyAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<QuizModel[]>> Get(bool includeQuestions = false)
         {
-            try
-            {
-                var results = await _repository.GetAllQuizzesAsync(includeQuestions);
+            var results = await _repository.GetAllQuizzesAsync(includeQuestions);
 
-                return _mapper.Map<QuizModel[]>(results);
-
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
-            }
+            return _mapper.Map<QuizModel[]>(results);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<QuizModel>> Get(int id, bool includeQuestions = false)
         {
-            try
-            {
-                var result = await _repository.GetQuizAsync(id, includeQuestions);
 
-                if (result == null)
-                {
-                    return NotFound();
-                }
+            var result = await _repository.GetQuizAsync(id, includeQuestions);
 
-                return _mapper.Map<QuizModel>(result);
-            }
-            catch (Exception)
+            if (result == null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
+                return NotFound();
             }
+
+            return _mapper.Map<QuizModel>(result);
+
         }
 
         public async Task<ActionResult<QuizModel>> Post(QuizModel model)
         {
-            try
+
+            model.DateAdded = DateTime.Now.ToString();
+
+            var quiz = _mapper.Map<Quiz>(model);
+
+            _repository.Add(quiz);
+
+            if (await _repository.SaveChangesAsync())
             {
-                model.DateAdded = DateTime.Now.ToString();
-
-                var quiz = _mapper.Map<Quiz>(model);
-
-                _repository.Add(quiz);
-
-                if (await _repository.SaveChangesAsync())
-                {
-                    return CreatedAtAction(nameof(Get), new { id = quiz.Id }, _mapper.Map<QuizModel>(quiz));
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure" + ex.Message);
+                return CreatedAtAction(nameof(Get), new { id = quiz.Id }, _mapper.Map<QuizModel>(quiz));
             }
 
             return BadRequest();
@@ -86,24 +67,17 @@ namespace QuizyfyAPI.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<QuizModel>> Put(int id, QuizModel model)
         {
-            try
+            var oldQuiz = await _repository.GetQuizAsync(id);
+            if (oldQuiz == null)
             {
-                var oldQuiz = await _repository.GetQuizAsync(id);
-                if(oldQuiz == null)
-                {
-                    return NotFound($"Couldn't find quiz with id of {id}");
-                }
-
-                _mapper.Map(model, oldQuiz);
-
-                if (await _repository.SaveChangesAsync())
-                {
-                    return _mapper.Map<QuizModel>(oldQuiz);
-                }
+                return NotFound($"Couldn't find quiz with id of {id}");
             }
-            catch (Exception ex)
+
+            _mapper.Map(model, oldQuiz);
+
+            if (await _repository.SaveChangesAsync())
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure" + ex.Message);
+                return _mapper.Map<QuizModel>(oldQuiz);
             }
 
             return BadRequest();
@@ -111,26 +85,18 @@ namespace QuizyfyAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
+            var oldQuiz = await _repository.GetQuizAsync(id);
+
+            if (oldQuiz == null)
             {
-                var oldQuiz = await _repository.GetQuizAsync(id);
-
-                if(oldQuiz == null)
-                {
-                    return NotFound();
-                }
-
-                _repository.Delete(oldQuiz);
-
-                if (await _repository.SaveChangesAsync())
-                {
-                    return Ok();
-                }
-
+                return NotFound();
             }
-            catch (Exception ex)
+
+            _repository.Delete(oldQuiz);
+
+            if (await _repository.SaveChangesAsync())
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure" + ex.Message);
+                return Ok();
             }
 
             return BadRequest();

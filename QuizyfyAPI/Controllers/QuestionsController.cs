@@ -26,130 +26,95 @@ namespace QuizyfyAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<QuestionModel[]>> Get(int quizId)
         {
-            try
-            {
-                var questions = await _repository.GetQuestionsByIdAsync(quizId, true);
+            var questions = await _repository.GetQuestionsByIdAsync(quizId, true);
 
-                return _mapper.Map<QuestionModel[]>(questions);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get questions");
-            }
+            return _mapper.Map<QuestionModel[]>(questions);
         }
 
         [HttpGet("{questionId}")]
         public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId)
         {
-            try
-            {
-                var question = await _repository.GetQuestionByIdAsync(quizId, questionId, true);
+            var question = await _repository.GetQuestionByIdAsync(quizId, questionId, true);
 
-                if(question == null)
-                {
-                    return NotFound("Couldn't find question");
-                }
-
-                return _mapper.Map<QuestionModel>(question);
-            }
-            catch (Exception)
+            if (question == null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get questions");
+                return NotFound("Couldn't find question");
             }
+
+            return _mapper.Map<QuestionModel>(question);
         }
 
         [HttpPost]
         public async Task<ActionResult<QuestionModel>> Post(int quizId, QuestionModel model)
         {
-            try
+            var quiz = await _repository.GetQuizAsync(quizId);
+
+            if (quiz == null)
             {
-                var quiz = await _repository.GetQuizAsync(quizId);
-
-                if(quiz == null)
-                {
-                    return BadRequest("Camp doesn't exists");
-                }
-
-                var question = _mapper.Map<Question>(model);
-
-                question.QuizId = quiz.Id;
-
-                _repository.Add(question);
-
-                if(await _repository.SaveChangesAsync())
-                {
-                    return CreatedAtAction(nameof(Get), _mapper.Map<QuestionModel>(question));
-                }
-
-                return BadRequest("Failed to save new question");
+                return BadRequest("Camp doesn't exists");
             }
-            catch (Exception)
+
+            var question = _mapper.Map<Question>(model);
+
+            question.QuizId = quiz.Id;
+
+            _repository.Add(question);
+
+            if (await _repository.SaveChangesAsync())
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get questions");
+                return CreatedAtAction(nameof(Get), _mapper.Map<QuestionModel>(question));
             }
+
+            return BadRequest("Failed to save new question");
         }
 
         [HttpPut("{questionId}")]
         public async Task<ActionResult<QuestionModel>> Put(int quizId, int questionId, QuestionModel model)
         {
-            try
+            var oldQuestion = await _repository.GetQuestionByIdAsync(quizId, questionId, true);
+
+            if (oldQuestion == null)
             {
-                var oldQuestion = await _repository.GetQuestionByIdAsync(quizId, questionId, true);
-
-                if (oldQuestion == null)
-                {
-                    return NotFound();
-                }
-
-                _mapper.Map(model, oldQuestion);
-
-                if (model.Choices != null)
-                {
-                    var choices = await _repository.GetChoicesForQuestion(questionId);
-                    if(choices != null)
-                    {
-                        oldQuestion.Choices = choices;
-                    }
-                }
-
-                if(await _repository.SaveChangesAsync())
-                {
-                    return _mapper.Map<QuestionModel>(oldQuestion);
-                }
-
-                return BadRequest();
+                return NotFound();
             }
-            catch (Exception)
+
+            _mapper.Map(model, oldQuestion);
+
+            if (model.Choices != null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get questions");
+                var choices = await _repository.GetChoicesForQuestion(questionId);
+                if (choices != null)
+                {
+                    oldQuestion.Choices = choices;
+                }
             }
+
+            if (await _repository.SaveChangesAsync())
+            {
+                return _mapper.Map<QuestionModel>(oldQuestion);
+            }
+
+            return BadRequest();
         }
 
         [HttpDelete("{questionId}")]
         public async Task<IActionResult> Delete(int quizId, int questionId)
         {
-            try
+            var question = await _repository.GetQuestionByIdAsync(quizId, questionId, true);
+
+            if (question == null)
             {
-                var question = await _repository.GetQuestionByIdAsync(quizId, questionId, true);
-
-                if(question == null)
-                {
-                    return NotFound("Failed to find the question to delete");
-                }
-
-                _repository.Delete(question);
-
-                if (await _repository.SaveChangesAsync())
-                {
-                    return Ok();
-                }
-
-                return BadRequest();
+                return NotFound("Failed to find the question to delete");
             }
-            catch (Exception)
+
+            _repository.Delete(question);
+
+            if (await _repository.SaveChangesAsync())
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get questions");
+                return Ok();
             }
+
+            return BadRequest();
         }
     }
 }

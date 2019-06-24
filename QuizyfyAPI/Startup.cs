@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,17 +30,14 @@ namespace QuizyfyAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<QuizDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("QuizyfyAPI")));
+            services.ConfigureDbContext(Configuration);
+
             services.AddTransient<IQuizRepository, QuizRepository>();
 
-            services.AddAutoMapper();
+            services.ConfigureApiVersioning();
 
-            services.AddApiVersioning(options =>
-            {
-                options.DefaultApiVersion = new ApiVersion(0, 1);
-                options.ReportApiVersions = true;
-                options.AssumeDefaultVersionWhenUnspecified = true;
-            });
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -56,6 +55,9 @@ namespace QuizyfyAPI
             }
 
             app.UseHttpsRedirection();
+
+            app.ConfigureGlobalExtensionHandling();
+            
             app.UseMvc();
         }
     }
