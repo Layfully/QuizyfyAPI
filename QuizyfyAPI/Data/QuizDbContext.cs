@@ -15,6 +15,7 @@ namespace QuizyfyAPI.Data
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Choice> Choices { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder bldr)
         {
