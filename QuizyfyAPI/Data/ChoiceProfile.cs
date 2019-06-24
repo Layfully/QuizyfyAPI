@@ -11,7 +11,7 @@ namespace QuizyfyAPI.Data
     {
         public ChoiceProfile()
         {
-            CreateMap<Choice, ChoiceModel>();
+            CreateMap<Choice, ChoiceModel>().ReverseMap();
         }
     }
 }
