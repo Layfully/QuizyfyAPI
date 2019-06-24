@@ -11,9 +11,9 @@ namespace QuizyfyAPI.Middleware
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger _logger;
+        private readonly ILogger<ExceptionMiddleware> _logger;
 
-        public ExceptionMiddleware(RequestDelegate next, ILogger logger)
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
             _logger = logger;
             _next = next;
@@ -40,7 +40,7 @@ namespace QuizyfyAPI.Middleware
             return context.Response.WriteAsync(new ErrorModel()
             {
                 StatusCode = context.Response.StatusCode,
-                Message = "Internal Server Error from the custom middleware."
+                Message = $"Internal Server Error from the custom middleware. {exception.Message}"
             }.ToString());
         }
     }
