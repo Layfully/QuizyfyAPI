@@ -33,7 +33,12 @@ namespace QuizyfyAPI
 
             services.AddAutoMapper();
 
-
+            services.AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = new ApiVersion(0, 1);
+                options.ReportApiVersions = true;
+                options.AssumeDefaultVersionWhenUnspecified = true;
+            });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
