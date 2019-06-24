@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QuizyfyAPI.Helpers;
 
 namespace QuizyfyAPI.Data
 {
@@ -114,6 +115,50 @@ namespace QuizyfyAPI.Data
             query = query.Where(choice => choice.QuestionId == questionId);
 
             return await query.ToArrayAsync();
+        }
+
+        public async Task<User> GetUserById(int userId)
+        {
+
+            _logger.LogInformation($"Getting user by id");
+
+            IQueryable<User> query = _context.Users;
+
+            query = query.Where(user => user.Id == userId);
+
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<User> GetUserByUsername(string username)
+        {
+            _logger.LogInformation($"Getting user by id");
+
+            IQueryable<User> query = _context.Users;
+
+            query = query.Where(user => user.Username == username);
+
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<User> Authenticate(string username, string password)
+        {
+            _logger.LogInformation($"Authenticating user");
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                return null;
+            }
+
+            IQueryable<User> query = _context.Users;
+
+            var user = await query.Where(userDb => userDb.Username == username).FirstOrDefaultAsync();
+
+            if (!PasswordHash.Verify(password, user.PasswordHash, user.PasswordSalt))
+            {
+                return null;
+            }
+
+            return user;
         }
     }
 }
