@@ -26,7 +26,7 @@ namespace QuizyfyAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<QuestionModel[]>> Get(int quizId)
         {
-            var questions = await _repository.GetQuestionsByIdAsync(quizId, true);
+            var questions = await _repository.GetQuestions(quizId, true);
 
             return _mapper.Map<QuestionModel[]>(questions);
         }
@@ -34,7 +34,7 @@ namespace QuizyfyAPI.Controllers
         [HttpGet("{questionId}")]
         public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId)
         {
-            var question = await _repository.GetQuestionByIdAsync(quizId, questionId, true);
+            var question = await _repository.GetQuestion(quizId, questionId, true);
 
             if (question == null)
             {
@@ -47,11 +47,11 @@ namespace QuizyfyAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<QuestionModel>> Post(int quizId, QuestionModel model)
         {
-            var quiz = await _repository.GetQuizAsync(quizId);
+            var quiz = await _repository.GetQuiz(quizId);
 
             if (quiz == null)
             {
-                return BadRequest("Camp doesn't exists");
+                return BadRequest("Quiz doesn't exists");
             }
 
             var question = _mapper.Map<Question>(model);
@@ -71,7 +71,7 @@ namespace QuizyfyAPI.Controllers
         [HttpPut("{questionId}")]
         public async Task<ActionResult<QuestionModel>> Put(int quizId, int questionId, QuestionModel model)
         {
-            var oldQuestion = await _repository.GetQuestionByIdAsync(quizId, questionId, true);
+            var oldQuestion = await _repository.GetQuestion(quizId, questionId, true);
 
             if (oldQuestion == null)
             {
@@ -82,7 +82,7 @@ namespace QuizyfyAPI.Controllers
 
             if (model.Choices != null)
             {
-                var choices = await _repository.GetChoicesForQuestion(questionId);
+                var choices = await _repository.GetChoices(quizId, questionId);
                 if (choices != null)
                 {
                     oldQuestion.Choices = choices;
@@ -100,7 +100,7 @@ namespace QuizyfyAPI.Controllers
         [HttpDelete("{questionId}")]
         public async Task<IActionResult> Delete(int quizId, int questionId)
         {
-            var question = await _repository.GetQuestionByIdAsync(quizId, questionId, true);
+            var question = await _repository.GetQuestion(quizId, questionId, true);
 
             if (question == null)
             {

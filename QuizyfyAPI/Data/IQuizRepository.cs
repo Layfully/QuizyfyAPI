@@ -14,11 +14,12 @@ namespace QuizyfyAPI.Data
         Task<bool> SaveChangesAsync();
 
         // Camps
-        Task<Quiz[]> GetAllQuizzesAsync(bool includeTalks = false);
-        Task<Quiz> GetQuizAsync(int id, bool includeTalks = false);
-        Task<Question[]> GetQuestionsByIdAsync(int id, bool includeChoices = false);
-        Task<Question> GetQuestionByIdAsync(int quizId, int id, bool includeChoices = false);
-        Task<Choice[]> GetChoicesForQuestion(int questionId);
+        Task<Quiz[]> GetQuizzes(bool includeTalks = false);
+        Task<Quiz> GetQuiz(int id, bool includeTalks = false);
+        Task<Question[]> GetQuestions(int quizId, bool includeChoices = false);
+        Task<Question> GetQuestion (int quizId, int questionId, bool includeChoices = false); 
+        Task<Choice[]> GetChoices(int quizId,int questionId);
+        Task<Choice> GetChoice(int quizId, int questionId, int choiceId);
         Task<User> GetUserById(int userId);
         Task<User> GetUserByUsername(string username);
         Task<User> Authenticate(string username, string password);

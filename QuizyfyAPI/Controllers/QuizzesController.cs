@@ -27,7 +27,7 @@ namespace QuizyfyAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<QuizModel[]>> Get(bool includeQuestions = false)
         {
-            var results = await _repository.GetAllQuizzesAsync(includeQuestions);
+            var results = await _repository.GetQuizzes(includeQuestions);
 
             return _mapper.Map<QuizModel[]>(results);
         }
@@ -36,7 +36,7 @@ namespace QuizyfyAPI.Controllers
         public async Task<ActionResult<QuizModel>> Get(int id, bool includeQuestions = false)
         {
 
-            var result = await _repository.GetQuizAsync(id, includeQuestions);
+            var result = await _repository.GetQuiz(id, includeQuestions);
 
             if (result == null)
             {
@@ -67,7 +67,7 @@ namespace QuizyfyAPI.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<QuizModel>> Put(int id, QuizModel model)
         {
-            var oldQuiz = await _repository.GetQuizAsync(id);
+            var oldQuiz = await _repository.GetQuiz(id);
             if (oldQuiz == null)
             {
                 return NotFound($"Couldn't find quiz with id of {id}");
@@ -85,7 +85,7 @@ namespace QuizyfyAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var oldQuiz = await _repository.GetQuizAsync(id);
+            var oldQuiz = await _repository.GetQuiz(id);
 
             if (oldQuiz == null)
             {
