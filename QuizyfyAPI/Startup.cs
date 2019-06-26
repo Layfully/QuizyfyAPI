@@ -48,6 +48,11 @@ namespace QuizyfyAPI
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.ConfigureJWTAuth(Configuration);
+
+            services.AddResponseCompression( options =>
+            {
+                options.EnableForHttps = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,6 +75,8 @@ namespace QuizyfyAPI
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
             app.UseAuthentication();
+
+            app.UseResponseCompression();
 
             app.UseMvc();
         }
