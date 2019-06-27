@@ -12,8 +12,9 @@ using QuizyfyAPI.Models;
 
 namespace QuizyfyAPI.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
+    [Produces("application/json")]
+    [Consumes("application/json")]
     [ApiController]
     public class QuizzesController : ControllerBase
     {
@@ -38,10 +39,18 @@ namespace QuizyfyAPI.Controllers
         ///     
         /// </remarks>
         /// <response code="200">Returns array of all quizzes</response>
+        /// <response code="204">No quizzes exists so return nothing.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [HttpGet]
         public async Task<ActionResult<QuizModel[]>> Get(bool includeQuestions = false)
         {
             var results = await _repository.GetQuizzes(includeQuestions);
+
+            if(results.Length == 0)
+            {
+                return NoContent();
+            }
 
             return _mapper.Map<QuizModel[]>(results);
         }
@@ -57,7 +66,13 @@ namespace QuizyfyAPI.Controllers
         ///      
         ///     GET /quizzes/1
         ///     
-        /// </remarks>        
+        /// </remarks>   
+        /// <response code="200">Returns one quiz with provided id</response>
+        /// <response code="404">Quiz with provided id wasn't found.</response>
+        /// <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [HttpGet("{id}")]
         public async Task<ActionResult<QuizModel>> Get(int id, bool includeQuestions = false)
         {
@@ -88,13 +103,18 @@ namespace QuizyfyAPI.Controllers
         ///     }
         ///     
         /// </remarks>  
+        /// <response code="400">Data provided was not complete or corrupted.</response>
+        /// <response code="201">Quiz was created and you can access it.</response>
+        /// <response code="422">One of validation errors occured.</response>
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [HttpPost]
-        public async Task<ActionResult<QuizModel>> Post(QuizModel model)
+        public async Task<ActionResult<QuizModel>> Post(QuizCreateModel model)
         {
-
-            model.DateAdded = DateTime.Now.ToString();
-
             var quiz = _mapper.Map<Quiz>(model);
+
+            quiz.DateAdded = DateTime.Now;
 
             _repository.Add(quiz);
 
@@ -122,8 +142,18 @@ namespace QuizyfyAPI.Controllers
         ///     }
         ///     
         /// </remarks>  
+        /// <response code="200">Returns quiz with provided id and updated info.</response>
+        /// <response code="404">Quiz with provided id wasn't found.</response> 
+        /// <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
+        /// <response code="422">One of validation errors occured.</response>
+        /// <response code="400">Bad request not complete or corrupted data.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPut("{id}")]
-        public async Task<ActionResult<QuizModel>> Put(int id, QuizModel model)
+        public async Task<ActionResult<QuizModel>> Put(int id, QuizCreateModel model)
         {
             var oldQuiz = await _repository.GetQuiz(id);
             if (oldQuiz == null)
@@ -152,6 +182,12 @@ namespace QuizyfyAPI.Controllers
         ///     DELETE /quizzes/1
         ///     
         /// </remarks> 
+        /// <response code = "404" >Quiz with provided id wasn't found.</response> 
+        /// <response code = "200" >Quiz was sucessfully deleted.</response> 
+        /// <response code = "400" >Request data was not complete or corrupted.</response> 
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

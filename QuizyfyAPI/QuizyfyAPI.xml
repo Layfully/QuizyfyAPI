@@ -17,6 +17,7 @@
                 
             </remarks>
             <response code="200">Returns array of all quizzes</response>
+            <response code="204">No quizzes exists so return nothing.</response>
         </member>
         <member name="M:QuizyfyAPI.Controllers.QuizzesController.Get(System.Int32,System.Boolean)">
             <summary>
@@ -30,9 +31,12 @@
                  
                 GET /quizzes/1
                 
-            </remarks>        
+            </remarks>   
+            <response code="200">Returns one quiz with provided id</response>
+            <response code="404">Quiz with provided id wasn't found.</response>
+            <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Post(QuizyfyAPI.Models.QuizModel)">
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Post(QuizyfyAPI.Models.QuizCreateModel)">
             <summary>
             Create quiz with provided info.
             </summary>
@@ -48,8 +52,11 @@
                 }
                 
             </remarks>  
+            <response code="400">Data provided was not complete or corrupted.</response>
+            <response code="201">Quiz was created and you can access it.</response>
+            <response code="422">One of validation errors occured.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Put(System.Int32,QuizyfyAPI.Models.QuizModel)">
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Put(System.Int32,QuizyfyAPI.Models.QuizCreateModel)">
             <summary>
             Updates quiz with specified id and data.
             </summary>
@@ -66,6 +73,11 @@
                 }
                 
             </remarks>  
+            <response code="200">Returns quiz with provided id and updated info.</response>
+            <response code="404">Quiz with provided id wasn't found.</response> 
+            <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
+            <response code="422">One of validation errors occured.</response>
+            <response code="400">Bad request not complete or corrupted data.</response>
         </member>
         <member name="M:QuizyfyAPI.Controllers.QuizzesController.Delete(System.Int32)">
             <summary>
@@ -79,6 +91,9 @@
                 DELETE /quizzes/1
                 
             </remarks> 
+            <response code = "404" >Quiz with provided id wasn't found.</response> 
+            <response code = "200" >Quiz was sucessfully deleted.</response> 
+            <response code = "400" >Request data was not complete or corrupted.</response> 
         </member>
         <member name="M:QuizyfyAPI.Controllers.UsersController.Login(QuizyfyAPI.Models.UserLoginModel)">
             <summary>
@@ -165,6 +180,21 @@
             <response code="400">You didn't provide enough data.</response>
             <response code="200">Returns ok if user deleted.</response>
             <response code="401">You aren't authenticated. Please authenticate first.</response>
+        </member>
+        <member name="T:QuizyfyAPI.Models.QuizCreateModel">
+            <summary>
+            A quiz with name and questions properties.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuizCreateModel.Name">
+            <summary>
+            Quiz name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuizCreateModel.Questions">
+            <summary>
+            Collection of questions which belongs to quiz.
+            </summary>
         </member>
         <member name="T:QuizyfyAPI.Models.QuizModel">
             <summary>
