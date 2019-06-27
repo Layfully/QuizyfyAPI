@@ -10,7 +10,7 @@ using QuizyfyAPI.Models;
 
 namespace QuizyfyAPI.Controllers
 {
-    [Route("api/quizzes/{quizId}/[controller]")]
+    [Route("api/Quizzes/{quizId}/[controller]")]
     [ApiController]
     public class QuestionsController : ControllerBase
     {
@@ -32,6 +32,8 @@ namespace QuizyfyAPI.Controllers
         }
 
         [HttpGet("{questionId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId)
         {
             var question = await _repository.GetQuestion(quizId, questionId, true);

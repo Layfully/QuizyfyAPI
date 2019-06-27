@@ -181,7 +181,8 @@ namespace QuizyfyAPI.Data
 
             var user = await query.Where(userDb => userDb.Username == username).FirstOrDefaultAsync();
 
-            if (!PasswordHash.Verify(password, user.PasswordHash, user.PasswordSalt))
+            
+            if (user == null || !PasswordHash.Verify(password, user?.PasswordHash, user?.PasswordSalt))
             {
                 return null;
             }

@@ -10,7 +10,7 @@ using QuizyfyAPI.Models;
 
 namespace QuizyfyAPI.Controllers
 {
-    [Route("api/quizzes/{quizId}/questions/{questionId}/[controller]")]
+    [Route("api/Quizzes/{quizId}/Questions/{questionId}/[controller]")]
     [ApiController]
     public class ChoicesController : ControllerBase
     {
@@ -32,6 +32,9 @@ namespace QuizyfyAPI.Controllers
         }
 
         [HttpGet("{choiceId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<ChoiceModel>> Get(int quizId, int questionId, int choiceId)
         {
             var choice = await _repository.GetChoice(quizId, questionId, choiceId);
@@ -44,6 +47,7 @@ namespace QuizyfyAPI.Controllers
             return _mapper.Map<ChoiceModel>(choice);
         }
 
+        [HttpPost]
         public async Task<ActionResult<ChoiceModel>> Post(int quizId, int questionId, ChoiceModel model)
         {
             var question = await _repository.GetQuestion(quizId, questionId);
@@ -68,6 +72,10 @@ namespace QuizyfyAPI.Controllers
         }
 
         [HttpPut("{choiceId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<ChoiceModel>> Put(int quizId, int questionId, int choiceId, ChoiceModel model)
         {
             var oldChoice = await _repository.GetChoice(quizId, questionId, choiceId);
@@ -88,6 +96,10 @@ namespace QuizyfyAPI.Controllers
         }
 
         [HttpDelete("{choiceId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<IActionResult> Delete(int quizId, int questionId, int choiceId)
         {
             var question = await _repository.GetChoice(quizId, questionId, choiceId);

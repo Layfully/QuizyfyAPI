@@ -40,7 +40,7 @@ namespace QuizyfyAPI.Middleware
             return context.Response.WriteAsync(new ErrorModel()
             {
                 StatusCode = context.Response.StatusCode,
-                Message = $"Internal Server Error from the custom middleware. {exception.Message}"
+                Message = $"Internal Server Error from the custom middleware. {exception.Message} \n {exception.StackTrace}"
             }.ToString());
         }
     }
