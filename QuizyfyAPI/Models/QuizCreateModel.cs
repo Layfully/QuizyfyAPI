@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace QuizyfyAPI.Models
 {
     /// <summary>
-    /// A quiz with name and questions properties.
+    /// A quiz with name and questions properties. Used for DTO.
     /// </summary>
     public class QuizCreateModel
     {

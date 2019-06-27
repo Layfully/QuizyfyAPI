@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace QuizyfyAPI.Models
 {
     /// <summary>
-    /// A quiz with name , date of addition and questions properties.
+    /// A quiz with name , date of addition and questions properties. Used for displaying quizzes.
     /// </summary>
     public class QuizModel
     {
