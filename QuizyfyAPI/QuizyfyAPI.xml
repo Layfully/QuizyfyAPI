@@ -1,0 +1,190 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>QuizyfyAPI</name>
+    </assembly>
+    <members>
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Get(System.Boolean)">
+            <summary>
+            Get list of all quizes.
+            </summary>
+            <param name="includeQuestions">Parameter which tells us wheter to include questions for quiz or not.</param>
+            <returns>An ActionResult of QuizModel array type</returns>
+            <remarks>
+            Sample request (this request returns **array of quizzes**)  
+                 
+                GET /quizzes
+                
+            </remarks>
+            <response code="200">Returns array of all quizzes</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Get(System.Int32,System.Boolean)">
+            <summary>
+            Get one quiz by id.
+            </summary>
+            <param name="id">This is id of the quiz you want to get.</param>
+            <param name="includeQuestions">Parameter which tells us wheter to include questions for quiz or not.</param>
+            <returns>>An ActionResult of QuizModel</returns>
+            <remarks>
+            Sample request (this request returns **one quiz**)  
+                 
+                GET /quizzes/1
+                
+            </remarks>        
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Post(QuizyfyAPI.Models.QuizModel)">
+            <summary>
+            Create quiz with provided info.
+            </summary>
+            <param name="model">This is json representation of quiz you want to create.</param>
+            <returns>>An ActionResult of QuizModel</returns>
+            <remarks>
+            Sample request (this request returns **created quiz**)  
+                 
+                POST /quizzes
+                
+                {
+                    "name":"quizname"
+                }
+                
+            </remarks>  
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Put(System.Int32,QuizyfyAPI.Models.QuizModel)">
+            <summary>
+            Updates quiz with specified id and data.
+            </summary>
+            <param name="id">Id of quiz you want to update.</param>
+            <param name="model">New data for quiz.</param>
+            <returns>>An ActionResult of QuizModel</returns>
+            <remarks>
+            Sample request (this request returns **updated quiz**)  
+                 
+                PUT /quizzes
+                
+                {
+                    "name":"another name"
+                }
+                
+            </remarks>  
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Delete(System.Int32)">
+            <summary>
+            Deletes quiz with specified id.
+            </summary>
+            <param name="id">Id of quiz you want to delete.</param>
+            <returns>Response Code</returns>
+            <remarks>
+            Sample request (this request returns **response code only**)  
+                 
+                DELETE /quizzes/1
+                
+            </remarks> 
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.UsersController.Login(QuizyfyAPI.Models.UserLoginModel)">
+            <summary>
+            Authenticate user by checking if he is in database.
+            </summary>
+            <param name="model">User credentials</param>
+            <returns>Action Result of user model</returns>
+            <remarks>
+            Sample request (this request returns **user with token if authentication went well**)  
+                 
+                POST /users/login
+                
+                {
+                    "username": "test",
+                    "password": "password"
+                }    
+                
+            </remarks> 
+            <response code="200">Returns user with JWT bearer token.</response>
+            <response code="204">User with this name was not found so return nothing.</response>
+            <response code="406">Request data type is not in acceptable format.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.UsersController.Register(QuizyfyAPI.Models.UserRegisterModel)">
+            <summary>
+            Create user with given credentials.
+            </summary>
+            <param name="model">User credentials</param>
+            <returns>Action Result of user model</returns>
+            <remarks>
+            Sample request (this request returns **user with token**)  
+                 
+                POST /users/register
+                
+                {
+                    "username": "test",
+                    "password": "password",
+                    "role": "user"
+                }    
+                
+            </remarks> 
+            <response code="400">User is already taken or you didn't provide enough data.</response>
+            <response code="201">User sucessfully created. Now you can login on login action.</response>
+            <response code="406">Request data type is not in acceptable format.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.UsersController.Put(System.Int32,QuizyfyAPI.Models.UserRegisterModel)">
+            <summary>
+            Updates user credentials.
+            </summary>
+            <param name="id">Id of user you want to update.</param>
+            <param name="model">New credentials.</param>
+            <returns>Action Result of user model</returns>
+            <remarks>
+            Sample request (this request returns **user**)  
+                 
+                PUT /users/1
+                
+                {
+                    "username": "test",
+                    "password": "password"
+                }    
+                
+            </remarks> 
+            <response code="404">User with given id was not found.</response>
+            <response code="403">You aren't user with given id.</response>
+            <response code="400">User with this name already exists or you didn't provide enough data.</response>
+            <response code="200">Returns user with changed properties.</response>
+            <response code="406">Request data type is not in acceptable format.</response>
+            <response code="401">You aren't authenticated. Please authenticate first.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.UsersController.Delete(System.Int32)">
+            <summary>
+            Deletes user with given id.
+            </summary>
+            <param name="id">Id of user you want to delete.</param>
+            <returns>Response Code</returns>
+            <remarks>
+            Sample request (this request returns **response code only**)  
+                 
+                DELETE /users/1
+                
+            </remarks> 
+            <response code="404">User with given id was not found.</response>
+            <response code="403">You aren't user with given id.</response>
+            <response code="400">You didn't provide enough data.</response>
+            <response code="200">Returns ok if user deleted.</response>
+            <response code="401">You aren't authenticated. Please authenticate first.</response>
+        </member>
+        <member name="T:QuizyfyAPI.Models.QuizModel">
+            <summary>
+            A quiz with name , date of addition and questions properties.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuizModel.Name">
+            <summary>
+            Quiz name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuizModel.DateAdded">
+            <summary>
+            Date of addition to database.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuizModel.Questions">
+            <summary>
+            Collection of questions which belongs to quiz.
+            </summary>
+        </member>
+    </members>
+</doc>

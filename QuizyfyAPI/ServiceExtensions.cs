@@ -10,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Http;
 
 namespace QuizyfyAPI
 {
@@ -71,6 +73,43 @@ namespace QuizyfyAPI
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = false,
                     ValidateAudience = false
+                };
+            });
+        }
+
+        public static void ConfigureMvcForApi(this IServiceCollection services)
+        {
+            services.AddMvc(setupAction => {
+
+                setupAction.Filters.Add(new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
+
+                setupAction.ReturnHttpNotAcceptable = true;
+
+                var jsonFormatter = setupAction.OutputFormatters.OfType<JsonOutputFormatter>().FirstOrDefault();
+
+                if (jsonFormatter != null)
+                {
+                    if (jsonFormatter.SupportedMediaTypes.Contains("text/json"))
+                    {
+                        jsonFormatter.SupportedMediaTypes.Remove("text/json");
+                    }
+                }
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+        }
+
+        public static void ConfigureValidationErrorResponse(this IServiceCollection services)
+        {
+            services.Configure<ApiBehaviorOptions>(options => {
+                options.InvalidModelStateResponseFactory = actionContext =>
+                {
+                    var actionExecutionContext = actionContext as ActionExecutingContext;
+
+                    if (actionContext.ModelState.ErrorCount > 0 && actionExecutionContext?.ActionArguments.Count == actionContext.ActionDescriptor.Parameters.Count)
+                    {
+                        return new UnprocessableEntityObjectResult(actionContext.ModelState);
+                    }
+
+                    return new BadRequestObjectResult(actionContext.ModelState);
                 };
             });
         }

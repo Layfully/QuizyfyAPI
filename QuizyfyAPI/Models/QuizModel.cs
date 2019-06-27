@@ -7,13 +7,25 @@ using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Models
 {
+    /// <summary>
+    /// A quiz with name , date of addition and questions properties.
+    /// </summary>
     public class QuizModel
     {
+        /// <summary>
+        /// Quiz name.
+        /// </summary>
         [Required]
-        [StringLength(70)]
+        [MaxLength(70)]
         public string Name { get; set; }
+        /// <summary>
+        /// Date of addition to database.
+        /// </summary>
         [Required]
         public string DateAdded { get; set; }
+        /// <summary>
+        /// Collection of questions which belongs to quiz.
+        /// </summary>
         public ICollection<QuestionModel> Questions {get;set;}
     }
 }
