@@ -11,6 +11,8 @@ using QuizyfyAPI.Models;
 namespace QuizyfyAPI.Controllers
 {
     [Route("api/Quizzes/{quizId}/[controller]")]
+    [Produces("application/json")]
+    [Consumes("application/json")]
     [ApiController]
     public class QuestionsController : ControllerBase
     {
@@ -23,20 +25,61 @@ namespace QuizyfyAPI.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Get list of all questions for given quiz id.
+        /// </summary>
+        /// <param name="quizId">Parameter which tells us to which quiz question belongs to.</param>
+        /// <param name="includeChoices">Parameter which tells us wheter to include choices for question or not.</param>
+        /// <returns>An ActionResult of QuestionModel array type</returns>
+        /// <remarks>
+        /// Sample request (this request returns **array of questions**)  
+        ///      
+        ///     GET /quizzes/1/questions/
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns array of all questions</response>
+        /// <response code="204">No questions exists so return nothing.</response>
+        /// <response code="404">Quiz doesn't exist.</response>
         [HttpGet]
-        public async Task<ActionResult<QuestionModel[]>> Get(int quizId)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<QuestionModel[]>> Get(int quizId, bool includeChoices = false)
         {
-            var questions = await _repository.GetQuestions(quizId, true);
+            var quiz = await _repository.GetQuiz(quizId);
+
+            if(quiz == null)
+            {
+                return NotFound();
+            }
+
+            var questions = await _repository.GetQuestions(quizId, includeChoices);
 
             return _mapper.Map<QuestionModel[]>(questions);
         }
 
+        /// <summary>
+        /// Get one question for given quiz id.
+        /// </summary>
+        /// <param name="quizId">Parameter which tells us to which quiz question belongs to.</param>
+        /// <param name="questionId">Id of question we want to return.</param>
+        /// <param name="includeChoices">Parameter which tells us wheter to include choices for question or not.</param>
+        /// <returns>An ActionResult of QuestionModel array type</returns>
+        /// <remarks>
+        /// Sample request (this request returns **one question**)  
+        ///      
+        ///     GET /quizzes/1/questions/1
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns array of all questions</response>
+        /// <response code="204">No questions exists so return nothing.</response>
+        /// <response code="404">Quiz doesn't exist.</response>
         [HttpGet("{questionId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId)
+        public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId, bool includeChoices)
         {
-            var question = await _repository.GetQuestion(quizId, questionId, true);
+            var question = await _repository.GetQuestion(quizId, questionId, includeChoices);
 
             if (question == null)
             {
@@ -46,8 +89,31 @@ namespace QuizyfyAPI.Controllers
             return _mapper.Map<QuestionModel>(question);
         }
 
+
+        /// <summary>
+        /// Creates question for given quiz with provided data.
+        /// </summary>
+        /// <param name="quizId">Id of quiz you want to attach question to.</param>
+        /// <param name="model">Question model.</param>
+        /// <returns>>An ActionResult of Question</returns>
+        /// <remarks>
+        /// Sample request (this request returns **created question**)  
+        ///      
+        ///     POST /quizzes/1/questions
+        ///     
+        ///     {
+        ///         "name":"another name"
+        ///     }
+        ///     
+        /// </remarks>  
+        /// <response code="201">Returns created question with.</response>
+        /// <response code="422">One of validation errors occured.</response>
+        /// <response code="400">Bad request not complete or corrupted data.</response>
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [HttpPost]
-        public async Task<ActionResult<QuestionModel>> Post(int quizId, QuestionModel model)
+        public async Task<ActionResult<QuestionModel>> Post(int quizId, QuestionCreateModel model)
         {
             var quiz = await _repository.GetQuiz(quizId);
 
@@ -64,14 +130,41 @@ namespace QuizyfyAPI.Controllers
 
             if (await _repository.SaveChangesAsync())
             {
-                return CreatedAtAction(nameof(Get), _mapper.Map<QuestionModel>(question));
+                return CreatedAtAction(nameof(Get), new { quizId = quiz.Id }, _mapper.Map<QuestionModel>(question));
             }
 
             return BadRequest("Failed to save new question");
         }
 
+        /// <summary>
+        /// Updates question for given quiz with specified id and data.
+        /// </summary>
+        /// <param name="quizId">Id of quiz you want to update.</param>
+        /// <param name="questionId">Id of question you want to update.</param>
+        /// <param name="model">New data for question.</param>
+        /// <returns>>An ActionResult of QuestionModel</returns>
+        /// <remarks>
+        /// Sample request (this request returns **updated question**)  
+        ///      
+        ///     PUT /quizzes/1/questions/1
+        ///     
+        ///     {
+        ///         "name":"another name"
+        ///     }
+        ///     
+        /// </remarks>  
+        /// <response code="200">Returns quiz with provided id and updated info.</response>
+        /// <response code="404">Question with provided id wasn't found.</response> 
+        /// <response code="204">Probably should never return that but there is possibility that question isn't null but mapping result in null.</response> 
+        /// <response code="422">One of validation errors occured.</response>
+        /// <response code="400">Bad request not complete or corrupted data.</response>
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPut("{questionId}")]
-        public async Task<ActionResult<QuestionModel>> Put(int quizId, int questionId, QuestionModel model)
+        public async Task<ActionResult<QuestionModel>> Put(int quizId, int questionId, QuestionCreateModel model)
         {
             var oldQuestion = await _repository.GetQuestion(quizId, questionId, true);
 
@@ -82,15 +175,6 @@ namespace QuizyfyAPI.Controllers
 
             _mapper.Map(model, oldQuestion);
 
-            if (model.Choices != null)
-            {
-                var choices = await _repository.GetChoices(quizId, questionId);
-                if (choices != null)
-                {
-                    oldQuestion.Choices = choices;
-                }
-            }
-
             if (await _repository.SaveChangesAsync())
             {
                 return _mapper.Map<QuestionModel>(oldQuestion);
@@ -99,6 +183,24 @@ namespace QuizyfyAPI.Controllers
             return BadRequest();
         }
 
+        /// <summary>
+        /// Deletes question for quiz with specified id.
+        /// </summary>
+        /// <param name="quizId">Id of quiz you want to delete question from.</param>
+        /// <param name="questionId">Id of question you want to delete</param>
+        /// <returns>Response Code</returns>
+        /// <remarks>
+        /// Sample request (this request returns **response code only**)  
+        ///      
+        ///     DELETE /quizzes/1/questions/1
+        ///     
+        /// </remarks> 
+        /// <response code = "404" >Quiz or question with provided id wasn't found.</response> 
+        /// <response code = "200" >Question was sucessfully deleted.</response> 
+        /// <response code = "400" >Request data was not complete or corrupted.</response> 
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpDelete("{questionId}")]
         public async Task<IActionResult> Delete(int quizId, int questionId)
         {
