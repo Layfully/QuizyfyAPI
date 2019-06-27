@@ -39,7 +39,7 @@ namespace QuizyfyAPI.Data
             return (await _context.SaveChangesAsync()) > 0;
         }
 
-        public async Task<Quiz[]> GetAllQuizzesAsync(bool includeQuestions = false)
+        public async Task<Quiz[]> GetQuizzes(bool includeQuestions = false)
         {
             _logger.LogInformation($"Getting all quizzes");
 
@@ -54,7 +54,7 @@ namespace QuizyfyAPI.Data
             return await query.ToArrayAsync();
         }
 
-        public async Task<Quiz> GetQuizAsync(int id, bool includeQuestions = false)
+        public async Task<Quiz> GetQuiz(int id, bool includeQuestions = false)
         {
             _logger.LogInformation($"Getting one quiz");
 
@@ -71,7 +71,7 @@ namespace QuizyfyAPI.Data
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Question[]> GetQuestionsByIdAsync(int id, bool includeChoices = false)
+        public async Task<Question[]> GetQuestions(int quizId, bool includeChoices = false)
         {
             _logger.LogInformation($"Getting all Questions for a Quiz");
 
@@ -83,13 +83,13 @@ namespace QuizyfyAPI.Data
             }
 
             query = query
-              .Where(question => question.QuizId == id)
+              .Where(question => question.QuizId == quizId)
               .OrderByDescending(question => question.Id);
 
             return await query.ToArrayAsync();
         }
 
-        public async Task<Question> GetQuestionByIdAsync(int quizId, int questionId, bool includeChoices = false)
+        public async Task<Question> GetQuestion(int quizId, int questionId, bool includeChoices = false)
         {
             _logger.LogInformation($"Getting one Question for a Quiz");
 
@@ -106,15 +106,43 @@ namespace QuizyfyAPI.Data
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Choice[]> GetChoicesForQuestion(int questionId)
+        public async Task<Choice[]> GetChoices(int quizId, int questionId)
         {
-            _logger.LogInformation($"Getting all choices for a Question");
+            _logger.LogInformation($"Getting all choices for a Question for a Quiz");
 
             IQueryable<Choice> query = _context.Choices;
+            IQueryable<Question> questionsQuery = _context.Questions;
+
+            questionsQuery = questionsQuery.Where(question => question.QuizId == quizId && question.Id == questionId);
+
+
+            if (await questionsQuery.FirstOrDefaultAsync() == null)
+            {
+                return null;
+            }
 
             query = query.Where(choice => choice.QuestionId == questionId);
 
             return await query.ToArrayAsync();
+        }
+        [Obsolete("Think about using repository methods for gtting question here")]
+        public async Task<Choice> GetChoice(int quizId, int questionId, int choiceId)
+        {
+            _logger.LogInformation($"Getting one choice");
+
+            IQueryable<Choice> query = _context.Choices;
+            IQueryable<Question> questionsQuery = _context.Questions;
+
+            questionsQuery = questionsQuery.Where(question => question.QuizId == quizId && question.Id == questionId);
+
+            if (await questionsQuery.FirstOrDefaultAsync() == null)
+            {
+                return null;
+            }
+
+            query = query.Where(choice => choice.Id == choiceId && choice.QuestionId == questionId);
+
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<User> GetUserById(int userId)
@@ -153,7 +181,8 @@ namespace QuizyfyAPI.Data
 
             var user = await query.Where(userDb => userDb.Username == username).FirstOrDefaultAsync();
 
-            if (!PasswordHash.Verify(password, user.PasswordHash, user.PasswordSalt))
+            
+            if (user == null || !PasswordHash.Verify(password, user?.PasswordHash, user?.PasswordSalt))
             {
                 return null;
             }
