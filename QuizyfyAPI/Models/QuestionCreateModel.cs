@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace QuizyfyAPI.Models
 {
     /// <summary>
-    /// A question with text(actual question) and collection of choices. Used for displaying questions.
+    /// Question with text(actual question) only. Used for DTO.
     /// </summary>
-    public class QuestionModel
+    public class QuestionCreateModel
     {
         /// <summary>
         /// Question text.
@@ -17,9 +17,5 @@ namespace QuizyfyAPI.Models
         [Required]
         [MaxLength(70)]
         public string Text { get; set; }
-        /// <summary>
-        /// Possible question answers.
-        /// </summary>
-        public ICollection<ChoiceModel> Choices { get; set; }
     }
 }

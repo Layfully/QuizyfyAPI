@@ -7,20 +7,19 @@ using System.Threading.Tasks;
 namespace QuizyfyAPI.Models
 {
     /// <summary>
-    /// A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
+    /// A user credentials. Used for authentication
     /// </summary>
-    public class ChoiceModel
+    public class UserLoginModel
     {
         /// <summary>
-        /// Choice text (answer).
+        /// User name.
         /// </summary>
         [Required]
-        public string Text { get; set; }
-
+        public string Username { get; set; }
         /// <summary>
-        /// Bool which defines whether this answer is right or not.
+        /// User password.
         /// </summary>
         [Required]
-        public bool IsRight { get; set; }
+        public string Password { get; set; }
     }
 }

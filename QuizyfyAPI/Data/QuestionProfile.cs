@@ -15,6 +15,11 @@ namespace QuizyfyAPI.Data
                 .ReverseMap()
                 .ForMember(question => question.QuizId, opt => opt.Ignore())
                 .ForMember(question => question.Choices, opt => opt.Ignore());
+
+            CreateMap<Question, QuestionCreateModel>()
+                .ReverseMap()
+                .ForMember(question => question.QuizId, opt => opt.Ignore())
+                .ForMember(question => question.Choices, opt => opt.Ignore());
         }
     }
 }

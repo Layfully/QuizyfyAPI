@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace QuizyfyAPI.Models
 {
     /// <summary>
-    /// A user with username, password, role, token and full name.
+    /// A user with username, password, role and full name. Used for creating user.
     /// </summary>
-    public class UserModel
+    public class UserRegisterModel
     {
         /// <summary>
         /// First name of the user owner.
@@ -34,9 +34,5 @@ namespace QuizyfyAPI.Models
         /// </summary>
         [Required]
         public string Role { get; set; }
-        /// <summary>
-        /// JWT Token used for authentication
-        /// </summary>
-        public string Token { get; set; }
     }
 }

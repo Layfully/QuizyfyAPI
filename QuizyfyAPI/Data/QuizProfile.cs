@@ -12,6 +12,8 @@ namespace QuizyfyAPI.Data
         public QuizProfile()
         {
             CreateMap<Quiz, QuizModel>().ReverseMap();
+
+            CreateMap<Quiz, QuizCreateModel>().ReverseMap();
         }
     }
 }

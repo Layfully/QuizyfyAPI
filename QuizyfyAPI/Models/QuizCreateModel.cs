@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace QuizyfyAPI.Models
 {
     /// <summary>
-    /// A quiz with name , date of addition and questions properties. Used for displaying quizzes.
+    /// A quiz with name and questions properties. Used for DTO.
     /// </summary>
-    public class QuizModel
+    public class QuizCreateModel
     {
         /// <summary>
         /// Quiz name.
@@ -19,13 +19,8 @@ namespace QuizyfyAPI.Models
         [MaxLength(70)]
         public string Name { get; set; }
         /// <summary>
-        /// Date of addition to database.
-        /// </summary>
-        [Required]
-        public string DateAdded { get; set; }
-        /// <summary>
         /// Collection of questions which belongs to quiz.
         /// </summary>
-        public ICollection<QuestionModel> Questions {get;set;}
+        public ICollection<QuestionModel> Questions { get; set; }
     }
 }
