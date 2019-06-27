@@ -71,12 +71,12 @@ namespace QuizyfyAPI.Controllers
         ///     GET /quizzes/1/questions/1
         ///     
         /// </remarks>
-        /// <response code="200">Returns array of all questions</response>
+        /// <response code="200">Returns one question</response>
         /// <response code="204">No questions exists so return nothing.</response>
         /// <response code="404">Quiz doesn't exist.</response>
         [HttpGet("{questionId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId, bool includeChoices)
         {
             var question = await _repository.GetQuestion(quizId, questionId, includeChoices);
@@ -109,7 +109,7 @@ namespace QuizyfyAPI.Controllers
         /// <response code="201">Returns created question with.</response>
         /// <response code="422">One of validation errors occured.</response>
         /// <response code="400">Bad request not complete or corrupted data.</response>
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [HttpPost]
@@ -153,7 +153,7 @@ namespace QuizyfyAPI.Controllers
         ///     }
         ///     
         /// </remarks>  
-        /// <response code="200">Returns quiz with provided id and updated info.</response>
+        /// <response code="200">Returns question with provided id and updated info.</response>
         /// <response code="404">Question with provided id wasn't found.</response> 
         /// <response code="204">Probably should never return that but there is possibility that question isn't null but mapping result in null.</response> 
         /// <response code="422">One of validation errors occured.</response>
@@ -198,7 +198,7 @@ namespace QuizyfyAPI.Controllers
         /// <response code = "404" >Quiz or question with provided id wasn't found.</response> 
         /// <response code = "200" >Question was sucessfully deleted.</response> 
         /// <response code = "400" >Request data was not complete or corrupted.</response> 
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpDelete("{questionId}")]

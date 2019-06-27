@@ -4,6 +4,106 @@
         <name>QuizyfyAPI</name>
     </assembly>
     <members>
+        <member name="M:QuizyfyAPI.Controllers.ChoicesController.Get(System.Int32,System.Int32)">
+            <summary>
+            Get list of all choices for given quiz id and question id.
+            </summary>
+            <param name="quizId">Parameter which tells us to which quiz question belongs to.</param>
+            <param name="questionId">Id of question we want to get choices from.</param>
+            <returns>An ActionResult of ChoiceModel array type</returns>
+            <remarks>
+            Sample request (this request returns **array of choices**)  
+                 
+                GET /quizzes/1/questions/1/choices
+                
+            </remarks>
+            <response code="200">Returns array of all choices</response>
+            <response code="204">No questions exists so return nothing.</response>
+            <response code="404">Quiz or question doesn't exist.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.ChoicesController.Get(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Get one choice for given quiz and question id.
+            </summary>
+            <param name="quizId">Parameter which tells us to which quiz question belongs to.</param>
+            <param name="questionId">Id of question we want to get choice from.</param>
+            <param name="choiceId">Id of choice we want to return.</param>
+            <returns>An ActionResult of ChoiceModel type</returns>
+            <remarks>
+            Sample request (this request returns **one choice**)  
+                 
+                GET /quizzes/1/questions/1/choices/1
+                
+            </remarks>
+            <response code="200">Returns one choice</response>
+            <response code="204">No questions exists so return nothing.</response>
+            <response code="404">Choice doesn't exist.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.ChoicesController.Post(System.Int32,System.Int32,QuizyfyAPI.Models.ChoiceModel)">
+            <summary>
+            Creates choice for given quiz and question with provided data.
+            </summary>
+            <param name="quizId">Id of quiz you want to get question from.</param>
+            <param name="questionId">Id of question we want to attach choice to.</param>
+            <param name="model">Choice model.</param>
+            <returns>>An ActionResult of Choice</returns>
+            <remarks>
+            Sample request (this request returns **created choice**)  
+                 
+                POST /quizzes/1/questions/1/choices/
+                
+                {
+                    "name":"another name"
+                }
+                
+            </remarks>  
+            <response code="201">Returns created choice.</response>
+            <response code="422">One of validation errors occured.</response>
+            <response code="400">Bad request not complete or corrupted data.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.ChoicesController.Put(System.Int32,System.Int32,System.Int32,QuizyfyAPI.Models.ChoiceModel)">
+            <summary>
+            Updates choice for given quiz and question with specified id and data.
+            </summary>
+            <param name="quizId">Id of quiz you want to update.</param>
+            <param name="questionId">Id of question you want to update.</param>
+            <param name="choiceId">Id of choice you want to update.</param>
+            <param name="model">New data for question.</param>
+            <returns>>An ActionResult of QuestionModel</returns>
+            <remarks>
+            Sample request (this request returns **updated choice**)  
+                 
+                PUT /quizzes/1/questions/1/choices/1
+                
+                {
+                    "name":"another name"
+                }
+                
+            </remarks>  
+            <response code="200">Returns choice with provided id and updated info.</response>
+            <response code="404">Choice with provided id wasn't found.</response> 
+            <response code="204">Probably should never return that but there is possibility that question isn't null but mapping result in null.</response> 
+            <response code="422">One of validation errors occured.</response>
+            <response code="400">Bad request not complete or corrupted data.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.ChoicesController.Delete(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Deletes question for quiz and question with specified id.
+            </summary>
+            <param name="quizId">Id of quiz you want to delete question from.</param>
+            <param name="questionId">Id of question you want to delete choice from.</param>
+            <param name="choiceId">Id of choice you want to delete.</param>
+            <returns>Response Code</returns>
+            <remarks>
+            Sample request (this request returns **response code only**)  
+                 
+                DELETE /quizzes/1/questions/1/choices/1
+                
+            </remarks> 
+            <response code = "404" >Quiz or question or choice with provided id wasn't found.</response> 
+            <response code = "200" >Choice was sucessfully deleted.</response> 
+            <response code = "400" >Request data was not complete or corrupted.</response> 
+        </member>
         <member name="M:QuizyfyAPI.Controllers.QuestionsController.Get(System.Int32,System.Boolean)">
             <summary>
             Get list of all questions for given quiz id.
@@ -35,7 +135,7 @@
                 GET /quizzes/1/questions/1
                 
             </remarks>
-            <response code="200">Returns array of all questions</response>
+            <response code="200">Returns one question</response>
             <response code="204">No questions exists so return nothing.</response>
             <response code="404">Quiz doesn't exist.</response>
         </member>
@@ -78,7 +178,7 @@
                 }
                 
             </remarks>  
-            <response code="200">Returns quiz with provided id and updated info.</response>
+            <response code="200">Returns question with provided id and updated info.</response>
             <response code="404">Question with provided id wasn't found.</response> 
             <response code="204">Probably should never return that but there is possibility that question isn't null but mapping result in null.</response> 
             <response code="422">One of validation errors occured.</response>
