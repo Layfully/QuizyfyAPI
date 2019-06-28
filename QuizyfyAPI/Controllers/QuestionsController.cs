@@ -16,12 +16,14 @@ namespace QuizyfyAPI.Controllers
     [ApiController]
     public class QuestionsController : ControllerBase
     {
-        private readonly IQuizRepository _repository;
+        private readonly IQuestionRepository _questionRepository;
+        private readonly IQuizRepository _quizRepository;
         private readonly IMapper _mapper;
 
-        public QuestionsController(IQuizRepository repository, IMapper mapper)
+        public QuestionsController(IQuestionRepository questionnRepository, IQuizRepository quizRepository, IMapper mapper)
         {
-            _repository = repository;
+            _questionRepository = questionnRepository;
+            _quizRepository = quizRepository;
             _mapper = mapper;
         }
 
@@ -46,14 +48,14 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<QuestionModel[]>> Get(int quizId, bool includeChoices = false)
         {
-            var quiz = await _repository.GetQuiz(quizId);
+            var quiz = await _quizRepository.GetQuiz(quizId);
 
             if(quiz == null)
             {
                 return NotFound();
             }
 
-            var questions = await _repository.GetQuestions(quizId, includeChoices);
+            var questions = await _questionRepository.GetQuestions(quizId, includeChoices);
 
             return _mapper.Map<QuestionModel[]>(questions);
         }
@@ -79,7 +81,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId, bool includeChoices)
         {
-            var question = await _repository.GetQuestion(quizId, questionId, includeChoices);
+            var question = await _questionRepository.GetQuestion(quizId, questionId, includeChoices);
 
             if (question == null)
             {
@@ -115,7 +117,7 @@ namespace QuizyfyAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<QuestionModel>> Post(int quizId, QuestionCreateModel model)
         {
-            var quiz = await _repository.GetQuiz(quizId);
+            var quiz = await _quizRepository.GetQuiz(quizId);
 
             if (quiz == null)
             {
@@ -126,9 +128,9 @@ namespace QuizyfyAPI.Controllers
 
             question.QuizId = quiz.Id;
 
-            _repository.Add(question);
+            _questionRepository.Add(question);
 
-            if (await _repository.SaveChangesAsync())
+            if (await _questionRepository.SaveChangesAsync())
             {
                 return CreatedAtAction(nameof(Get), new { quizId = quiz.Id }, _mapper.Map<QuestionModel>(question));
             }
@@ -166,7 +168,7 @@ namespace QuizyfyAPI.Controllers
         [HttpPut("{questionId}")]
         public async Task<ActionResult<QuestionModel>> Put(int quizId, int questionId, QuestionCreateModel model)
         {
-            var oldQuestion = await _repository.GetQuestion(quizId, questionId, true);
+            var oldQuestion = await _questionRepository.GetQuestion(quizId, questionId, true);
 
             if (oldQuestion == null)
             {
@@ -175,7 +177,7 @@ namespace QuizyfyAPI.Controllers
 
             _mapper.Map(model, oldQuestion);
 
-            if (await _repository.SaveChangesAsync())
+            if (await _questionRepository.SaveChangesAsync())
             {
                 return _mapper.Map<QuestionModel>(oldQuestion);
             }
@@ -204,16 +206,16 @@ namespace QuizyfyAPI.Controllers
         [HttpDelete("{questionId}")]
         public async Task<IActionResult> Delete(int quizId, int questionId)
         {
-            var question = await _repository.GetQuestion(quizId, questionId, true);
+            var question = await _questionRepository.GetQuestion(quizId, questionId, true);
 
             if (question == null)
             {
                 return NotFound("Failed to find the question to delete");
             }
 
-            _repository.Delete(question);
+            _questionRepository.Delete(question);
 
-            if (await _repository.SaveChangesAsync())
+            if (await _questionRepository.SaveChangesAsync())
             {
                 return Ok();
             }
