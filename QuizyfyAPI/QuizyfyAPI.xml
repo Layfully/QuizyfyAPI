@@ -378,9 +378,64 @@
             <response code="200">Returns ok if user deleted.</response>
             <response code="401">You aren't authenticated. Please authenticate first.</response>
         </member>
+        <member name="T:QuizyfyAPI.Models.ChoiceModel">
+            <summary>
+            A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.ChoiceModel.Text">
+            <summary>
+            Choice text (answer).
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.ChoiceModel.IsRight">
+            <summary>
+            Bool which defines whether this answer is right or not.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Models.ErrorModel">
+            <summary>
+            Error with status code and message.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.ErrorModel.StatusCode">
+            <summary>
+            Int which tells us error status code.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.ErrorModel.Message">
+            <summary>
+            Error message.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Models.QuestionCreateModel">
+            <summary>
+            Question with text(actual question) only. Used for DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuestionCreateModel.Text">
+            <summary>
+            Question text.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Models.QuestionModel">
+            <summary>
+            A question with text(actual question) and collection of choices. Used for displaying questions.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuestionModel.Text">
+            <summary>
+            Question text.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuestionModel.Choices">
+            <summary>
+            Possible question answers.
+            </summary>
+        </member>
         <member name="T:QuizyfyAPI.Models.QuizCreateModel">
             <summary>
-            A quiz with name and questions properties.
+            A quiz with name and questions properties. Used for DTO.
             </summary>
         </member>
         <member name="P:QuizyfyAPI.Models.QuizCreateModel.Name">
@@ -395,7 +450,7 @@
         </member>
         <member name="T:QuizyfyAPI.Models.QuizModel">
             <summary>
-            A quiz with name , date of addition and questions properties.
+            A quiz with name , date of addition and questions properties. Used for displaying quizzes.
             </summary>
         </member>
         <member name="P:QuizyfyAPI.Models.QuizModel.Name">
@@ -411,6 +466,86 @@
         <member name="P:QuizyfyAPI.Models.QuizModel.Questions">
             <summary>
             Collection of questions which belongs to quiz.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Models.UserLoginModel">
+            <summary>
+            A user credentials. Used for authentication
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserLoginModel.Username">
+            <summary>
+            User name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserLoginModel.Password">
+            <summary>
+            User password.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Models.UserModel">
+            <summary>
+            A user with username, password, role, token and full name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserModel.FirstName">
+            <summary>
+            First name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserModel.LastName">
+            <summary>
+            Last name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserModel.Username">
+            <summary>
+            User name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserModel.Password">
+            <summary>
+            User password.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserModel.Role">
+            <summary>
+            User role. (Can be either admin or user)
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserModel.Token">
+            <summary>
+            JWT Token used for authentication
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Models.UserRegisterModel">
+            <summary>
+            A user with username, password, role and full name. Used for creating user.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserRegisterModel.FirstName">
+            <summary>
+            First name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserRegisterModel.LastName">
+            <summary>
+            Last name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserRegisterModel.Username">
+            <summary>
+            User name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserRegisterModel.Password">
+            <summary>
+            User password.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.UserRegisterModel.Role">
+            <summary>
+            User role. (Can be either admin or user)
             </summary>
         </member>
     </members>
