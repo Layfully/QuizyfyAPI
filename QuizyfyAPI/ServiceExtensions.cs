@@ -55,7 +55,7 @@ namespace QuizyfyAPI
                 {
                     OnTokenValidated = async (context) =>
                     {
-                        var userService = context.HttpContext.RequestServices.GetRequiredService<IQuizRepository>();
+                        var userService = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
                         var userId = int.Parse(context.Principal.Identity.Name);
                         var user = await userService.GetUserById(userId);
                         if (user == null)
