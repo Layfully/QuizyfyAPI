@@ -57,6 +57,11 @@ namespace QuizyfyAPI.Controllers
 
             var questions = await _questionRepository.GetQuestions(quizId, includeChoices);
 
+            if (questions.Length == 0)
+            {
+                return NoContent();
+            }
+
             return _mapper.Map<QuestionModel[]>(questions);
         }
 
@@ -126,9 +131,12 @@ namespace QuizyfyAPI.Controllers
 
             var question = _mapper.Map<Question>(model);
 
-            question.QuizId = quiz.Id;
+            if(question != null)
+            {
+                question.QuizId = quiz.Id;
 
-            _questionRepository.Add(question);
+                _questionRepository.Add(question);
+            }
 
             if (await _questionRepository.SaveChangesAsync())
             {
