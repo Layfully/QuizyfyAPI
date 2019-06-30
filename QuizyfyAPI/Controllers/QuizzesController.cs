@@ -114,9 +114,12 @@ namespace QuizyfyAPI.Controllers
         {
             var quiz = _mapper.Map<Quiz>(model);
 
-            quiz.DateAdded = DateTime.Now;
+            if(quiz != null)
+            {
+                quiz.DateAdded = DateTime.Now;
 
-            _repository.Add(quiz);
+                _repository.Add(quiz);
+            }
 
             if (await _repository.SaveChangesAsync())
             {
