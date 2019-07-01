@@ -43,36 +43,18 @@ namespace QuizyfyAPI.Data
             _logger.LogInformation($"Getting all choices for a Question for a Quiz");
 
             IQueryable<Choice> query = _context.Choices;
-            IQueryable<Question> questionsQuery = _context.Questions;
-
-            questionsQuery = questionsQuery.Where(question => question.QuizId == quizId && question.Id == questionId);
-
-
-            if (await questionsQuery.FirstOrDefaultAsync() == null)
-            {
-                return null;
-            }
 
             query = query.Where(choice => choice.QuestionId == questionId);
 
             return await query.ToArrayAsync();
         }
-        [Obsolete("Think about using repository methods for gtting question here")]
         public async Task<Choice> GetChoice(int quizId, int questionId, int choiceId)
         {
             _logger.LogInformation($"Getting one choice");
 
             IQueryable<Choice> query = _context.Choices;
-            IQueryable<Question> questionsQuery = _context.Questions;
 
-            questionsQuery = questionsQuery.Where(question => question.QuizId == quizId && question.Id == questionId);
-
-            if (await questionsQuery.FirstOrDefaultAsync() == null)
-            {
-                return null;
-            }
-
-            query = query.Where(choice => choice.Id == choiceId && choice.QuestionId == questionId);
+            query = query.Where(choice => choice.QuestionId == questionId && choice.Id == choiceId);
 
             return await query.FirstOrDefaultAsync();
         }

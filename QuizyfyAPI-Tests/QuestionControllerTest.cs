@@ -71,7 +71,6 @@ namespace QuizyfyAPI_Tests
             //Assert
             Assert.IsType<NotFoundResult>(result.Result);
         }
-
         
         [Fact]
         [Trait("Category", "Get")]
@@ -103,7 +102,6 @@ namespace QuizyfyAPI_Tests
             Assert.IsType<QuestionModel[]>(result.Value);
         }
 
-        
         [Fact]
         [Trait("Category", "Get")]
         public async Task Get_Returns_All_Questions()
@@ -114,7 +112,6 @@ namespace QuizyfyAPI_Tests
             var question = new Question() { Id = 1, QuizId = 101, Text = "Pytanko", Choices = null };
 
             var question1 = new Question() { Id = 2, QuizId = 101, Text = "Pytanko1", Choices = null };
-
 
             //Arrange
             _quizRepository.Empty<Quiz>();

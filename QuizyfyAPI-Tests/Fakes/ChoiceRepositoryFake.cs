@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace QuizyfyAPI_Tests.Fakes
 {
-    class QuizRepositoryFake : IQuizRepository
+    class ChoiceRepositoryFake : IChoiceRepository
     {
         private readonly QuizDbContext _context;
 
-        public QuizRepositoryFake()
+        public ChoiceRepositoryFake()
         {
             DbContextOptions<QuizDbContext> options = new DbContextOptionsBuilder<QuizDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
@@ -39,24 +39,22 @@ namespace QuizyfyAPI_Tests.Fakes
             }
         }
 
-        public async Task<Quiz> GetQuiz(int id, bool includeQuestions = false)
+        public async Task<Choice> GetChoice(int quizId, int questionId, int choiceId)
         {
-            IQueryable<Quiz> _query = _context.Quizzes;
+            IQueryable<Choice> query = _context.Choices;
 
-            _query = _query.Where(quiz => quiz.Id == id);
+            query = query.Where(choice => choice.QuestionId == questionId && choice.Id == choiceId);
 
-            _query = _query.OrderBy(q => q.Id);
-
-            return await _query.FirstOrDefaultAsync();
+            return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Quiz[]> GetQuizzes(bool includeQuestions = false)
+        public async Task<Choice[]> GetChoices(int quizId, int questionId)
         {
-            IQueryable<Quiz> _query = _context.Quizzes;
+            IQueryable<Choice> query = _context.Choices;
 
-            _query = _query.OrderBy(q => q.Id);
+            query = query.Where(choice => choice.QuestionId == questionId);
 
-            return await _query.ToArrayAsync();
+            return await query.ToArrayAsync();
         }
 
         public async Task<bool> SaveChangesAsync()

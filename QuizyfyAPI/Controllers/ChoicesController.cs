@@ -60,6 +60,11 @@ namespace QuizyfyAPI.Controllers
 
             var choices = await _choiceRepository.GetChoices(quizId, questionId);
 
+            if(choices.Length == 0)
+            {
+                return NoContent();
+            }
+
             return _mapper.Map<ChoiceModel[]>(choices);
         }
 
@@ -85,9 +90,11 @@ namespace QuizyfyAPI.Controllers
         [HttpGet("{choiceId}")]
         public async Task<ActionResult<ChoiceModel>> Get(int quizId, int questionId, int choiceId)
         {
+            var quiz = await _quizRepository.GetQuiz(quizId);
+            var question = await _questionRepository.GetQuestion(quizId, questionId);
             var choice = await _choiceRepository.GetChoice(quizId, questionId, choiceId);
 
-            if (choice == null)
+            if (choice == null || quiz == null || question == null)
             {
                 return NotFound("Couldn't find choice");
             }
@@ -130,9 +137,12 @@ namespace QuizyfyAPI.Controllers
 
             var choice = _mapper.Map<Choice>(model);
 
-            choice.QuestionId = question.Id;
+            if(choice != null)
+            {
+                choice.QuestionId = question.Id;
 
-            _choiceRepository.Add(choice);
+                _choiceRepository.Add(choice);
+            }
 
             if (await _choiceRepository.SaveChangesAsync())
             {
@@ -175,8 +185,10 @@ namespace QuizyfyAPI.Controllers
         public async Task<ActionResult<ChoiceModel>> Put(int quizId, int questionId, int choiceId, ChoiceModel model)
         {
             var oldChoice = await _choiceRepository.GetChoice(quizId, questionId, choiceId);
+            var question = await _questionRepository.GetQuestion(quizId, questionId);
+            var quiz = await _quizRepository.GetQuiz(quizId);
 
-            if (oldChoice == null)
+            if (oldChoice == null || quiz == null || question == null)
             {
                 return NotFound();
             }
@@ -213,14 +225,16 @@ namespace QuizyfyAPI.Controllers
         [HttpDelete("{choiceId}")]
         public async Task<IActionResult> Delete(int quizId, int questionId, int choiceId)
         {
-            var question = await _choiceRepository.GetChoice(quizId, questionId, choiceId);
+            var choice = await _choiceRepository.GetChoice(quizId, questionId, choiceId);
+            var question = await _questionRepository.GetQuestion(quizId, questionId);
+            var quiz = await _quizRepository.GetQuiz(quizId);
 
-            if (question == null)
+            if (question == null || choice == null || quiz == null)
             {
                 return NotFound("Failed to find the choice to delete");
             }
 
-            _choiceRepository.Delete(question);
+            _choiceRepository.Delete(choice);
 
             if (await _choiceRepository.SaveChangesAsync())
             {
