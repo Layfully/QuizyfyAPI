@@ -17,11 +17,11 @@ namespace QuizyfyAPI.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IQuizRepository _repository;
+        private readonly IUserRepository _repository;
         private readonly IMapper _mapper;
         private readonly AppSettings _appSettings;
 
-        public UsersController(IQuizRepository repository, IMapper mapper, IOptions<AppSettings> appSettings)
+        public UsersController(IUserRepository repository, IMapper mapper, IOptions<AppSettings> appSettings)
         {
             _repository = repository;
             _mapper = mapper;

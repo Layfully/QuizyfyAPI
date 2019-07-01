@@ -45,6 +45,9 @@ namespace QuizyfyAPI
             services.ConfigureDbContext(Configuration);
 
             services.AddTransient<IQuizRepository, QuizRepository>();
+            services.AddTransient<IQuestionRepository, QuestionRepository>();
+            services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IChoiceRepository, ChoiceRepository>();
 
             services.ConfigureApiVersioning();
 
@@ -99,8 +102,6 @@ namespace QuizyfyAPI
 
                 setupAction.IncludeXmlComments(xmlCommentsPath);
             });
-
-
 
             services.AddResponseCompression(options =>
            {
