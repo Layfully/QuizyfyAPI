@@ -103,8 +103,6 @@ namespace QuizyfyAPI
                 setupAction.IncludeXmlComments(xmlCommentsPath);
             });
 
-
-
             services.AddResponseCompression(options =>
            {
                options.EnableForHttps = true;

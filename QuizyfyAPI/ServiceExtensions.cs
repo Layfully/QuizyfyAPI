@@ -22,7 +22,7 @@ namespace QuizyfyAPI
         {
             services.AddApiVersioning(options =>
             {
-                options.DefaultApiVersion = new ApiVersion(0, 2);
+                options.DefaultApiVersion = new ApiVersion(0, 5);
                 options.ReportApiVersions = true;
                 options.AssumeDefaultVersionWhenUnspecified = true;
             });
