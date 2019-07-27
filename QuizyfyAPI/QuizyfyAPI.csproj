@@ -13,6 +13,8 @@
   <ItemGroup>
     <Compile Remove="Migrations\20190624164525_Add Users Table.cs" />
     <Compile Remove="Migrations\20190624164525_Add Users Table.Designer.cs" />
+    <Compile Remove="Migrations\20190727180636_Add Likes Table.cs" />
+    <Compile Remove="Migrations\20190727180636_Add Likes Table.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
