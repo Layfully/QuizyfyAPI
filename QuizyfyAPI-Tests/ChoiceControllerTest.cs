@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using QuizyfyAPI.Controllers;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Models;
@@ -32,8 +34,14 @@ namespace QuizyfyAPI_Tests
                 config.AddProfile(new ChoiceProfile());
             });
 
+            var services = new ServiceCollection();
+            services.AddMemoryCache();
+            var serviceProvider = services.BuildServiceProvider();
+
+            var memoryCache = serviceProvider.GetService<IMemoryCache>();
+
             _mapper = configuration.CreateMapper();
-            _choiceController = new ChoicesController(_choiceRepository, _quizRepository, _questionRepository, _mapper);
+            _choiceController = new ChoicesController(_choiceRepository, _quizRepository, _questionRepository, _mapper, memoryCache);
         }
 
         [Fact]
@@ -140,11 +148,17 @@ namespace QuizyfyAPI_Tests
             await _questionRepository.SaveChangesAsync();
             await _choiceRepository.SaveChangesAsync();
 
-            //Act
-            var result = await _choiceController.Get(100, 5);
+            ActionResult<ChoiceModel[]> result = null;
 
-            //Assert
+            for (int i = 0; i < 10000; i++)
+            {
+                result = await _choiceController.Get(100, 5);
+
+                //Assert
+            }
             Assert.True(result.Value.Length == 2);
+
+            //Act
         }
 
         [Fact]

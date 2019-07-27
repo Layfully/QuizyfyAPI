@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Models;
 
@@ -20,13 +21,15 @@ namespace QuizyfyAPI.Controllers
         private readonly IQuizRepository _quizRepository;
         private readonly IQuestionRepository _questionRepository;
         private readonly IMapper _mapper;
+        private readonly IMemoryCache _cache;
 
-        public ChoicesController(IChoiceRepository choiceRepository, IQuizRepository quizRepository, IQuestionRepository questionRepository, IMapper mapper)
+        public ChoicesController(IChoiceRepository choiceRepository, IQuizRepository quizRepository, IQuestionRepository questionRepository, IMapper mapper, IMemoryCache cache)
         {
             _choiceRepository = choiceRepository;
             _quizRepository = quizRepository;
             _questionRepository = questionRepository;
             _mapper = mapper;
+            _cache = cache;
         }
 
         /// <summary>
@@ -58,7 +61,13 @@ namespace QuizyfyAPI.Controllers
                 return NotFound();
             }
 
-            var choices = await _choiceRepository.GetChoices(quizId, questionId);
+            Choice[] choices;
+
+            if (!_cache.TryGetValue("Choices", out choices))
+            {
+                choices = await _choiceRepository.GetChoices(quizId, questionId);
+                _cache.Set("Choices", choices);
+            }
 
             if(choices.Length == 0)
             {
@@ -92,7 +101,14 @@ namespace QuizyfyAPI.Controllers
         {
             var quiz = await _quizRepository.GetQuiz(quizId);
             var question = await _questionRepository.GetQuestion(quizId, questionId);
-            var choice = await _choiceRepository.GetChoice(quizId, questionId, choiceId);
+
+            Choice choice;
+
+            if (!_cache.TryGetValue("$Choice {choiceId}", out choice))
+            {
+                choice = await _choiceRepository.GetChoice(quizId, questionId, choiceId);
+                _cache.Set("$Choice {choiceId}", choice);
+            }
 
             if (choice == null || quiz == null || question == null)
             {
@@ -146,6 +162,7 @@ namespace QuizyfyAPI.Controllers
 
             if (await _choiceRepository.SaveChangesAsync())
             {
+                _cache.Set($"Choice {choice.Id}", choice);
                 return CreatedAtAction(nameof(Get), _mapper.Map<ChoiceModel>(choice));
             }
 
@@ -197,6 +214,7 @@ namespace QuizyfyAPI.Controllers
 
             if (await _choiceRepository.SaveChangesAsync())
             {
+                _cache.Set($"Choice {oldChoice.Id}", oldChoice);
                 return _mapper.Map<ChoiceModel>(oldChoice);
             }
 
@@ -238,6 +256,7 @@ namespace QuizyfyAPI.Controllers
 
             if (await _choiceRepository.SaveChangesAsync())
             {
+                _cache.Remove($"Choice {choiceId}");
                 return Ok();
             }
 
