@@ -13,5 +13,6 @@ namespace QuizyfyAPI.Data
         public string Description { get; set; }
         public DateTime DateAdded { get; set; } = DateTime.MinValue;
         public ICollection<Question> Questions { get; set; }
+        public ICollection<Like> Likes { get; set; }
     }
 }
