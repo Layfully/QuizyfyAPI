@@ -36,36 +36,23 @@ namespace QuizyfyAPI.Migrations
                     b.HasIndex("QuestionId");
 
                     b.ToTable("Choices");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            IsRight = false,
-                            QuestionId = 1,
-                            Text = "Entity Framework From Scratch"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            IsRight = true,
-                            QuestionId = 1,
-                            Text = "Writing Sample Data Made Easy"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            IsRight = false,
-                            QuestionId = 2,
-                            Text = "Writing Sample Data Made Easy"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            IsRight = true,
-                            QuestionId = 2,
-                            Text = "ANSWER"
-                        });
+            modelBuilder.Entity("QuizyfyAPI.Data.Like", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("QuizId");
+
+                    b.Property<int>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizId");
+
+                    b.ToTable("Likes");
                 });
 
             modelBuilder.Entity("QuizyfyAPI.Data.Question", b =>
@@ -83,20 +70,6 @@ namespace QuizyfyAPI.Migrations
                     b.HasIndex("QuizId");
 
                     b.ToTable("Questions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            QuizId = 1,
-                            Text = "Entity Framework From Scratch"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            QuizId = 1,
-                            Text = "Writing Sample Data Made Easy"
-                        });
                 });
 
             modelBuilder.Entity("QuizyfyAPI.Data.Quiz", b =>
@@ -107,19 +80,15 @@ namespace QuizyfyAPI.Migrations
 
                     b.Property<DateTime>("DateAdded");
 
+                    b.Property<string>("Description");
+
+                    b.Property<string>("ImageUrl");
+
                     b.Property<string>("Name");
 
                     b.HasKey("Id");
 
                     b.ToTable("Quizzes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            DateAdded = new DateTime(2019, 6, 24, 18, 47, 16, 786, DateTimeKind.Local).AddTicks(1519),
-                            Name = "Quizzserser"
-                        });
                 });
 
             modelBuilder.Entity("QuizyfyAPI.Data.User", b =>
@@ -152,6 +121,14 @@ namespace QuizyfyAPI.Migrations
                     b.HasOne("QuizyfyAPI.Data.Question")
                         .WithMany("Choices")
                         .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("QuizyfyAPI.Data.Like", b =>
+                {
+                    b.HasOne("QuizyfyAPI.Data.Quiz")
+                        .WithMany("Likes")
+                        .HasForeignKey("QuizId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
