@@ -1,6 +1,8 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using QuizyfyAPI.Controllers;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Models;
@@ -30,8 +32,15 @@ namespace QuizyfyAPI_Tests
                 config.AddProfile(new QuestionProfile());
             });
 
+
+            var services = new ServiceCollection();
+            services.AddMemoryCache();
+            var serviceProvider = services.BuildServiceProvider();
+
+            var memoryCache = serviceProvider.GetService<IMemoryCache>();
+
             _mapper = configuration.CreateMapper();
-            _questionsController = new QuestionsController(_questionRepository, _quizRepository ,_mapper);
+            _questionsController = new QuestionsController(_questionRepository, _quizRepository ,_mapper, memoryCache);
         }
         
         [Fact]

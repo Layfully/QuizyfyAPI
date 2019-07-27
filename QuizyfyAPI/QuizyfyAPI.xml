@@ -139,7 +139,7 @@
             <response code="204">No questions exists so return nothing.</response>
             <response code="404">Quiz doesn't exist.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuestionsController.Post(System.Int32,QuizyfyAPI.Models.QuestionCreateModel)">
+        <member name="M:QuizyfyAPI.Controllers.QuestionsController.Post(System.Int32,System.Collections.Generic.ICollection{QuizyfyAPI.Models.QuestionCreateModel})">
             <summary>
             Creates question for given quiz with provided data.
             </summary>
@@ -201,7 +201,7 @@
             <response code = "200" >Question was sucessfully deleted.</response> 
             <response code = "400" >Request data was not complete or corrupted.</response> 
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Get(System.Boolean)">
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Get(QuizyfyAPI.Models.PagingParams)">
             <summary>
             Get list of all quizes.
             </summary>
@@ -443,6 +443,11 @@
             Quiz name.
             </summary>
         </member>
+        <member name="P:QuizyfyAPI.Models.QuizCreateModel.Description">
+            <summary>
+            Quiz description.
+            </summary>
+        </member>
         <member name="P:QuizyfyAPI.Models.QuizCreateModel.Questions">
             <summary>
             Collection of questions which belongs to quiz.
@@ -453,9 +458,19 @@
             A quiz with name , date of addition and questions properties. Used for displaying quizzes.
             </summary>
         </member>
+        <member name="P:QuizyfyAPI.Models.QuizModel.Id">
+            <summary>
+            Quiz id.
+            </summary>
+        </member>
         <member name="P:QuizyfyAPI.Models.QuizModel.Name">
             <summary>
             Quiz name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuizModel.Description">
+            <summary>
+            Quiz description.
             </summary>
         </member>
         <member name="P:QuizyfyAPI.Models.QuizModel.DateAdded">
