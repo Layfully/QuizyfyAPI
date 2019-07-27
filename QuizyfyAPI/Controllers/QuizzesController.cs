@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -7,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Memory;
+using QuizyfyAP;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Models;
 
@@ -14,17 +17,24 @@ namespace QuizyfyAPI.Controllers
 {
     [Route("api/[controller]")]
     [Produces("application/json")]
-    [Consumes("application/json")]
     [ApiController]
     public class QuizzesController : ControllerBase
     {
         private readonly IQuizRepository _repository;
+        private readonly IQuestionRepository _questionRepository;
+        private readonly IChoiceRepository _choiceRepository;
         private readonly IMapper _mapper;
+        private readonly IMemoryCache _cache;
+        private readonly IUrlHelper _urlHelper;
 
-        public QuizzesController(IQuizRepository repository, IMapper mapper)
+        public QuizzesController(IQuizRepository repository, IQuestionRepository questionRepository, IChoiceRepository choiceRepository, IMapper mapper, IMemoryCache memoryCache, IUrlHelper urlHelper)
         {
             _repository = repository;
+            _questionRepository = questionRepository;
+            _choiceRepository = choiceRepository;
             _mapper = mapper;
+            _cache = memoryCache;
+            _urlHelper = urlHelper;
         }
 
         /// <summary>
@@ -42,42 +52,94 @@ namespace QuizyfyAPI.Controllers
         /// <response code="204">No quizzes exists so return nothing.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [HttpGet]
-        public async Task<ActionResult<QuizModel[]>> Get(bool includeQuestions = false)
+        [HttpGet(Order = 0)]
+        public async Task<ActionResult<QuizListModel>> Get([FromQuery]PagingParams pagingParams)
         {
-            var results = await _repository.GetQuizzes(includeQuestions);
+            PagedList<Quiz> obj;
 
-            if(results.Length == 0)
+                obj = _repository.GetQuizzes(pagingParams);
+
+
+            Response.Headers.Add("X-Pagination", obj.GetHeader().ToJson());
+
+            if(obj.List.Count == 0)
             {
                 return NoContent();
             }
 
-            return _mapper.Map<QuizModel[]>(results);
+            var output = new QuizListModel
+            {
+                Paging = obj.GetHeader(),
+                Links = GetLinks(obj, HttpContext),
+                Items = _mapper.Map<List<QuizModel>>(obj.List)
+            };
+
+            return output;
         }
 
-        /// <summary>
-        /// Get one quiz by id.
-        /// </summary>
-        /// <param name="id">This is id of the quiz you want to get.</param>
-        /// <param name="includeQuestions">Parameter which tells us wheter to include questions for quiz or not.</param>
-        /// <returns>>An ActionResult of QuizModel</returns>
-        /// <remarks>
-        /// Sample request (this request returns **one quiz**)  
-        ///      
-        ///     GET /quizzes/1
-        ///     
-        /// </remarks>   
-        /// <response code="200">Returns one quiz with provided id</response>
-        /// <response code="404">Quiz with provided id wasn't found.</response>
-        /// <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        private List<LinkInfo> GetLinks(PagedList<Quiz> list, HttpContext HttpContext)
+        {
+            var links = new List<LinkInfo>();
+
+            if (list.HasPreviousPage)
+                links.Add(CreateLink(HttpContext, list.PreviousPageNumber,
+                           list.PageSize, "previousPage", "GET"));
+
+            links.Add(CreateLink(HttpContext, list.PageNumber,
+                           list.PageSize, "self", "GET"));
+
+            if (list.HasNextPage)
+                links.Add(CreateLink(HttpContext, list.NextPageNumber,
+                           list.PageSize, "nextPage", "GET"));
+
+            return links;
+        }
+
+        private LinkInfo CreateLink(
+    HttpContext HttpContext, int pageNumber, int pageSize,
+    string rel, string method)
+        {
+            return new LinkInfo
+            {
+                Href = HttpContext.Request.Path + $"?PageNumber={pageNumber}&PageSize={pageSize}",
+                Rel = rel,
+                Method = method
+            };
+        }
+    
+
+
+
+    /// <summary>
+    /// Get one quiz by id.
+    /// </summary>
+    /// <param name="id">This is id of the quiz you want to get.</param>
+    /// <param name="includeQuestions">Parameter which tells us wheter to include questions for quiz or not.</param>
+    /// <returns>>An ActionResult of QuizModel</returns>
+    /// <remarks>
+    /// Sample request (this request returns **one quiz**)  
+    ///      
+    ///     GET /quizzes/1
+    ///     
+    /// </remarks>   
+    /// <response code="200">Returns one quiz with provided id</response>
+    /// <response code="404">Quiz with provided id wasn't found.</response>
+    /// <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
+    [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Order = 1)]
         public async Task<ActionResult<QuizModel>> Get(int id, bool includeQuestions = false)
         {
+            Quiz obj;
 
-            var result = await _repository.GetQuiz(id, includeQuestions);
+            if (!_cache.TryGetValue("Quizzes", out obj))
+            {
+                obj = await _repository.GetQuiz(id, includeQuestions);
+                _cache.Set($"Quiz {id}", obj);
+            }
+
+            var result = obj;
 
             if (result == null)
             {
@@ -113,16 +175,38 @@ namespace QuizyfyAPI.Controllers
         public async Task<ActionResult<QuizModel>> Post(QuizCreateModel model)
         {
             var quiz = _mapper.Map<Quiz>(model);
-
+            
             if(quiz != null)
             {
                 quiz.DateAdded = DateTime.Now;
+                
+                if (model.Image != null && model.Image.Length > 0)
+                {
+                    var fileName = Path.GetFileName(model.Image.FileName);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\quizzes", fileName);
+                    using (var fileSteam = new FileStream(filePath, FileMode.Create))
+                    {
+                        await model.Image.CopyToAsync(fileSteam);
+                    }
+
+                    filePath = Path.Combine("https://localhost:5001/", "images\\quizzes", fileName);
+                    filePath = filePath.Replace('\\', '/');
+
+                    quiz.ImageUrl = filePath;
+                }
 
                 _repository.Add(quiz);
             }
 
             if (await _repository.SaveChangesAsync())
             {
+                _cache.Set($"Quiz {quiz.Id}", quiz);
+                _cache.Remove($"Quizzes");
+
+                var questionController = new QuestionsController(_questionRepository,_choiceRepository, _repository, _mapper, _cache);
+
+                await questionController.Post(quiz.Id, model.Questions);
+
                 return CreatedAtAction(nameof(Get), new { id = quiz.Id }, _mapper.Map<QuizModel>(quiz));
             }
 
@@ -168,6 +252,8 @@ namespace QuizyfyAPI.Controllers
 
             if (await _repository.SaveChangesAsync())
             {
+                _cache.Set( $"Quiz {id}", oldQuiz);
+                _cache.Remove($"Quizzes");
                 return _mapper.Map<QuizModel>(oldQuiz);
             }
 
@@ -205,6 +291,7 @@ namespace QuizyfyAPI.Controllers
 
             if (await _repository.SaveChangesAsync())
             {
+                _cache.Remove($"Quiz {id}");
                 return Ok();
             }
 

@@ -17,5 +17,6 @@ namespace QuizyfyAPI.Models
         [Required]
         [MaxLength(70)]
         public string Text { get; set; }
+        public ICollection<ChoiceModel> Choices { get; set; }
     }
 }

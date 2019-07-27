@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Models;
 
@@ -17,14 +18,18 @@ namespace QuizyfyAPI.Controllers
     public class QuestionsController : ControllerBase
     {
         private readonly IQuestionRepository _questionRepository;
+        private readonly IChoiceRepository _choiceRepository;
         private readonly IQuizRepository _quizRepository;
         private readonly IMapper _mapper;
+        private readonly IMemoryCache _cache;
 
-        public QuestionsController(IQuestionRepository questionnRepository, IQuizRepository quizRepository, IMapper mapper)
+        public QuestionsController(IQuestionRepository questionRepository, IChoiceRepository choiceRepository, IQuizRepository quizRepository, IMapper mapper, IMemoryCache cache)
         {
-            _questionRepository = questionnRepository;
+            _questionRepository = questionRepository;
+            _choiceRepository = choiceRepository;
             _quizRepository = quizRepository;
             _mapper = mapper;
+            _cache = cache;
         }
 
         /// <summary>
@@ -55,7 +60,13 @@ namespace QuizyfyAPI.Controllers
                 return NotFound();
             }
 
-            var questions = await _questionRepository.GetQuestions(quizId, includeChoices);
+            Question[] questions;
+
+            if (!_cache.TryGetValue("Questions", out questions))
+            {
+                questions = await _questionRepository.GetQuestions(quizId, includeChoices);
+                _cache.Set("Questions", questions);
+            }
 
             if (questions.Length == 0)
             {
@@ -86,7 +97,13 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId, bool includeChoices)
         {
-            var question = await _questionRepository.GetQuestion(quizId, questionId, includeChoices);
+            Question question;
+
+            if (!_cache.TryGetValue($"Question {questionId}", out question))
+            {
+                question = await _questionRepository.GetQuestion(quizId, questionId, includeChoices);
+                _cache.Set($"Question {questionId}", question);
+            }
 
             if (question == null)
             {
@@ -120,7 +137,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [HttpPost]
-        public async Task<ActionResult<QuestionModel>> Post(int quizId, QuestionCreateModel model)
+        public async Task<ActionResult<QuestionModel>> Post(int quizId, ICollection<QuestionCreateModel> models)
         {
             var quiz = await _quizRepository.GetQuiz(quizId);
 
@@ -129,18 +146,33 @@ namespace QuizyfyAPI.Controllers
                 return BadRequest("Quiz doesn't exists");
             }
 
-            var question = _mapper.Map<Question>(model);
-
-            if(question != null)
+            foreach (var questionModel in models)
             {
-                question.QuizId = quiz.Id;
+                var question = _mapper.Map<Question>(questionModel);
 
-                _questionRepository.Add(question);
+                if (question != null)
+                {
+                    question.QuizId = quiz.Id;
+
+                    _questionRepository.Add(question);
+                }
+
+                await _questionRepository.SaveChangesAsync();
+
+                foreach (var choice in questionModel.Choices)
+                {
+                    var choicesController = new ChoicesController(_choiceRepository, _quizRepository, _questionRepository, _mapper, _cache);
+
+                    await choicesController.Post(quiz.Id, question.Id, choice);
+                }
+
+                _cache.Set($"Question {question.Id}", question);
             }
 
             if (await _questionRepository.SaveChangesAsync())
             {
-                return CreatedAtAction(nameof(Get), new { quizId = quiz.Id }, _mapper.Map<QuestionModel>(question));
+
+                return CreatedAtAction(nameof(Get), new { quizId = quiz.Id });
             }
 
             return BadRequest("Failed to save new question");
@@ -187,6 +219,7 @@ namespace QuizyfyAPI.Controllers
 
             if (await _questionRepository.SaveChangesAsync())
             {
+                _cache.Set($"Question {oldQuestion.Id}", oldQuestion);
                 return _mapper.Map<QuestionModel>(oldQuestion);
             }
 
@@ -225,6 +258,7 @@ namespace QuizyfyAPI.Controllers
 
             if (await _questionRepository.SaveChangesAsync())
             {
+                _cache.Remove($"Question {questionId}");
                 return Ok();
             }
 
