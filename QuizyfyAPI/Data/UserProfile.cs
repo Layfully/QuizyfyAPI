@@ -11,7 +11,6 @@ namespace QuizyfyAPI.Data
     {
         public UserProfile()
         {
-            CreateMap<RefreshToken, RefreshToken>().ForMember(m => m.User, opt => opt.Ignore());
             CreateMap<User, UserModel>().ReverseMap();
             CreateMap<User, UserRegisterModel>().ReverseMap();
             CreateMap<UserModel, UserRegisterModel>().ReverseMap();

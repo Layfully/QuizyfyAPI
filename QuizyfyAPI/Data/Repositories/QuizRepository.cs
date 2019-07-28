@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QuizyfyAPI.Helpers;
-using QuizyfyAPI.Models;
 
 namespace QuizyfyAPI.Data
 {
@@ -32,7 +31,6 @@ namespace QuizyfyAPI.Data
             _logger.LogInformation($"Removing an object of type {entity.GetType()} to the context.");
             _context.Remove(entity);
         }
-
         public async Task<bool> SaveChangesAsync()
         {
             _logger.LogInformation($"Attempitng to save the changes in the context");
@@ -41,7 +39,7 @@ namespace QuizyfyAPI.Data
             return (await _context.SaveChangesAsync()) > 0;
         }
 
-        public PagedList<Quiz> GetQuizzes(PagingParams pagingParams, bool includeQuestions = false)
+        public async Task<Quiz[]> GetQuizzes(bool includeQuestions = false)
         {
             _logger.LogInformation($"Getting all quizzes");
 
@@ -53,9 +51,7 @@ namespace QuizyfyAPI.Data
                 query = query.Include(quiz => quiz.Questions).ThenInclude(question => question.Choices);
             }
 
-            PagedList<Quiz> pagedQuizzes = new PagedList<Quiz>(query, pagingParams.PageNumber, pagingParams.PageSize);
-
-            return pagedQuizzes;
+            return await query.ToArrayAsync();
         }
 
         public async Task<Quiz> GetQuiz(int id, bool includeQuestions = false)

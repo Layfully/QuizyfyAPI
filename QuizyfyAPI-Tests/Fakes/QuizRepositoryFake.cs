@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using QuizyfyAPI.Models;
+
 
 namespace QuizyfyAPI_Tests.Fakes
 {
@@ -50,13 +50,13 @@ namespace QuizyfyAPI_Tests.Fakes
             return await _query.FirstOrDefaultAsync();
         }
 
-        public PagedList<Quiz> GetQuizzes(PagingParams pagingParams, bool includeQuestions = false)
+        public async Task<Quiz[]> GetQuizzes(bool includeQuestions = false)
         {
             IQueryable<Quiz> _query = _context.Quizzes;
 
             _query = _query.OrderBy(q => q.Id);
 
-            throw new NotImplementedException(); // returnawait _query.ToArrayAsync();
+            return await _query.ToArrayAsync();
         }
 
         public async Task<bool> SaveChangesAsync()

@@ -1,19 +1,12 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Helpers;
 using QuizyfyAPI.Models;
-using QuizyfyAPI.Services;
 
 namespace QuizyfyAPI.Controllers
 {
@@ -24,19 +17,15 @@ namespace QuizyfyAPI.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IUserRepository _repository;
         private readonly IMapper _mapper;
         private readonly AppSettings _appSettings;
-        private readonly IUserService _userService;
 
-        public UsersController(IUserRepository userRepository, IRefreshTokenRepository refreshTokenRepository, IMapper mapper, IOptions<AppSettings> appSettings, IUserService userService)
+        public UsersController(IUserRepository repository, IMapper mapper, IOptions<AppSettings> appSettings)
         {
-            _userRepository = userRepository;
-            _refreshTokenRepository = refreshTokenRepository;
+            _repository = repository;
             _mapper = mapper;
             _appSettings = appSettings.Value;
-            _userService = userService;
         }
 
         /// <summary>
@@ -65,11 +54,11 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         public async Task<ActionResult<UserModel>> Login(UserLoginModel model)
         {
-            var user = await _userRepository.Authenticate(model.Username, model.Password);
+            var user = await _repository.Authenticate(model.Username, model.Password);
 
             if (user != null)
             {
-                user = await _userService.RequestToken(user);
+                user = JWTHelper.RequestToken(user, _appSettings);
             }
 
             return _mapper.Map<UserModel>(user);
@@ -104,7 +93,7 @@ namespace QuizyfyAPI.Controllers
         {
             var user = _mapper.Map<User>(model);
 
-            if (await _userRepository.GetUserByUsername(model.Username) != null)
+            if (await _repository.GetUserByUsername(model.Username) != null)
             {
                 return BadRequest("Username: " + user.Username + " is already taken");
             }
@@ -115,9 +104,9 @@ namespace QuizyfyAPI.Controllers
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
 
-            _userRepository.Add(user);
+            _repository.Add(user);
 
-            if (await _userRepository.SaveChangesAsync())
+            if (await _repository.SaveChangesAsync())
             {
                 return CreatedAtAction(nameof(Login), model);
             }
@@ -157,7 +146,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<UserModel>> Put(int id, UserRegisterModel model)
         {
-            var oldUser = await _userRepository.GetUserById(id);
+            var oldUser = await _repository.GetUserById(id);
 
             if (oldUser == null)
             {
@@ -172,7 +161,7 @@ namespace QuizyfyAPI.Controllers
 
             if (oldUser.Username != model.Username)
             {
-                if (await _userRepository.GetUserByUsername(model.Username) != null)
+                if (await _repository.GetUserByUsername(model.Username) != null)
                 {
                     return BadRequest("User with this username already exists!");
                 }
@@ -189,7 +178,7 @@ namespace QuizyfyAPI.Controllers
 
             _mapper.Map(model, oldUser);
 
-            if (await _userRepository.SaveChangesAsync())
+            if (await _repository.SaveChangesAsync())
             {
                 return _mapper.Map<UserModel>(oldUser);
             }
@@ -221,7 +210,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Delete(int id)
         {
-            var oldUser = await _userRepository.GetUserById(id);
+            var oldUser = await _repository.GetUserById(id);
 
             var user = User.Identity.Name;
 
@@ -233,29 +222,16 @@ namespace QuizyfyAPI.Controllers
             if (!User.IsInRole(Role.Admin) && oldUser.Id.ToString() != user)
             {
                 return Forbid("Only admin can delete other users.");
-            }
+            } 
 
-            _userRepository.Delete(oldUser);
+            _repository.Delete(oldUser);
 
-            if (await _userRepository.SaveChangesAsync())
+            if (await _repository.SaveChangesAsync())
             {
                 return Ok();
             }
 
             return BadRequest();
-        }
-        [AllowAnonymous]
-        [HttpPost("Refresh")]
-        public async Task<ActionResult<UserModel>> Refresh(UserRefreshModel model)
-        {
-            var refreshResponse = await _userService.RefreshTokenAsync(model);
-
-            if (!refreshResponse.Success)
-            {
-                return BadRequest(refreshResponse.Errors);
-            }
-
-            return _mapper.Map<UserModel>(refreshResponse.User);
         }
     }
 }
