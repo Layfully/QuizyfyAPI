@@ -1,8 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using QuizyfyAPI.Controllers;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Models;
@@ -14,7 +12,7 @@ using Xunit;
 namespace QuizyfyAPI_Tests
 {
     public class QuizControllerTest
-    {/*
+    {
         QuizzesController _quizzesController;
         QuizRepositoryFake _quizRepository;
         IMapper _mapper;
@@ -32,14 +30,8 @@ namespace QuizyfyAPI_Tests
                 config.AddProfile(new QuizProfile());
             });
 
-            var services = new ServiceCollection();
-            services.AddMemoryCache();
-            var serviceProvider = services.BuildServiceProvider();
-
-            var memoryCache = serviceProvider.GetService<IMemoryCache>();
-
             _mapper = configuration.CreateMapper();
-            _quizzesController = new QuizzesController(_quizRepository, _mapper, memoryCache);
+            _quizzesController = new QuizzesController(_quizRepository, _mapper);
         }
 
         [Fact]
@@ -51,7 +43,9 @@ namespace QuizyfyAPI_Tests
 
             await _quizRepository.SaveChangesAsync();
 
+            //Act
             var result = await _quizzesController.Get();
+
             //Assert
             Assert.IsType<NoContentResult>(result.Result);
         }
@@ -95,13 +89,8 @@ namespace QuizyfyAPI_Tests
             await _quizRepository.SaveChangesAsync();
 
             //Act
+            var result = await _quizzesController.Get();
 
-            ActionResult<QuizModel[]> result = null;
-            //Act
-            for (int i = 0; i < 1000000; i++)
-            {
-                result = await _quizzesController.Get();
-            }
             //Assert
             Assert.True(result.Value.Length == 2);
         }
@@ -205,7 +194,7 @@ namespace QuizyfyAPI_Tests
             await _quizRepository.SaveChangesAsync();
 
             var quizModel = new QuizCreateModel { Name = "Nowy", Questions = null };
-
+            
             //Act
             await _quizzesController.Post(quizModel);
 
@@ -223,7 +212,7 @@ namespace QuizyfyAPI_Tests
 
             await _quizRepository.SaveChangesAsync();
 
-            var result = await _quizzesController.Put(1, new QuizCreateModel { Name = "Dsa", Questions = null });
+            var result = await _quizzesController.Put(1, new QuizCreateModel { Name = "Dsa", Questions = null } );
 
             //Assert
             Assert.IsType<QuizModel>(result.Value);
@@ -262,7 +251,7 @@ namespace QuizyfyAPI_Tests
         public async Task Put_Updates_Quiz()
         {
             _quizRepository.Add(new Quiz { Id = 1, Name = "asd", DateAdded = DateTime.Now });
-
+            
             await _quizRepository.SaveChangesAsync();
             var newQuiz = new QuizCreateModel { Name = "New", Questions = null };
 
@@ -319,6 +308,6 @@ namespace QuizyfyAPI_Tests
             var result = await _quizzesController.Get();
 
             Assert.IsType<NoContentResult>(result.Result);
-        }*/
+        }
     }
 }
