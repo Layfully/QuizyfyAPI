@@ -27,6 +27,7 @@ using System.IO;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using QuizyfyAPI.Services;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace QuizyfyAPI
@@ -51,6 +52,7 @@ namespace QuizyfyAPI
             services.AddTransient<IQuestionRepository, QuestionRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IChoiceRepository, ChoiceRepository>();
+            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
 
             services.ConfigureApiVersioning();
 
@@ -121,6 +123,9 @@ namespace QuizyfyAPI
                                            .ActionContext;
                 return new UrlHelper(actionContext);
             });
+
+            services.AddTransient<IUserService, UserService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

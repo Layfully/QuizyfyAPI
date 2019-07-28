@@ -71,7 +71,7 @@ namespace QuizyfyAPI.Data
                 return null;
             }
 
-            IQueryable<User> query = _context.Users;
+            IQueryable<User> query = _context.Users.Include(s => s.RefreshToken);
 
             var user = await query.Where(userDb => userDb.Username == username).FirstOrDefaultAsync();
 
