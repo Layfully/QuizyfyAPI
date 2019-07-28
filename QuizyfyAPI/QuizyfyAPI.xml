@@ -104,6 +104,46 @@
             <response code = "200" >Choice was sucessfully deleted.</response> 
             <response code = "400" >Request data was not complete or corrupted.</response> 
         </member>
+        <member name="M:QuizyfyAPI.Controllers.LikesController.Put(System.Int32)">
+            <summary>
+            Updates question for given quiz with specified id and data.
+            </summary>
+            <param name="quizId">Id of quiz you want to update.</param>
+            <param name="questionId">Id of question you want to update.</param>
+            <param name="model">New data for question.</param>
+            <returns>>An ActionResult of QuestionModel</returns>
+            <remarks>
+            Sample request (this request returns **updated question**)  
+                 
+                PUT /quizzes/1/questions/1
+                
+                {
+                    "name":"another name"
+                }
+                
+            </remarks>  
+            <response code="200">Returns question with provided id and updated info.</response>
+            <response code="404">Question with provided id wasn't found.</response> 
+            <response code="204">Probably should never return that but there is possibility that question isn't null but mapping result in null.</response> 
+            <response code="422">One of validation errors occured.</response>
+            <response code="400">Bad request not complete or corrupted data.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.LikesController.Delete(System.Int32)">
+            <summary>
+            Deletes quiz with specified id.
+            </summary>
+            <param name="id">Id of quiz you want to delete.</param>
+            <returns>Response Code</returns>
+            <remarks>
+            Sample request (this request returns **response code only**)  
+                 
+                DELETE /quizzes/1
+                
+            </remarks> 
+            <response code = "404" >Quiz with provided id wasn't found.</response> 
+            <response code = "200" >Quiz was sucessfully deleted.</response> 
+            <response code = "400" >Request data was not complete or corrupted.</response> 
+        </member>
         <member name="M:QuizyfyAPI.Controllers.QuestionsController.Get(System.Int32,System.Boolean)">
             <summary>
             Get list of all questions for given quiz id.
@@ -139,7 +179,7 @@
             <response code="204">No questions exists so return nothing.</response>
             <response code="404">Quiz doesn't exist.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuestionsController.Post(System.Int32,QuizyfyAPI.Models.QuestionCreateModel)">
+        <member name="M:QuizyfyAPI.Controllers.QuestionsController.Post(System.Int32,System.Collections.Generic.ICollection{QuizyfyAPI.Models.QuestionCreateModel})">
             <summary>
             Creates question for given quiz with provided data.
             </summary>
@@ -201,7 +241,7 @@
             <response code = "200" >Question was sucessfully deleted.</response> 
             <response code = "400" >Request data was not complete or corrupted.</response> 
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Get(System.Boolean)">
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Get(QuizyfyAPI.Models.PagingParams)">
             <summary>
             Get list of all quizes.
             </summary>
@@ -443,6 +483,11 @@
             Quiz name.
             </summary>
         </member>
+        <member name="P:QuizyfyAPI.Models.QuizCreateModel.Description">
+            <summary>
+            Quiz description.
+            </summary>
+        </member>
         <member name="P:QuizyfyAPI.Models.QuizCreateModel.Questions">
             <summary>
             Collection of questions which belongs to quiz.
@@ -453,9 +498,19 @@
             A quiz with name , date of addition and questions properties. Used for displaying quizzes.
             </summary>
         </member>
+        <member name="P:QuizyfyAPI.Models.QuizModel.Id">
+            <summary>
+            Quiz id.
+            </summary>
+        </member>
         <member name="P:QuizyfyAPI.Models.QuizModel.Name">
             <summary>
             Quiz name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Models.QuizModel.Description">
+            <summary>
+            Quiz description.
             </summary>
         </member>
         <member name="P:QuizyfyAPI.Models.QuizModel.DateAdded">
@@ -513,7 +568,7 @@
             User role. (Can be either admin or user)
             </summary>
         </member>
-        <member name="P:QuizyfyAPI.Models.UserModel.Token">
+        <member name="P:QuizyfyAPI.Models.UserModel.JwtToken">
             <summary>
             JWT Token used for authentication
             </summary>

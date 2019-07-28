@@ -14,6 +14,7 @@ namespace QuizyfyAPI.Data
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
         public string Role { get; set; }
-        public string Token { get; set; }
+        public string JwtToken { get; set; }
+        public RefreshToken RefreshToken { get; set; }
     }
 }

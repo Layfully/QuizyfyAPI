@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QuizyfyAPI.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -37,6 +38,7 @@ namespace QuizyfyAPI.Models
         /// <summary>
         /// JWT Token used for authentication
         /// </summary>
-        public string Token { get; set; }
+        public string JwtToken { get; set; }
+        public RefreshToken RefreshToken { get; set; }
     }
 }

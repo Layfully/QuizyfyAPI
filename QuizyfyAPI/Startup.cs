@@ -25,6 +25,10 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.IO;
 using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using QuizyfyAPI.Services;
+
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace QuizyfyAPI
 {
@@ -48,6 +52,7 @@ namespace QuizyfyAPI
             services.AddTransient<IQuestionRepository, QuestionRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IChoiceRepository, ChoiceRepository>();
+            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
 
             services.ConfigureApiVersioning();
 
@@ -107,6 +112,20 @@ namespace QuizyfyAPI
            {
                options.EnableForHttps = true;
            });
+
+            services.AddMemoryCache();
+
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
+            services.AddScoped<IUrlHelper>(factory =>
+            {
+                var actionContext = factory.GetService<IActionContextAccessor>()
+                                           .ActionContext;
+                return new UrlHelper(actionContext);
+            });
+
+            services.AddTransient<IUserService, UserService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -130,7 +149,7 @@ namespace QuizyfyAPI
 
             app.UseAuthentication();
 
-            //app.UseResponseCompression();
+            app.UseResponseCompression();
 
             app.UseSwagger();
 
@@ -139,6 +158,7 @@ namespace QuizyfyAPI
                 setupAction.SwaggerEndpoint("/swagger/QuizyfyOpenAPISpecification/swagger.json", "Quzify API");
                 setupAction.RoutePrefix = "";
             });
+            app.UseStaticFiles();
 
             app.UseMvc();
         }

@@ -30,7 +30,7 @@ namespace QuizyfyAPI
 
         public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<QuizDbContext>(
+            services.AddDbContextPool<QuizDbContext>(
                 options => options.UseSqlServer(
                     configuration.GetConnectionString("QuizyfyAPI")
                 ));
@@ -44,9 +44,22 @@ namespace QuizyfyAPI
             // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                RequireExpirationTime = false
+            };
+
+            services.AddSingleton(tokenValidationParameters);
+
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(x =>
@@ -67,13 +80,7 @@ namespace QuizyfyAPI
 
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
+                x.TokenValidationParameters = tokenValidationParameters;
             });
         }
 
@@ -106,6 +113,10 @@ namespace QuizyfyAPI
 
                     if (actionContext.ModelState.ErrorCount > 0 && actionExecutionContext?.ActionArguments.Count == actionContext.ActionDescriptor.Parameters.Count)
                     {
+                        string messages = string.Join("; ", actionContext.ModelState.Values
+                                        .SelectMany(x => x.Errors)
+                                        .Select(x => x.ErrorMessage));
+                        Console.WriteLine(messages);
                         return new UnprocessableEntityObjectResult(actionContext.ModelState);
                     }
 
