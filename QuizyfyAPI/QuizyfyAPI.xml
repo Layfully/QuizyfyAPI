@@ -568,7 +568,7 @@
             User role. (Can be either admin or user)
             </summary>
         </member>
-        <member name="P:QuizyfyAPI.Models.UserModel.Token">
+        <member name="P:QuizyfyAPI.Models.UserModel.JwtToken">
             <summary>
             JWT Token used for authentication
             </summary>

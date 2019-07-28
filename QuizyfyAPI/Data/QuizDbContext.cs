@@ -17,5 +17,6 @@ namespace QuizyfyAPI.Data
         public DbSet<Choice> Choices { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Like> Likes { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

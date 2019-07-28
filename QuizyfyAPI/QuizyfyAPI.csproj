@@ -15,6 +15,12 @@
     <Compile Remove="Migrations\20190624164525_Add Users Table.Designer.cs" />
     <Compile Remove="Migrations\20190727180636_Add Likes Table.cs" />
     <Compile Remove="Migrations\20190727180636_Add Likes Table.Designer.cs" />
+    <Compile Remove="Migrations\20190728081857_Add Refresh Tokens Table.cs" />
+    <Compile Remove="Migrations\20190728081857_Add Refresh Tokens Table.Designer.cs" />
+    <Compile Remove="Migrations\20190728082512_Add Refresh Tokens Table.cs" />
+    <Compile Remove="Migrations\20190728082512_Add Refresh Tokens Table.Designer.cs" />
+    <Compile Remove="Migrations\20190728122118_Add Refresh Tokens Table.cs" />
+    <Compile Remove="Migrations\20190728122118_Add Refresh Tokens Table.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
