@@ -1,17 +1,9 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using QuizyfyAPI.Data;
-using QuizyfyAPI.Helpers;
 using QuizyfyAPI.Models;
 using QuizyfyAPI.Services;
 
@@ -24,18 +16,10 @@ namespace QuizyfyAPI.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
-        private readonly IMapper _mapper;
-        private readonly AppSettings _appSettings;
         private readonly IUserService _userService;
 
-        public UsersController(IUserRepository userRepository, IRefreshTokenRepository refreshTokenRepository, IMapper mapper, IOptions<AppSettings> appSettings, IUserService userService)
+        public UsersController(IUserService userService)
         {
-            _userRepository = userRepository;
-            _refreshTokenRepository = refreshTokenRepository;
-            _mapper = mapper;
-            _appSettings = appSettings.Value;
             _userService = userService;
         }
 
@@ -43,7 +27,7 @@ namespace QuizyfyAPI.Controllers
         /// Authenticate user by checking if he is in database.
         /// </summary>
         /// <param name="model">User credentials</param>
-        /// <returns>Action Result of user model</returns>
+        /// <returns>Action Result with user model</returns>
         /// <remarks>
         /// Sample request (this request returns **user with token if authentication went well**)  
         ///      
@@ -57,22 +41,25 @@ namespace QuizyfyAPI.Controllers
         /// </remarks> 
         /// <response code="200">Returns user with JWT bearer token.</response>
         /// <response code="204">User with this name was not found so return nothing.</response>
+        /// <response code="401">Provided login and password didn't match with any user.</response>
         /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [AllowAnonymous]
         [HttpPost("Login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserModel>> Login(UserLoginModel model)
         {
-            var user = await _userRepository.Authenticate(model.Username, model.Password);
+            var loginResponse = await _userService.Login(model);
 
-            if (user != null)
+            if (!loginResponse.Success)
             {
-                user = await _userService.RequestToken(user);
+                return Unauthorized(loginResponse.Errors);
             }
-
-            return _mapper.Map<UserModel>(user);
+            return loginResponse.Object;
         }
 
         /// <summary>
@@ -92,37 +79,25 @@ namespace QuizyfyAPI.Controllers
         ///     }    
         ///     
         /// </remarks> 
-        /// <response code="400">User is already taken or you didn't provide enough data.</response>
         /// <response code="201">User sucessfully created. Now you can login on login action.</response>
+        /// <response code="400">User is already taken or there was no records in db saved.</response>
         /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [AllowAnonymous]
         [HttpPost("Register")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserModel>> Register(UserRegisterModel model)
         {
-            var user = _mapper.Map<User>(model);
+            var registerResponse = await _userService.Register(model);
 
-            if (await _userRepository.GetUserByUsername(model.Username) != null)
+            if (!registerResponse.Success)
             {
-                return BadRequest("Username: " + user.Username + " is already taken");
+                return BadRequest(registerResponse.Errors);
             }
-
-            byte[] passwordHash, passwordSalt;
-            PasswordHash.Create(model.Password, out passwordHash, out passwordSalt);
-
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-
-            _userRepository.Add(user);
-
-            if (await _userRepository.SaveChangesAsync())
-            {
-                return CreatedAtAction(nameof(Login), model);
-            }
-
-            return BadRequest();
+            return CreatedAtAction(nameof(Login), model);
         }
 
         /// <summary>
@@ -130,7 +105,7 @@ namespace QuizyfyAPI.Controllers
         /// </summary>
         /// <param name="id">Id of user you want to update.</param>
         /// <param name="model">New credentials.</param>
-        /// <returns>Action Result of user model</returns>
+        /// <returns>Action Result with user model</returns>
         /// <remarks>
         /// Sample request (this request returns **user**)  
         ///      
@@ -142,59 +117,39 @@ namespace QuizyfyAPI.Controllers
         ///     }    
         ///     
         /// </remarks> 
-        /// <response code="404">User with given id was not found.</response>
-        /// <response code="403">You aren't user with given id.</response>
-        /// <response code="400">User with this name already exists or you didn't provide enough data.</response>
         /// <response code="200">Returns user with changed properties.</response>
-        /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="400">User with this name already exists or there was no records updated.</response>
         /// <response code="401">You aren't authenticated. Please authenticate first.</response>
+        /// <response code="403">You aren't user with given id.</response>
+        /// <response code="404">User with given id was not found.</response>
+        /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserModel>> Put(int id, UserRegisterModel model)
         {
-            var oldUser = await _userRepository.GetUserById(id);
-
-            if (oldUser == null)
-            {
-                return NotFound($"Couldn't find user with id of {id}");
-            }
-
-
-            if (!User.IsInRole(Role.Admin) && User.Identity.Name != id.ToString())
+            if (!User.IsInRole(Role.Admin) && User.Claims.Single(x => x.Type == "Id").Value != id.ToString())
             {
                 return Forbid("Only admin can change other users data.");
             }
 
-            if (oldUser.Username != model.Username)
+            var updateResponse = await _userService.Update(id, model);
+
+            if (!updateResponse.Success)
             {
-                if (await _userRepository.GetUserByUsername(model.Username) != null)
+                if (!updateResponse.Found)
                 {
-                    return BadRequest("User with this username already exists!");
+                    return NotFound(updateResponse.Errors);
                 }
+                return BadRequest(updateResponse.Errors);
             }
-
-            if (!string.IsNullOrEmpty(model.Password))
-            {
-                byte[] passwordHash, passwordSalt;
-                PasswordHash.Create(model.Password, out passwordHash, out passwordSalt);
-
-                oldUser.PasswordHash = passwordHash;
-                oldUser.PasswordSalt = passwordSalt;
-            }
-
-            _mapper.Map(model, oldUser);
-
-            if (await _userRepository.SaveChangesAsync())
-            {
-                return _mapper.Map<UserModel>(oldUser);
-            }
-
-            return BadRequest();
+            return updateResponse.Object;
         }
 
         /// <summary>
@@ -208,44 +163,65 @@ namespace QuizyfyAPI.Controllers
         ///     DELETE /users/1
         ///     
         /// </remarks> 
-        /// <response code="404">User with given id was not found.</response>
-        /// <response code="403">You aren't user with given id.</response>
-        /// <response code="400">You didn't provide enough data.</response>
-        /// <response code="200">Returns ok if user deleted.</response>
+        /// <response code="200">Returns ok if user was deleted.</response>
+        /// <response code="400">There was no affected records in db.</response>
         /// <response code="401">You aren't authenticated. Please authenticate first.</response>
+        /// <response code="403">You aren't user with given id.</response>
+        /// <response code="404">User with given id was not found.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(int id)
         {
-            var oldUser = await _userRepository.GetUserById(id);
-
-            var user = User.Identity.Name;
-
-            if (oldUser == null)
-            {
-                return NotFound();
-            }
-
-            if (!User.IsInRole(Role.Admin) && oldUser.Id.ToString() != user)
+            if (!User.IsInRole(Role.Admin) && id.ToString() != User.Claims.Single(x => x.Type == "Id").Value)
             {
                 return Forbid("Only admin can delete other users.");
             }
 
-            _userRepository.Delete(oldUser);
+            var deleteResponse = await _userService.Delete(id);
 
-            if (await _userRepository.SaveChangesAsync())
+            if (!deleteResponse.Success)
             {
-                return Ok();
+                if (!deleteResponse.Found)
+                {
+                    return NotFound(deleteResponse.Errors);
+                }
+                return BadRequest(deleteResponse.Errors);
             }
-
-            return BadRequest();
+            return Ok();
         }
+
+        /// <summary>
+        /// Refresh JWT token of a user.
+        /// </summary>
+        /// <param name="model">Object with refresh token and JWT token</param>
+        /// <returns>Action Result with user with refreshed JWT token/returns>
+        /// <remarks>
+        /// Sample request (this request returns **user with JWT token and refresh token**)  
+        ///      
+        ///     POST /users/1/refresh
+        ///     
+        ///     {
+        ///         "JwtToken": "token",
+        ///         "RefreshToken": token
+        ///     }    
+        ///     
+        /// </remarks> 
+        /// <response code="200">JWT sucessfully refreshed.</response>
+        /// <response code="400">There were problems with tokens validation.</response>
+        /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [AllowAnonymous]
         [HttpPost("Refresh")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserModel>> Refresh(UserRefreshModel model)
         {
             var refreshResponse = await _userService.RefreshTokenAsync(model);
@@ -254,8 +230,7 @@ namespace QuizyfyAPI.Controllers
             {
                 return BadRequest(refreshResponse.Errors);
             }
-
-            return _mapper.Map<UserModel>(refreshResponse.User);
+            return refreshResponse.Object;
         }
     }
 }

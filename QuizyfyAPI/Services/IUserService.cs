@@ -11,7 +11,11 @@ namespace QuizyfyAPI.Services
 {
     public interface IUserService
     {
-        Task<AuthenticationResult> RefreshTokenAsync(UserRefreshModel model);
+        Task<ObjectResult<UserModel>> Login(UserLoginModel model);
+        Task<BasicResult> Register(UserRegisterModel model);
+        Task<ObjectResult<UserModel>> Update(int userId, UserRegisterModel model);
+        Task<DetailedResult> Delete(int userId);
+        Task<ObjectResult<UserModel>> RefreshTokenAsync(UserRefreshModel model);
         Task<User> RequestToken(User user);
     }
 }
