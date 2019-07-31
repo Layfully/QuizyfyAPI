@@ -8,7 +8,7 @@ namespace QuizyfyAPI.Models
 {
     public class UserRefreshModel
     {
-        public RefreshToken RefreshToken { get; set; }
+        public string RefreshToken { get; set; }
         public string JwtToken { get; set; }
     }
 }

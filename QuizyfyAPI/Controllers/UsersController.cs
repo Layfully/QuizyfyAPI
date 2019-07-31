@@ -15,7 +15,7 @@ namespace QuizyfyAPI.Controllers
     [Consumes("application/json")]
     [ApiController]
     public class UsersController : ControllerBase
-    {
+    {   
         private readonly IUserService _userService;
 
         public UsersController(IUserService userService)
@@ -208,7 +208,7 @@ namespace QuizyfyAPI.Controllers
         ///     
         ///     {
         ///         "JwtToken": "token",
-        ///         "RefreshToken": token
+        ///         "RefreshToken": "token"
         ///     }    
         ///     
         /// </remarks> 
