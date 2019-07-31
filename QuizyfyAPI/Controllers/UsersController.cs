@@ -43,6 +43,7 @@ namespace QuizyfyAPI.Controllers
         /// <response code="204">User with this name was not found so return nothing.</response>
         /// <response code="401">Provided login and password didn't match with any user.</response>
         /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
         /// <response code="500">Something threw exception on server.</response>
         [AllowAnonymous]
         [HttpPost("Login")]
@@ -50,6 +51,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserModel>> Login(UserLoginModel model)
         {
@@ -82,12 +84,14 @@ namespace QuizyfyAPI.Controllers
         /// <response code="201">User sucessfully created. Now you can login on login action.</response>
         /// <response code="400">User is already taken or there was no records in db saved.</response>
         /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
         /// <response code="500">Something threw exception on server.</response>
         [AllowAnonymous]
         [HttpPost("Register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserModel>> Register(UserRegisterModel model)
         {
@@ -123,6 +127,7 @@ namespace QuizyfyAPI.Controllers
         /// <response code="403">You aren't user with given id.</response>
         /// <response code="404">User with given id was not found.</response>
         /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
         /// <response code="500">Something threw exception on server.</response>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -131,6 +136,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserModel>> Put(int id, UserRegisterModel model)
         {
@@ -168,6 +174,7 @@ namespace QuizyfyAPI.Controllers
         /// <response code="401">You aren't authenticated. Please authenticate first.</response>
         /// <response code="403">You aren't user with given id.</response>
         /// <response code="404">User with given id was not found.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
         /// <response code="500">Something threw exception on server.</response>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -175,6 +182,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(int id)
         {
@@ -215,12 +223,14 @@ namespace QuizyfyAPI.Controllers
         /// <response code="200">JWT sucessfully refreshed.</response>
         /// <response code="400">There were problems with tokens validation.</response>
         /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
         /// <response code="500">Something threw exception on server.</response>
         [AllowAnonymous]
         [HttpPost("Refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserModel>> Refresh(UserRefreshModel model)
         {

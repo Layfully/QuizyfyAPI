@@ -95,10 +95,12 @@ namespace QuizyfyAPI.Services
 
             _mapper.Map(model, user);
 
-            await _userRepository.SaveChangesAsync();
+            if(await _userRepository.SaveChangesAsync())
+            {
+                return new ObjectResult<UserModel> { Success = true, Object = _mapper.Map<UserModel>(user) };
+            }
 
-            return new ObjectResult<UserModel> { Success = true, Object = _mapper.Map<UserModel>(user) };
-
+            return new ObjectResult<UserModel> { Errors = new[] { "No rows were affected" } };
         }
 
         public async Task<DetailedResult> Delete(int userId)
