@@ -28,7 +28,9 @@ namespace QuizyfyAPI.Services
                 return new ObjectResult<LikeModel> { Errors = new[] { "Quiz with given id was not found" } };
             }
 
-            if (await _likeRepository.GetLike(quizId, userId) != null)
+            Like like;
+
+            if ((like = await _likeRepository.GetLike(quizId, userId)) != null)
             {
                 return new ObjectResult<LikeModel> { Found = true, Success = true, Object = _mapper.Map<LikeModel>(like) };
             }
@@ -39,7 +41,7 @@ namespace QuizyfyAPI.Services
                 UserId = userId
             };
 
-            var like = _mapper.Map<Like>(likeModel);
+            like = _mapper.Map<Like>(likeModel);
 
             _likeRepository.Add(like);
 
