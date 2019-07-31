@@ -139,7 +139,7 @@ namespace QuizyfyAPI.Services
 
             var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
 
-            var storedRefreshToken = await _refreshTokenRepository.GetRefreshToken(model.RefreshToken.Token);
+            var storedRefreshToken = await _refreshTokenRepository.GetRefreshToken(model.RefreshToken);
 
             if (storedRefreshToken == null)
             {
