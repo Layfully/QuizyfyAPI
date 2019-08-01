@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using QuizyfyAPI.Data;
@@ -7,7 +6,6 @@ using QuizyfyAPI.Domain;
 using QuizyfyAPI.Helpers;
 using QuizyfyAPI.Models;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -53,8 +51,7 @@ namespace QuizyfyAPI.Services
                 return new BasicResult { Errors = new[] { "Username: " + user.Username + " is already taken" } };
             }
 
-            byte[] passwordHash, passwordSalt;
-            PasswordHash.Create(model.Password, out passwordHash, out passwordSalt);
+            PasswordHash.Create(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
@@ -86,8 +83,7 @@ namespace QuizyfyAPI.Services
 
             if (!string.IsNullOrEmpty(model.Password))
             {
-                byte[] passwordHash, passwordSalt;
-                PasswordHash.Create(model.Password, out passwordHash, out passwordSalt);
+                PasswordHash.Create(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
