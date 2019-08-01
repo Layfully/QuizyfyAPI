@@ -208,7 +208,7 @@ namespace QuizyfyAPI.Controllers
         /// Refresh JWT token of a user.
         /// </summary>
         /// <param name="model">Object with refresh token and JWT token</param>
-        /// <returns>Action Result with user with refreshed JWT token/returns>
+        /// <returns>Action Result with user with refreshed JWT token</returns>
         /// <remarks>
         /// Sample request (this request returns **user with JWT token and refresh token**)  
         ///      
