@@ -52,7 +52,6 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<LikeModel> { Found = true, Errors = new[] { "No rows were affected" } };
         }
-
         public async Task<DetailedResult> Delete(int quizId, int userId)
         {
             var quiz = await _quizRepository.GetQuiz(quizId);

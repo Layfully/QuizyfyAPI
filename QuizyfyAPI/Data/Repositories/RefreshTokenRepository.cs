@@ -28,6 +28,11 @@ namespace QuizyfyAPI.Data
             _context.Remove(entity);
         }
 
+        public void Update<T>(T entity) where T : class
+        {
+            _context.Update(entity);
+        }
+
         public async Task<RefreshToken> GetRefreshToken(string refreshToken)
         {
             return await _context.RefreshTokens.SingleOrDefaultAsync(storedRefreshToken => storedRefreshToken.Token == refreshToken);
