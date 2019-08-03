@@ -50,8 +50,7 @@ namespace QuizyfyAPI.Data
             }
 
             query = query
-              .Where(question => question.QuizId == quizId)
-              .OrderByDescending(question => question.Id);
+              .Where(question => question.QuizId == quizId);
 
             return await query.ToArrayAsync();
         }

@@ -91,9 +91,8 @@ namespace QuizyfyAPI.Controllers
 
             if (!getResponse.Found)
             {
-                return NotFound("Couldn't find choice");
+                return NotFound(getResponse.Errors);
             }
-
             return getResponse.Object;
         }
 
