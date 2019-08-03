@@ -29,6 +29,10 @@ namespace QuizyfyAPI.Data.Repositories
             _logger.LogInformation($"Removing an object of type {entity.GetType()} to the context.");
             _context.Remove(entity);
         }
+        public void Update<T>(T entity) where T : class
+        {
+            _context.Update(entity);
+        }
 
         public async Task<Like> GetLike(int quizId, int userId)
         {

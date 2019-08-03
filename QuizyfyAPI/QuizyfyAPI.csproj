@@ -34,10 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\images\quizzes\11258031_858656067540452_1060186636832202579_n.jpg" />
-    <None Include="wwwroot\images\quizzes\215cc21a-194e-4e37-b808-e7422693dc4b.png" />
-    <None Include="wwwroot\images\quizzes\pobrane.jpg" />
-    <None Include="wwwroot\images\quizzes\zdj.png" />
+    <Folder Include="wwwroot\images\quizzes\" />
   </ItemGroup>
 
 </Project>

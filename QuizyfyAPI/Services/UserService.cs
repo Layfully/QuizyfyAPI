@@ -41,7 +41,6 @@ namespace QuizyfyAPI.Services
             }
             return new ObjectResult<UserModel> { Success = false, Errors = new[] { "Wrong user credentials" } };
         }
-
         public async Task<BasicResult> Register(UserRegisterModel model)
         {
             var user = _mapper.Map<User>(model);
@@ -62,7 +61,6 @@ namespace QuizyfyAPI.Services
 
             return new BasicResult { Success = true };
         }
-
         public async Task<ObjectResult<UserModel>> Update(int userId, UserRegisterModel model)
         {
             var user = await _userRepository.GetUserById(userId);
@@ -98,7 +96,6 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<UserModel> { Errors = new[] { "No rows were affected" } };
         }
-
         public async Task<DetailedResult> Delete(int userId)
         {
             var user = await _userRepository.GetUserById(userId);
@@ -117,7 +114,6 @@ namespace QuizyfyAPI.Services
 
             return new DetailedResult {Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
-
         public async Task<ObjectResult<UserModel>> RefreshTokenAsync(UserRefreshModel model)
         {
             var validatedToken = GetPrincipalFromToken(model.JwtToken);
@@ -180,7 +176,6 @@ namespace QuizyfyAPI.Services
                 Object = _mapper.Map<UserModel>(user)
             };
         }
-
         public async Task<User> RequestToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -237,7 +232,6 @@ namespace QuizyfyAPI.Services
                 return null;
             }
         }
-
         private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
         {
             return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
