@@ -33,7 +33,7 @@ namespace QuizyfyAPI.Services
 
             if (question == null)
             {
-                return new ObjectResult<ChoiceModel[]> { Errors = new[] { "Failed to find the choice to update" } };
+                return new ObjectResult<ChoiceModel[]> { Errors = new[] { "Failed to find the choice" } };
             }
 
             if (!_cache.TryGetValue("Choices", out ICollection<Choice> choices))

@@ -20,6 +20,8 @@ namespace QuizyfyAPI.Controllers
     [ApiController]
     public class QuizzesController : ControllerBase
     {
+        private readonly IQuizService _quizService;
+
         private readonly IQuizRepository _repository;
         private readonly IQuestionRepository _questionRepository;
         private readonly IChoiceRepository _choiceRepository;
@@ -55,14 +57,11 @@ namespace QuizyfyAPI.Controllers
         [HttpGet(Order = 0)]
         public async Task<ActionResult<QuizListModel>> Get([FromQuery]PagingParams pagingParams)
         {
-            PagedList<Quiz> obj;
-
-                obj = _repository.GetQuizzes(pagingParams);
-
+            PagedList<Quiz> obj = _repository.GetQuizzes(pagingParams);
 
             Response.Headers.Add("X-Pagination", obj.GetHeader().ToJson());
 
-            if(obj.List.Count == 0)
+            if (obj.List.Count == 0)
             {
                 return NoContent();
             }
@@ -96,7 +95,7 @@ namespace QuizyfyAPI.Controllers
         }
 
         private LinkInfo CreateLink(
-    HttpContext HttpContext, int pageNumber, int pageSize,
+         HttpContext HttpContext, int pageNumber, int pageSize,
     string rel, string method)
         {
             return new LinkInfo
@@ -106,34 +105,32 @@ namespace QuizyfyAPI.Controllers
                 Method = method
             };
         }
-    
 
 
 
-    /// <summary>
-    /// Get one quiz by id.
-    /// </summary>
-    /// <param name="id">This is id of the quiz you want to get.</param>
-    /// <param name="includeQuestions">Parameter which tells us wheter to include questions for quiz or not.</param>
-    /// <returns>>An ActionResult of QuizModel</returns>
-    /// <remarks>
-    /// Sample request (this request returns **one quiz**)  
-    ///      
-    ///     GET /quizzes/1
-    ///     
-    /// </remarks>   
-    /// <response code="200">Returns one quiz with provided id</response>
-    /// <response code="404">Quiz with provided id wasn't found.</response>
-    /// <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
-    [ProducesResponseType(StatusCodes.Status200OK)]
+
+        /// <summary>
+        /// Get one quiz by id.
+        /// </summary>
+        /// <param name="id">This is id of the quiz you want to get.</param>
+        /// <param name="includeQuestions">Parameter which tells us wheter to include questions for quiz or not.</param>
+        /// <returns>>An ActionResult of QuizModel</returns>
+        /// <remarks>
+        /// Sample request (this request returns **one quiz**)  
+        ///      
+        ///     GET /quizzes/1
+        ///     
+        /// </remarks>   
+        /// <response code="200">Returns one quiz with provided id</response>
+        /// <response code="404">Quiz with provided id wasn't found.</response>
+        /// <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [HttpGet("{id}", Order = 1)]
         public async Task<ActionResult<QuizModel>> Get(int id, bool includeQuestions = false)
         {
-            Quiz obj;
-
-            if (!_cache.TryGetValue("Quizzes", out obj))
+            if (!_cache.TryGetValue("Quizzes", out Quiz obj))
             {
                 obj = await _repository.GetQuiz(id, includeQuestions);
                 _cache.Set($"Quiz {id}", obj);
@@ -175,11 +172,11 @@ namespace QuizyfyAPI.Controllers
         public async Task<ActionResult<QuizModel>> Post(QuizCreateModel model)
         {
             var quiz = _mapper.Map<Quiz>(model);
-            
-            if(quiz != null)
+
+            if (quiz != null)
             {
                 quiz.DateAdded = DateTime.Now;
-                
+
                 if (model.Image != null && model.Image.Length > 0)
                 {
                     var fileName = Path.GetFileName(model.Image.FileName);
@@ -203,7 +200,7 @@ namespace QuizyfyAPI.Controllers
                 _cache.Set($"Quiz {quiz.Id}", quiz);
                 _cache.Remove($"Quizzes");
 
-                var questionController = new QuestionsController(_questionRepository,_choiceRepository, _repository, _mapper, _cache);
+                var questionController = new QuestionsController(_questionRepository, _choiceRepository, _repository, _mapper, _cache);
 
                 await questionController.Post(quiz.Id, model.Questions);
 
@@ -252,7 +249,7 @@ namespace QuizyfyAPI.Controllers
 
             if (await _repository.SaveChangesAsync())
             {
-                _cache.Set( $"Quiz {id}", oldQuiz);
+                _cache.Set($"Quiz {id}", oldQuiz);
                 _cache.Remove($"Quizzes");
                 return _mapper.Map<QuizModel>(oldQuiz);
             }

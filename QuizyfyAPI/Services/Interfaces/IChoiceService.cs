@@ -1,6 +1,5 @@
 ﻿using QuizyfyAPI.Domain;
 using QuizyfyAPI.Models;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services

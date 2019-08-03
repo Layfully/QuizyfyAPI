@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using QuizyfyAPI.Data;
 using QuizyfyAPI.Models;
+using QuizyfyAPI.Services;
 
 namespace QuizyfyAPI.Controllers
 {
@@ -17,19 +13,11 @@ namespace QuizyfyAPI.Controllers
     [ApiController]
     public class QuestionsController : ControllerBase
     {
-        private readonly IQuestionRepository _questionRepository;
-        private readonly IChoiceRepository _choiceRepository;
-        private readonly IQuizRepository _quizRepository;
-        private readonly IMapper _mapper;
-        private readonly IMemoryCache _cache;
+        private readonly IQuestionService _questionService;
 
-        public QuestionsController(IQuestionRepository questionRepository, IChoiceRepository choiceRepository, IQuizRepository quizRepository, IMapper mapper, IMemoryCache cache)
+        public QuestionsController(IQuestionService questionService)
         {
-            _questionRepository = questionRepository;
-            _choiceRepository = choiceRepository;
-            _quizRepository = quizRepository;
-            _mapper = mapper;
-            _cache = cache;
+            _questionService = questionService;
         }
 
         /// <summary>
@@ -47,33 +35,29 @@ namespace QuizyfyAPI.Controllers
         /// <response code="200">Returns array of all questions</response>
         /// <response code="204">No questions exists so return nothing.</response>
         /// <response code="404">Quiz doesn't exist.</response>
-        [HttpGet]
+        /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
         public async Task<ActionResult<QuestionModel[]>> Get(int quizId, bool includeChoices = false)
         {
-            var quiz = await _quizRepository.GetQuiz(quizId);
+            var getAllResponse = await _questionService.GetAll(quizId, includeChoices);
 
-            if(quiz == null)
+            if (!getAllResponse.Success)
             {
-                return NotFound();
-            }
-
-            Question[] questions;
-
-            if (!_cache.TryGetValue("Questions", out questions))
-            {
-                questions = await _questionRepository.GetQuestions(quizId, includeChoices);
-                _cache.Set("Questions", questions);
-            }
-
-            if (questions.Length == 0)
-            {
+                if (!getAllResponse.Found)
+                {
+                    return NotFound(getAllResponse.Errors);
+                }
                 return NoContent();
             }
-
-            return _mapper.Map<QuestionModel[]>(questions);
+            return getAllResponse.Object;
         }
 
         /// <summary>
@@ -90,27 +74,25 @@ namespace QuizyfyAPI.Controllers
         ///     
         /// </remarks>
         /// <response code="200">Returns one question</response>
-        /// <response code="204">No questions exists so return nothing.</response>
         /// <response code="404">Quiz doesn't exist.</response>
+        /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [HttpGet("{questionId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId, bool includeChoices)
         {
-            Question question;
+            var getResponse = await _questionService.Get(quizId, questionId, includeChoices);
 
-            if (!_cache.TryGetValue($"Question {questionId}", out question))
+            if (!getResponse.Found)
             {
-                question = await _questionRepository.GetQuestion(quizId, questionId, includeChoices);
-                _cache.Set($"Question {questionId}", question);
+                return NotFound(getResponse.Errors);
             }
-
-            if (question == null)
-            {
-                return NotFound("Couldn't find question");
-            }
-
-            return _mapper.Map<QuestionModel>(question);
+            return getResponse.Object;
         }
 
 
@@ -119,7 +101,7 @@ namespace QuizyfyAPI.Controllers
         /// </summary>
         /// <param name="quizId">Id of quiz you want to attach question to.</param>
         /// <param name="model">Question model.</param>
-        /// <returns>>An ActionResult of Question</returns>
+        /// <returns>An ActionResult of Question</returns>
         /// <remarks>
         /// Sample request (this request returns **created question**)  
         ///      
@@ -131,51 +113,26 @@ namespace QuizyfyAPI.Controllers
         ///     
         /// </remarks>  
         /// <response code="201">Returns created question with.</response>
-        /// <response code="422">One of validation errors occured.</response>
         /// <response code="400">Bad request not complete or corrupted data.</response>
+        /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult<QuestionModel>> Post(int quizId, ICollection<QuestionCreateModel> models)
+        public async Task<ActionResult<QuestionModel>> Post(int quizId, QuestionCreateModel model)
         {
-            var quiz = await _quizRepository.GetQuiz(quizId);
+            var createResponse = await _questionService.Create(quizId, model);
 
-            if (quiz == null)
+            if (!createResponse.Success)
             {
-                return BadRequest("Quiz doesn't exists");
+                return BadRequest(createResponse.Errors);
             }
-
-            foreach (var questionModel in models)
-            {
-                var question = _mapper.Map<Question>(questionModel);
-
-                if (question != null)
-                {
-                    question.QuizId = quiz.Id;
-
-                    _questionRepository.Add(question);
-                }
-
-                await _questionRepository.SaveChangesAsync();
-
-                foreach (var choice in questionModel.Choices)
-                {
-                    var choicesController = new ChoicesController(_choiceRepository, _quizRepository, _questionRepository, _mapper, _cache);
-
-                    await choicesController.Post(quiz.Id, question.Id, choice);
-                }
-
-                _cache.Set($"Question {question.Id}", question);
-            }
-
-            if (await _questionRepository.SaveChangesAsync())
-            {
-
-                return CreatedAtAction(nameof(Get), new { quizId = quiz.Id });
-            }
-
-            return BadRequest("Failed to save new question");
+            return CreatedAtAction(nameof(Get), createResponse.Object);
         }
 
         /// <summary>
@@ -196,34 +153,33 @@ namespace QuizyfyAPI.Controllers
         ///     
         /// </remarks>  
         /// <response code="200">Returns question with provided id and updated info.</response>
-        /// <response code="404">Question with provided id wasn't found.</response> 
         /// <response code="204">Probably should never return that but there is possibility that question isn't null but mapping result in null.</response> 
-        /// <response code="422">One of validation errors occured.</response>
+        /// <response code="404">Question with provided id wasn't found.</response> 
         /// <response code="400">Bad request not complete or corrupted data.</response>
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut("{questionId}")]
         public async Task<ActionResult<QuestionModel>> Put(int quizId, int questionId, QuestionCreateModel model)
         {
-            var oldQuestion = await _questionRepository.GetQuestion(quizId, questionId, true);
+            var updateResponse = await _questionService.Update(quizId, questionId, model);
 
-            if (oldQuestion == null)
+            if (!updateResponse.Success)
             {
-                return NotFound();
+                if (!updateResponse.Found)
+                {
+                    return NotFound(updateResponse.Errors);
+                }
+                return BadRequest(updateResponse.Errors);
             }
-
-            _mapper.Map(model, oldQuestion);
-
-            if (await _questionRepository.SaveChangesAsync())
-            {
-                _cache.Set($"Question {oldQuestion.Id}", oldQuestion);
-                return _mapper.Map<QuestionModel>(oldQuestion);
-            }
-
-            return BadRequest();
+            return updateResponse.Object;
         }
 
         /// <summary>
@@ -238,31 +194,32 @@ namespace QuizyfyAPI.Controllers
         ///     DELETE /quizzes/1/questions/1
         ///     
         /// </remarks> 
-        /// <response code = "404" >Quiz or question with provided id wasn't found.</response> 
-        /// <response code = "200" >Question was sucessfully deleted.</response> 
-        /// <response code = "400" >Request data was not complete or corrupted.</response> 
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        /// <response code="200" >Question was sucessfully deleted.</response> 
+        /// <response code="400" >Request data was not complete or corrupted.</response>
+        /// <response code="404" >Quiz or question with provided id wasn't found.</response> 
+        /// <response code="406">Request data type is not in acceptable format.</response>
+        /// <response code="422">Request data couldn't be processed.</response>
+        /// <response code="500">Something threw exception on server.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{questionId}")]
         public async Task<IActionResult> Delete(int quizId, int questionId)
         {
-            var question = await _questionRepository.GetQuestion(quizId, questionId, true);
+            var deleteResponse = await _questionService.Delete(quizId, questionId);
 
-            if (question == null)
+            if (!deleteResponse.Success)
             {
-                return NotFound("Failed to find the question to delete");
+                if (!deleteResponse.Found)
+                {
+                    return NotFound(deleteResponse.Errors);
+                }
+                return BadRequest(deleteResponse.Errors);
             }
-
-            _questionRepository.Delete(question);
-
-            if (await _questionRepository.SaveChangesAsync())
-            {
-                _cache.Remove($"Question {questionId}");
-                return Ok();
-            }
-
-            return BadRequest();
+            return Ok();
         }
     }
 }
