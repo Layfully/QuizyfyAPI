@@ -117,6 +117,101 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
+        <member name="M:QuizyfyAPI.Controllers.ImagesController.Get">
+            <summary>
+            Get list of all images.
+            </summary>
+            <returns>An ActionResult of ImageModel array type</returns>
+            <remarks>
+            Sample request (this request returns **array of images**)  
+                 
+                GET /images
+                
+            </remarks>
+            <response code="200">Returns array of all images</response>
+            <response code="204">No images exists so return nothing.</response>
+            <response code="404">Images don't exist.</response>
+            <response code="406">Request data type is not in acceptable format.</response>
+            <response code="422">Request data couldn't be processed.</response>
+            <response code="500">Something threw exception on server.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.ImagesController.Get(System.Int32)">
+            <summary>
+            Get one image with given id.
+            </summary>
+            <param name="id">Parameter which tells us image to return.</param>
+            <returns>An ActionResult of ImageModel type</returns>
+            <remarks>
+            Sample request (this request returns **one image**)  
+                 
+                GET /images/1
+                
+            </remarks>
+            <response code="200">Returns one image</response>
+            <response code="204">No images exists so return nothing.</response>
+            <response code="404">Image doesn't exist.</response>
+            <response code="406">Request data type is not in acceptable format.</response>
+            <response code="422">Request data couldn't be processed.</response>
+            <response code="500">Something threw exception on server.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.ImagesController.Post(Microsoft.AspNetCore.Http.IFormFile)">
+            <summary>
+            Create image with provided info.
+            </summary>
+            <param name="file">This is representation of file you want to upload</param>
+            <returns>>An ActionResult of ImageModel</returns>
+            <remarks>
+            Sample request (this request returns **created image**)  
+                 
+                POST /images
+                
+            </remarks>  
+            <response code="201">Image was created and you can access it.</response>
+            <response code="400">Data provided was not complete or corrupted.</response>
+            <response code="406">Request data type is not in acceptable format.</response>
+            <response code="422">Request data couldn't be processed.</response>
+            <response code="500">Something threw exception on server.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.ImagesController.Put(System.Int32,Microsoft.AspNetCore.Http.IFormFile)">
+            <summary>
+            Updates image with given id with specified  data.
+            </summary>
+            <param name="id">Id of image you want to update.</param>
+            <param name="file">New image.</param>
+            <returns>>An ActionResult of ImageModel</returns>
+            <remarks>
+            Sample request (this request returns **updated image**)  
+                 
+                PUT /images/1
+                
+            </remarks>  
+            <response code="200">Returns image with provided id and updated info.</response>
+            <response code="204">Probably should never return that but there is possibility that images isn't null but mapping result in null.</response> 
+            <response code="400">Bad request not complete or corrupted data.</response>
+            <response code="404">Image with provided id wasn't found.</response> 
+            <response code="406">Request data type is not in acceptable format.</response>
+            <response code="422">Request data couldn't be processed.</response>
+            <response code="500">Something threw exception on server.</response>
+        </member>
+        <member name="M:QuizyfyAPI.Controllers.ImagesController.Delete(System.Int32)">
+            <summary>
+            Deletes image with specified id.
+            </summary>
+            <param name="id">Specifies which image to delete</param>
+            <returns>Response Code</returns>
+            <remarks>
+            Sample request (this request returns **response code only**)  
+                 
+                DELETE /images/1
+                
+            </remarks> 
+            <response code="200">Image was sucessfully deleted.</response> 
+            <response code="400">Request data was not complete or corrupted.</response> 
+            <response code="404">Image with provided id wasn't found.</response> 
+            <response code="406">Request data type is not in acceptable format.</response>
+            <response code="422">Request data couldn't be processed.</response>
+            <response code="500">Something threw exception on server.</response>
+        </member>
         <member name="M:QuizyfyAPI.Controllers.LikesController.Put(System.Int32)">
             <summary>
             Likes quiz.

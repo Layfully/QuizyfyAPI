@@ -8,31 +8,30 @@ using QuizyfyAPI.Services;
 namespace QuizyfyAPI.Controllers
 {
     [Route("api/[controller]")]
+    [Produces("application/json")]
     [ApiController]
-    public class QuizzesController : ControllerBase
+    public class ImagesController : ControllerBase
     {
-        private readonly IQuizService _quizService;
+        private readonly IImageService _imageService;
 
-        public QuizzesController(IQuizService quizService)
+        public ImagesController(IImageService imageService)
         {
-            _quizService = quizService;
+            _imageService = imageService;
         }
 
-
         /// <summary>
-        /// Get list of all quizes.
+        /// Get list of all images.
         /// </summary>
-        /// <param name="pagingParams">Parameter which tells us about which quizzes to display.</param>
-        /// <returns>An ActionResult of QuizModel array type</returns>
+        /// <returns>An ActionResult of ImageModel array type</returns>
         /// <remarks>
-        /// Sample request (this request returns **array of quizzes**)  
+        /// Sample request (this request returns **array of images**)  
         ///      
-        ///     GET /quizzes
+        ///     GET /images
         ///     
         /// </remarks>
-        /// <response code="200">Returns array of all quizzes</response>
-        /// <response code="204">No quizzes exists so return nothing.</response>
-        /// <response code="404">Couldn't find any quizzes.</response>
+        /// <response code="200">Returns array of all images</response>
+        /// <response code="204">No images exists so return nothing.</response>
+        /// <response code="404">Images don't exist.</response>
         /// <response code="406">Request data type is not in acceptable format.</response>
         /// <response code="422">Request data couldn't be processed.</response>
         /// <response code="500">Something threw exception on server.</response>
@@ -43,9 +42,9 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<ActionResult<QuizListModel>> Get([FromQuery]PagingParams pagingParams)
+        public async Task<ActionResult<ImageModel[]>> Get()
         {
-            var getAllResponse = await _quizService.GetAll(pagingParams, Response, HttpContext);
+            var getAllResponse = await _imageService.GetAll();
 
             if (!getAllResponse.Success)
             {
@@ -59,33 +58,32 @@ namespace QuizyfyAPI.Controllers
         }
 
         /// <summary>
-        /// Get one quiz by id.
+        /// Get one image with given id.
         /// </summary>
-        /// <param name="id">This is id of the quiz you want to get.</param>
-        /// <param name="includeQuestions">Parameter which tells us wheter to include questions for quiz or not.</param>
-        /// <returns>>An ActionResult of QuizModel</returns>
+        /// <param name="id">Parameter which tells us image to return.</param>
+        /// <returns>An ActionResult of ImageModel type</returns>
         /// <remarks>
-        /// Sample request (this request returns **one quiz**)  
+        /// Sample request (this request returns **one image**)  
         ///      
-        ///     GET /quizzes/1
+        ///     GET /images/1
         ///     
-        /// </remarks>   
-        /// <response code="200">Returns one quiz with provided id</response>
-        /// <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
-        /// <response code="404">Quiz with provided id wasn't found.</response>
+        /// </remarks>
+        /// <response code="200">Returns one image</response>
+        /// <response code="204">No images exists so return nothing.</response>
+        /// <response code="404">Image doesn't exist.</response>
         /// <response code="406">Request data type is not in acceptable format.</response>
         /// <response code="422">Request data couldn't be processed.</response>
         /// <response code="500">Something threw exception on server.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<ActionResult<QuizModel>> Get(int id, bool includeQuestions = false)
+        public async Task<ActionResult<ImageModel>> Get(int id)
         {
-            var getResponse = await _quizService.Get(id, includeQuestions);
+            var getResponse = await _imageService.Get(id);
 
             if (!getResponse.Found)
             {
@@ -95,21 +93,17 @@ namespace QuizyfyAPI.Controllers
         }
 
         /// <summary>
-        /// Create quiz with provided info.
+        /// Create image with provided info.
         /// </summary>
-        /// <param name="model">This is json representation of quiz you want to create.</param>
-        /// <returns>>An ActionResult of QuizModel</returns>
+        /// <param name="file">This is representation of file you want to upload</param>
+        /// <returns>>An ActionResult of ImageModel</returns>
         /// <remarks>
-        /// Sample request (this request returns **created quiz**)  
+        /// Sample request (this request returns **created image**)  
         ///      
-        ///     POST /quizzes
-        ///     
-        ///     {
-        ///         "name":"quizname"
-        ///     }
+        ///     POST /images
         ///     
         /// </remarks>  
-        /// <response code="201">Quiz was created and you can access it.</response>
+        /// <response code="201">Image was created and you can access it.</response>
         /// <response code="400">Data provided was not complete or corrupted.</response>
         /// <response code="406">Request data type is not in acceptable format.</response>
         /// <response code="422">Request data couldn't be processed.</response>
@@ -119,53 +113,49 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [Consumes("application/json", "multipart/form-data")]
         [HttpPost]
-        public async Task<ActionResult<QuizModel>> Post(QuizCreateModel model)
+        public async Task<ActionResult<ImageModel>> Post(IFormFile file)
         {
-            var createResponse = await _quizService.Create(model);
+            var createResponse = await _imageService.Create(file);
 
             if (!createResponse.Success)
-            { 
+            {
                 return BadRequest(createResponse.Errors);
             }
             return CreatedAtAction(nameof(Get), new { id = createResponse.Object.Id }, createResponse.Object);
         }
 
         /// <summary>
-        /// Updates quiz with specified id and data.
+        /// Updates image with given id with specified  data.
         /// </summary>
-        /// <param name="id">Id of quiz you want to update.</param>
-        /// <param name="model">New data for quiz.</param>
-        /// <returns>>An ActionResult of QuizModel</returns>
+        /// <param name="id">Id of image you want to update.</param>
+        /// <param name="file">New image.</param>
+        /// <returns>>An ActionResult of ImageModel</returns>
         /// <remarks>
-        /// Sample request (this request returns **updated quiz**)  
+        /// Sample request (this request returns **updated image**)  
         ///      
-        ///     PUT /quizzes
-        ///     
-        ///     {
-        ///         "name":"another name"
-        ///     }
+        ///     PUT /images/1
         ///     
         /// </remarks>  
-        /// <response code="200">Returns quiz with provided id and updated info.</response>
-        /// <response code="204">Probably should never return that but there is possibility that quiz isn't null but mapping result in this.</response> 
+        /// <response code="200">Returns image with provided id and updated info.</response>
+        /// <response code="204">Probably should never return that but there is possibility that images isn't null but mapping result in null.</response> 
         /// <response code="400">Bad request not complete or corrupted data.</response>
-        /// <response code="404">Quiz with provided id wasn't found.</response> 
+        /// <response code="404">Image with provided id wasn't found.</response> 
         /// <response code="406">Request data type is not in acceptable format.</response>
         /// <response code="422">Request data couldn't be processed.</response>
         /// <response code="500">Something threw exception on server.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesDefaultResponseType]
         [HttpPut("{id}")]
-        public async Task<ActionResult<QuizModel>> Put(int id, QuizCreateModel model)
+        public async Task<ActionResult<ImageModel>> Put(int id, IFormFile file)
         {
-            var updateResponse = await _quizService.Update(id, model);
+            var updateResponse = await _imageService.Update(id, file);
 
             if (!updateResponse.Success)
             {
@@ -178,34 +168,33 @@ namespace QuizyfyAPI.Controllers
             return updateResponse.Object;
         }
 
-
         /// <summary>
-        /// Deletes quiz with specified id.
+        /// Deletes image with specified id.
         /// </summary>
-        /// <param name="id">Id of quiz you want to delete.</param>
+        /// <param name="id">Specifies which image to delete</param>
         /// <returns>Response Code</returns>
         /// <remarks>
         /// Sample request (this request returns **response code only**)  
         ///      
-        ///     DELETE /quizzes/1
+        ///     DELETE /images/1
         ///     
         /// </remarks> 
-        /// <response code="200" >Quiz was sucessfully deleted.</response> 
-        /// <response code="400" >Request data was not complete or corrupted.</response> 
-        /// <response code="404" >Quiz with provided id wasn't found.</response> 
+        /// <response code="200">Image was sucessfully deleted.</response> 
+        /// <response code="400">Request data was not complete or corrupted.</response> 
+        /// <response code="404">Image with provided id wasn't found.</response> 
         /// <response code="406">Request data type is not in acceptable format.</response>
         /// <response code="422">Request data couldn't be processed.</response>
         /// <response code="500">Something threw exception on server.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var deleteResponse = await _quizService.Delete(id);
+            var deleteResponse = await _imageService.Delete(id);
 
             if (!deleteResponse.Success)
             {

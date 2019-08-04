@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace QuizyfyAP
+namespace QuizyfyAPI
 {
     public class JsonWithFilesFormDataModelBinder : IModelBinder
     {
