@@ -41,7 +41,7 @@ namespace QuizyfyAPI_Tests
             var memoryCache = serviceProvider.GetService<IMemoryCache>();
 
             _mapper = configuration.CreateMapper();
-            _choiceController = new ChoicesController(_choiceRepository, _quizRepository, _questionRepository, _mapper, memoryCache);
+           // _choiceController = new ChoicesController(_choiceRepository, _quizRepository, _questionRepository, _mapper, memoryCache);
         }
 
         [Fact]
