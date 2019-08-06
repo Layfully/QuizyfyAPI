@@ -653,6 +653,11 @@
             Quiz description.
             </summary>
         </member>
+        <member name="P:QuizyfyAPI.Models.QuizCreateModel.ImageId">
+            <summary>
+            Quiz image url which we get when we upload image.
+            </summary>
+        </member>
         <member name="P:QuizyfyAPI.Models.QuizCreateModel.Questions">
             <summary>
             Collection of questions which belongs to quiz.

@@ -15,16 +15,19 @@ namespace QuizyfyAPI.Services
     public class QuizService : IQuizService
     {
         private readonly IQuizRepository _quizRepository;
+        private readonly IImageRepository _imageRepository;
         private readonly IMemoryCache _cache;
         private readonly IMapper _mapper;
         private readonly IQuestionService _questionService;
 
-        public QuizService(IQuizRepository quizRepository, IMemoryCache cache, IMapper mapper, IQuestionService questionService)
+        public QuizService(IQuizRepository quizRepository, IImageRepository imageRepository, IMemoryCache cache, IMapper mapper, IQuestionService questionService)
         {
             _quizRepository = quizRepository;
+            _imageRepository = imageRepository;
             _cache = cache;
             _mapper = mapper;
             _questionService = questionService;
+
         }
         public async Task<ObjectResult<QuizModel>> Get(int id, bool includeQuestions)
         {
@@ -48,34 +51,24 @@ namespace QuizyfyAPI.Services
             {
                 quiz.DateAdded = DateTime.Now;
 
-                if (model.Image != null && model.Image.Length > 0)
-                {
-                    var fileName = Path.GetFileName(model.Image.FileName);
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\quizzes", fileName);
-                    using (var fileSteam = new FileStream(filePath, FileMode.Create))
-                    {
-                        await model.Image.CopyToAsync(fileSteam);
-                    }
-
-                    filePath = Path.Combine("https://localhost:5001/", "images\\quizzes", fileName);
-                    filePath = filePath.Replace('\\', '/');
-
-                    quiz.ImageUrl = filePath;
-                }
                 _quizRepository.Add(quiz);
             }
 
+            quiz.Image = await _imageRepository.GetImage(model.ImageId);
+
             if (await _quizRepository.SaveChangesAsync())
             {
-                _cache.Set($"Quiz {quiz.Id}", quiz);
-                _cache.Remove($"Quizzes");
-
                 var questionController = new QuestionsController(_questionService);
 
                 foreach(var question in model.Questions)
                 {
                     await questionController.Post(quiz.Id, question);
                 }
+
+                _cache.Set($"Quiz {quiz.Id}", quiz);
+                _cache.Remove($"Quizzes");
+
+                await _quizRepository.SaveChangesAsync();
 
                 return new ObjectResult<QuizModel> { Object = _mapper.Map<QuizModel>(quiz), Found = true, Success = true };
             }

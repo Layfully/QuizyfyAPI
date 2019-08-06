@@ -118,10 +118,8 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [Consumes("application/json", "multipart/form-data")]
-        [HttpPost]
-        public async Task<ActionResult<QuizModel>> Post(QuizCreateModel model)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]        [HttpPost]
+        public async Task<ActionResult<QuizModel>> Post(QuizCreateModel model  )
         {
             var createResponse = await _quizService.Create(model);
 
