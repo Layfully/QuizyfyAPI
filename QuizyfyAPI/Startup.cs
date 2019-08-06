@@ -53,6 +53,7 @@ namespace QuizyfyAPI
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IChoiceRepository, ChoiceRepository>();
             services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddTransient<IImageRepository, ImageRepository>();
 
             services.ConfigureApiVersioning();
 
@@ -125,6 +126,7 @@ namespace QuizyfyAPI
             });
 
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IImageService, ImageService>();
             services.AddTransient<IQuestionService, QuestionService>();
             services.AddTransient<IChoiceService, ChoiceService>();
             services.AddTransient<IQuizService, QuizService>();
