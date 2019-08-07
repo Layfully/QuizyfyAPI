@@ -39,7 +39,7 @@ namespace QuizyfyAPI_Tests.Fakes
             }
         }
 
-        public async Task<Choice> GetChoice(int quizId, int questionId, int choiceId)
+        public async Task<Choice> GetChoice(int questionId, int choiceId)
         {
             IQueryable<Choice> query = _context.Choices;
 
@@ -48,7 +48,7 @@ namespace QuizyfyAPI_Tests.Fakes
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Choice[]> GetChoices(int quizId, int questionId)
+        public async Task<Choice[]> GetChoices(int questionId)
         {
             IQueryable<Choice> query = _context.Choices;
 
@@ -60,6 +60,11 @@ namespace QuizyfyAPI_Tests.Fakes
         public async Task<bool> SaveChangesAsync()
         {
             return (await _context.SaveChangesAsync()) > 0;
+        }
+
+        public void Update<T>(T entity) where T : class
+        {
+            _context.Update(entity);
         }
     }
 }

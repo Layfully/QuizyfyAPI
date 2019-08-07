@@ -13,6 +13,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace QuizyfyAPI
 {
@@ -91,9 +92,8 @@ namespace QuizyfyAPI
                 setupAction.Filters.Add(new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
 
                 setupAction.ReturnHttpNotAcceptable = true;
-
+              
                 var jsonFormatter = setupAction.OutputFormatters.OfType<JsonOutputFormatter>().FirstOrDefault();
-
                 if (jsonFormatter != null)
                 {
                     if (jsonFormatter.SupportedMediaTypes.Contains("text/json"))
