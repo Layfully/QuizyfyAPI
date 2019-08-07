@@ -38,6 +38,19 @@ namespace QuizyfyAPI.Migrations
                     b.ToTable("Choices");
                 });
 
+            modelBuilder.Entity("QuizyfyAPI.Data.Image", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Url");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Images");
+                });
+
             modelBuilder.Entity("QuizyfyAPI.Data.Like", b =>
                 {
                     b.Property<int>("Id")
