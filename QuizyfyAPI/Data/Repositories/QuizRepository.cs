@@ -9,41 +9,11 @@ using QuizyfyAPI.Models;
 
 namespace QuizyfyAPI.Data
 {
-    public class QuizRepository : IQuizRepository
+    public class QuizRepository : Repository, IQuizRepository
     {
 
-        private readonly QuizDbContext _context;
-        private readonly ILogger<QuizRepository> _logger;
-
-        public QuizRepository(QuizDbContext context, ILogger<QuizRepository> logger)
+        public QuizRepository(QuizDbContext context, ILogger<QuizRepository> logger) : base(context, logger)
         {
-            _context = context;
-            _logger = logger;
-        }
-
-        public void Add<T>(T entity) where T : class
-        {
-            _logger.LogInformation($"Adding an object of type {entity.GetType()} to the context.");
-            _context.Add(entity);
-        }
-
-        public void Delete<T>(T entity) where T : class
-        {
-            _logger.LogInformation($"Removing an object of type {entity.GetType()} to the context.");
-            _context.Remove(entity);
-        }
-
-        public void Update<T>(T entity) where T : class
-        {
-            _context.Update(entity);
-        }
-
-        public async Task<bool> SaveChangesAsync()
-        {
-            _logger.LogInformation($"Attempitng to save the changes in the context");
-
-            // Only return success if at least one row was changed
-            return (await _context.SaveChangesAsync()) > 0;
         }
 
         public PagedList<Quiz> GetQuizzes(PagingParams pagingParams, bool includeQuestions = false)

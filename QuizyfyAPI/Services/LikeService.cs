@@ -63,7 +63,7 @@ namespace QuizyfyAPI.Services
 
             var like = await _likeRepository.GetLike(quizId, userId);
 
-            if (quiz == null)
+            if (like == null)
             {
                 return new DetailedResult { Errors = new[] { "Like for this quiz was not found!" } };
             }

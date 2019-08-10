@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services
 {
-    public interface IChoiceService
+    public interface IChoiceService : IService
     {
         Task<ObjectResult<ChoiceModel[]>> GetAll(int quizId, int questionId);
         Task<ObjectResult<ChoiceModel>> Get(int quizId, int questionId, int choiceId);

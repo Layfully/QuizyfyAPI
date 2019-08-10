@@ -116,21 +116,24 @@ namespace QuizyfyAPI.Services
         }
         public async Task<ObjectResult<QuizListModel>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext)
         {
-            PagedList<Quiz> obj = _quizRepository.GetQuizzes(pagingParams);
-
-            if (obj.List.Count == 0)
+            return await Task.Run(() =>
             {
-                return new ObjectResult<QuizListModel> { Errors = new[] { "Couldn't find this quiz" } };
-            }
+                PagedList<Quiz> obj = _quizRepository.GetQuizzes(pagingParams);
 
-            var output = new QuizListModel
-            {
-                Paging = obj.GetHeader(),
-                Links = GetLinks(obj, httpContext),
-                Items = _mapper.Map<List<QuizModel>>(obj.List)
-            };
+                if (obj.List.Count == 0)
+                {
+                    return new ObjectResult<QuizListModel> { Errors = new[] { "Couldn't find this quiz" } };
+                }
 
-            return new ObjectResult<QuizListModel> { Success = true, Found = true, Object = output };
+                var output = new QuizListModel
+                {
+                    Paging = obj.GetHeader(),
+                    Links = GetLinks(obj, httpContext),
+                    Items = _mapper.Map<List<QuizModel>>(obj.List)
+                };
+
+                return new ObjectResult<QuizListModel> { Success = true, Found = true, Object = output };
+            });
         }
 
 
