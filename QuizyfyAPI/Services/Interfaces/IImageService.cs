@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services
 {
-    public interface IImageService
+    public interface IImageService : IService
     {
         Task<ObjectResult<ImageModel[]>> GetAll();
         Task<ObjectResult<ImageModel>> Get(int id);

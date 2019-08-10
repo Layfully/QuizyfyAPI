@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 using QuizyfyAPI.Models;
+using QuizyfyAPI.Options;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,12 +18,14 @@ namespace QuizyfyAPI.Services
         private readonly IImageRepository _imageRepository;
         private readonly IMemoryCache _cache;
         private readonly IMapper _mapper;
+        private readonly AppOptions _appOptions;
 
-        public ImageService(IImageRepository imageRepository, IMemoryCache cache, IMapper mapper)
+        public ImageService(IImageRepository imageRepository, IMemoryCache cache, IMapper mapper, IOptions<AppOptions> appOptions)
         {
             _imageRepository = imageRepository;
             _cache = cache;
             _mapper = mapper;
+            _appOptions = appOptions.Value;
         }
 
         public async Task<ObjectResult<ImageModel[]>> GetAll()
@@ -127,7 +131,7 @@ namespace QuizyfyAPI.Services
                 await file.CopyToAsync(fileStream);
             }
 
-            filePath = Path.Combine("https://localhost:5001/", "images\\quizzes", fileName);
+            filePath = Path.Combine(_appOptions.ServerPath, "images\\quizzes", fileName);
             filePath = filePath.Replace('\\', '/');
 
             return filePath;

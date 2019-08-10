@@ -1,47 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using QuizyfyAPI.Helpers;
 
 namespace QuizyfyAPI.Data
 {
-    public class QuestionRepository : IQuestionRepository
+    public class QuestionRepository : Repository, IQuestionRepository
     {
-        private readonly QuizDbContext _context;
-        private readonly ILogger<QuestionRepository> _logger;
-
-        public QuestionRepository(QuizDbContext context, ILogger<QuestionRepository> logger)
+        public QuestionRepository(QuizDbContext context, ILogger<QuestionRepository> logger) : base(context, logger)
         {
-            _context = context;
-            _logger = logger;
-        }
-
-        public void Add<T>(T entity) where T : class
-        {
-            _logger.LogInformation($"Adding an object of type {entity.GetType()} to the context.");
-            _context.Add(entity);
-        }
-
-        public void Delete<T>(T entity) where T : class
-        {
-            _logger.LogInformation($"Removing an object of type {entity.GetType()} to the context.");
-            _context.Remove(entity);
-        }
-
-        public void Update<T>(T entity) where T : class
-        {
-            _context.Update(entity);
-        }
-
-        public async Task<bool> SaveChangesAsync()
-        {
-            _logger.LogInformation($"Attempitng to save the changes in the context");
-
-            // Only return success if at least one row was changed
-            return (await _context.SaveChangesAsync()) > 0;
         }
 
         public async Task<Question[]> GetQuestions(int quizId, bool includeChoices = false)

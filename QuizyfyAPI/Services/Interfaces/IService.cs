@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace QuizyfyAPI.Helpers
+namespace QuizyfyAPI.Services
 {
-    public class AppSettings
+    public interface IService
     {
-        public string Secret { get; set; }
     }
 }
-    
