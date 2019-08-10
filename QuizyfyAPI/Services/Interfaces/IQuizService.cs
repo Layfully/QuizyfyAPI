@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services
 {
-    public interface IQuizService
+    public interface IQuizService : IService
     {
         Task<ObjectResult<QuizListModel>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext);
         Task<ObjectResult<QuizModel>> Get(int id, bool includeQuestions);

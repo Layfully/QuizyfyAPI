@@ -5,6 +5,7 @@ using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 using QuizyfyAPI.Helpers;
 using QuizyfyAPI.Models;
+using QuizyfyAPI.Options;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -18,15 +19,15 @@ namespace QuizyfyAPI.Services
     {
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IUserRepository _userRepository;
-        private readonly AppSettings _appSettings;
+        private readonly JwtOptions _jwtOptions;
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly IMapper _mapper;
 
-        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<AppSettings> appSettings, TokenValidationParameters tokenValidationParameters, IMapper mapper)
+        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, IMapper mapper)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _userRepository = userRepository;
-            _appSettings = appSettings.Value;
+            _jwtOptions = jwtOptions.Value;
             _tokenValidationParameters = tokenValidationParameters;
             _mapper = mapper;
         }
@@ -69,12 +70,9 @@ namespace QuizyfyAPI.Services
             {
                 return new ObjectResult<UserModel> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
             }
-            else if (user.Username != model.Username)
+            else if (user.Username != model.Username && await _userRepository.GetUserByUsername(model.Username) != null)
             {
-                if (await _userRepository.GetUserByUsername(model.Username) != null)
-                {
-                    return new ObjectResult<UserModel> { Errors = new[] { "User with this username already exists!" } };
-                }
+                return new ObjectResult<UserModel> { Errors = new[] { "User with this username already exists!" } };
             }
 
             _userRepository.Update(user);
@@ -179,7 +177,7 @@ namespace QuizyfyAPI.Services
         public async Task<User> RequestToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+            var key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
@@ -218,7 +216,6 @@ namespace QuizyfyAPI.Services
             {
                 _tokenValidationParameters.ValidateLifetime = false;
                 var principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out var validatedToken);
-                var boole = IsJwtWithValidSecurityAlgorithm(validatedToken);
                 if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
                 {
                     return null;
