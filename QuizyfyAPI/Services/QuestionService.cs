@@ -25,7 +25,7 @@ namespace QuizyfyAPI.Services
             _choiceService = choiceService;
         }
 
-        public async Task<ObjectResult<QuestionModel[]>> GetAll(int quizId, bool includeChoices = false)
+        public async Task<ObjectResult<QuestionModel[]>> GetAll(int quizId, bool includeChoices)
         {
             if (!_cache.TryGetValue("Questions", out Question[] questions))
             {
@@ -43,7 +43,7 @@ namespace QuizyfyAPI.Services
             }
             return new ObjectResult<QuestionModel[]> { Found = true, Success = true, Object = _mapper.Map<QuestionModel[]>(questions) };
         }
-        public async Task<ObjectResult<QuestionModel>> Get(int quizId, int questionId, bool includeChoices)
+        public async Task<ObjectResult<QuestionModel>> Get(int quizId, int questionId, bool includeChoices = false)
         {
             if (!_cache.TryGetValue("$Choice {choiceId}", out Question question))
             {

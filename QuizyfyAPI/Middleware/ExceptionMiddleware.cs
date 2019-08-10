@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Logging;
 using QuizyfyAPI.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Middleware

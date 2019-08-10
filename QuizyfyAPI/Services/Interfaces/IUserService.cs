@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services
 {
-    public interface IUserService
+    public interface IUserService : IService
     {
         Task<ObjectResult<UserModel>> Login(UserLoginModel model);
         Task<BasicResult> Register(UserRegisterModel model);

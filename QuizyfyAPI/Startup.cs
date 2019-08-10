@@ -1,118 +1,66 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using QuizyfyAPI.Data;
-using QuizyfyAPI.Models;
-using System.Text;
-using QuizyfyAPI.Helpers;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
-using System.IO;
-using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using QuizyfyAPI.Services;
+using QuizyfyAPI.Middleware;
+using QuizyfyAPI.Options;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace QuizyfyAPI
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+        private SwaggerOptions SwaggerOptions;
+
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            SwaggerOptions = new SwaggerOptions();
+            var AppOptions = new AppOptions();
+            var JwtOptions = new JwtOptions();
+
+            Configuration.GetSection(nameof(SwaggerOptions)).Bind(SwaggerOptions);
+            Configuration.GetSection(nameof(AppOptions)).Bind(AppOptions);
+            Configuration.GetSection(nameof(JwtOptions)).Bind(JwtOptions);
+
+            services.AddOptions();
+            services.Configure<AppOptions>(Configuration.GetSection(nameof(AppOptions)));
+            services.Configure<JwtOptions>(Configuration.GetSection(nameof(JwtOptions)));
+            services.Configure<SwaggerOptions>(Configuration.GetSection(nameof(SwaggerOptions)));
+
             services.AddCors();
 
-            services.ConfigureDbContext(Configuration);
+            services.ConfigureDbContext(AppOptions);
 
-            services.AddTransient<IQuizRepository, QuizRepository>();
-            services.AddTransient<IQuestionRepository, QuestionRepository>();
-            services.AddTransient<IUserRepository, UserRepository>();
-            services.AddTransient<IChoiceRepository, ChoiceRepository>();
-            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
-            services.AddTransient<IImageRepository, ImageRepository>();
+            services.Scan(scan => scan.FromAssemblyOf<Startup>()
+            .AddClasses(classes => classes.AssignableToAny(typeof(IService), typeof(IRepository)))
+            .AsMatchingInterface().WithScopedLifetime());
 
-            services.ConfigureApiVersioning();
+            services.ConfigureApiVersioning(SwaggerOptions);
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-            services.ConfigureMvcForApi();
+            services.ConfigureMvcForApi(AppOptions);
 
             services.ConfigureValidationErrorResponse();
 
-            services.ConfigureJWTAuth(Configuration);
+            services.ConfigureJWTAuth(JwtOptions);
 
-            services.AddSwaggerGen(setupAction =>
-            {
-                setupAction.SwaggerDoc("QuizyfyOpenAPISpecification", new OpenApiInfo()
-                {
-                    Title = "Quizyfy API",
-                    Version = "0.2",
-                    Description = "Through this API you can create, access and modify existing quizzes.",
-                    Contact = new OpenApiContact()
-                    {
-                        Email = "adriangaborek3@gmail.com",
-                        Name = "Adrian Gaborek",
-                    },
-                    License = new OpenApiLicense()
-                    {
-                        Name = "MIT License",
-                        Url = new Uri("https://opensource.org/licenses/MIT")
-                    }
-                });
-
-                setupAction.AddSecurityDefinition("JWT bearer", new OpenApiSecurityScheme
-                {
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                });
-
-                setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "JWT bearer"
-                            }
-                        }, new List<string>()
-                    }
-                });
-
-                var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlCommentsPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
-
-                setupAction.IncludeXmlComments(xmlCommentsPath);
-            });
-
-            services.AddResponseCompression(options =>
-           {
-               options.EnableForHttps = true;
-           });
+            services.ConfigureSwagger(SwaggerOptions);
 
             services.AddMemoryCache();
 
@@ -120,20 +68,10 @@ namespace QuizyfyAPI
 
             services.AddScoped<IUrlHelper>(factory =>
             {
-                var actionContext = factory.GetService<IActionContextAccessor>()
-                                           .ActionContext;
-                return new UrlHelper(actionContext);
+                return new UrlHelper(factory.GetService<IActionContextAccessor>().ActionContext);
             });
-
-            services.AddTransient<IUserService, UserService>();
-            services.AddTransient<IImageService, ImageService>();
-            services.AddTransient<IQuestionService, QuestionService>();
-            services.AddTransient<IChoiceService, ChoiceService>();
-            services.AddTransient<IQuizService, QuizService>();
-            services.AddTransient<ILikeService, LikeService>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -148,20 +86,18 @@ namespace QuizyfyAPI
 
             app.UseHttpsRedirection();
 
-            app.ConfigureGlobalExtensionHandling();
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
             app.UseAuthentication();
 
-            app.UseResponseCompression();
-
             app.UseSwagger();
 
             app.UseSwaggerUI(setupAction =>
             {
-                setupAction.SwaggerEndpoint("/swagger/QuizyfyOpenAPISpecification/swagger.json", "Quzify API");
-                setupAction.RoutePrefix = "";
+                setupAction.SwaggerEndpoint(SwaggerOptions.UIEndpoint, SwaggerOptions.Title);
+                setupAction.RoutePrefix = SwaggerOptions.RoutePrefix;
             });
             app.UseStaticFiles();
 
