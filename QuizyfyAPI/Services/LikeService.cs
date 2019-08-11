@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using QuizyfyAPI.Models;
 using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services
@@ -19,23 +19,23 @@ namespace QuizyfyAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<ObjectResult<LikeModel>> Like(int quizId, int userId)
+        public async Task<ObjectResult<LikeResponse>> Like(int quizId, int userId)
         {
             var quiz = await _quizRepository.GetQuiz(quizId);
 
             if (quiz == null)
             {
-                return new ObjectResult<LikeModel> { Errors = new[] { "Quiz with given id was not found" } };
+                return new ObjectResult<LikeResponse> { Errors = new[] { "Quiz with given id was not found" } };
             }
 
             Like like;
 
             if ((like = await _likeRepository.GetLike(quizId, userId)) != null)
             {
-                return new ObjectResult<LikeModel> { Found = true, Success = true, Object = _mapper.Map<LikeModel>(like) };
+                return new ObjectResult<LikeResponse> { Found = true, Success = true, Object = _mapper.Map<LikeResponse>(like) };
             }
 
-            var likeModel = new LikeModel
+            var likeModel = new LikeResponse
             {
                 QuizId = quizId,
                 UserId = userId
@@ -47,10 +47,10 @@ namespace QuizyfyAPI.Services
 
             if (await _likeRepository.SaveChangesAsync())
             {
-                return new ObjectResult<LikeModel> { Found = true, Success = true, Object = likeModel };
+                return new ObjectResult<LikeResponse> { Found = true, Success = true, Object = likeModel };
             }
 
-            return new ObjectResult<LikeModel> { Found = true, Errors = new[] { "No rows were affected" } };
+            return new ObjectResult<LikeResponse> { Found = true, Errors = new[] { "No rows were affected" } };
         }
         public async Task<DetailedResult> Delete(int quizId, int userId)
         {

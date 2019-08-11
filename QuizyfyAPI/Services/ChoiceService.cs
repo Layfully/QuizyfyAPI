@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using QuizyfyAPI.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,13 +27,13 @@ namespace QuizyfyAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<ObjectResult<ChoiceModel[]>> GetAll(int quizId, int questionId)
+        public async Task<ObjectResult<ChoiceResponse[]>> GetAll(int quizId, int questionId)
         {
             var question = await _questionRepository.GetQuestion(quizId, questionId, true);
 
             if (question == null)
             {
-                return new ObjectResult<ChoiceModel[]> { Errors = new[] { "Failed to find the choice" } };
+                return new ObjectResult<ChoiceResponse[]> { Errors = new[] { "Failed to find the choice" } };
             }
 
             if (!_cache.TryGetValue("Choices", out ICollection<Choice> choices))
@@ -44,12 +44,12 @@ namespace QuizyfyAPI.Services
 
             if (choices.Count == 0)
             {
-                return new ObjectResult<ChoiceModel[]>{ Found = true, Errors = new[] { "This question doesn't have any choices" } };
+                return new ObjectResult<ChoiceResponse[]>{ Found = true, Errors = new[] { "This question doesn't have any choices" } };
             }
 
-            return new ObjectResult<ChoiceModel[]> { Object = _mapper.Map<ChoiceModel[]>(choices).ToArray(), Found = true, Success = true };
+            return new ObjectResult<ChoiceResponse[]> { Object = _mapper.Map<ChoiceResponse[]>(choices).ToArray(), Found = true, Success = true };
         }
-        public async Task<ObjectResult<ChoiceModel>> Get(int quizId, int questionId, int choiceId)
+        public async Task<ObjectResult<ChoiceResponse>> Get(int quizId, int questionId, int choiceId)
         {
             var question = await _questionRepository.GetQuestion(quizId, questionId);
 
@@ -61,21 +61,21 @@ namespace QuizyfyAPI.Services
 
             if (choice == null || question == null)
             {
-                return new ObjectResult<ChoiceModel> { Errors = new[] { "Failed to find the choice to update" } };
+                return new ObjectResult<ChoiceResponse> { Errors = new[] { "Failed to find the choice to update" } };
             }
 
-            return new ObjectResult<ChoiceModel> { Object = _mapper.Map<ChoiceModel>(choice), Found = true, Success = true };
+            return new ObjectResult<ChoiceResponse> { Object = _mapper.Map<ChoiceResponse>(choice), Found = true, Success = true };
         }
-        public async Task<ObjectResult<ChoiceModel>> Create(int quizId, int questionId, ChoiceModel model)
+        public async Task<ObjectResult<ChoiceResponse>> Create(int quizId, int questionId, ChoiceCreateRequest request)
         {
             var question = await _questionRepository.GetQuestion(quizId, questionId);
 
             if (question == null)
             {
-                return new ObjectResult<ChoiceModel> { Errors = new[] { "Didn't find the question" } };
+                return new ObjectResult<ChoiceResponse> { Errors = new[] { "Didn't find the question" } };
             }
 
-            var choice = _mapper.Map<Choice>(model);
+            var choice = _mapper.Map<Choice>(request);
 
             if (choice != null)
             {
@@ -87,32 +87,32 @@ namespace QuizyfyAPI.Services
             if (await _choiceRepository.SaveChangesAsync())
             {
                 _cache.Set($"Choice {choice.Id}", choice);
-                return new ObjectResult<ChoiceModel> { Object = _mapper.Map<ChoiceModel>(choice), Found = true, Success = true };
+                return new ObjectResult<ChoiceResponse> { Object = _mapper.Map<ChoiceResponse>(choice), Found = true, Success = true };
             }
 
-            return new ObjectResult<ChoiceModel> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+            return new ObjectResult<ChoiceResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
-        public async Task<ObjectResult<ChoiceModel>> Update(int quizId, int questionId, int choiceId, ChoiceModel model)
+        public async Task<ObjectResult<ChoiceResponse>> Update(int quizId, int questionId, int choiceId, ChoiceUpdateRequest request)
         {
             var choice = await _choiceRepository.GetChoice(questionId, choiceId);
             var question = await _questionRepository.GetQuestion(quizId, questionId);
 
             if (choice == null || question == null)
             {
-                return new ObjectResult<ChoiceModel> { Errors = new[] { "Failed to find the choice to update" } };
+                return new ObjectResult<ChoiceResponse> { Errors = new[] { "Failed to find the choice to update" } };
             }
 
             _choiceRepository.Update(choice);
 
-            choice = _mapper.Map<Choice>(model);
+            choice = _mapper.Map<Choice>(request);
 
             if (await _choiceRepository.SaveChangesAsync())
             {
                 _cache.Set($"Choice {choice.Id}", choice);
-                return new ObjectResult<ChoiceModel> { Object = _mapper.Map<ChoiceModel>(choice), Found = true, Success = true };
+                return new ObjectResult<ChoiceResponse> { Object = _mapper.Map<ChoiceResponse>(choice), Found = true, Success = true };
             }
 
-            return new ObjectResult<ChoiceModel> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+            return new ObjectResult<ChoiceResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
         public async Task<DetailedResult> Delete(int quizId, int questionId, int choiceId)
         {

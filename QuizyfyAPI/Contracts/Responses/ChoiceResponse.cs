@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace QuizyfyAPI.Models
+namespace QuizyfyAPI.Contracts.Responses
 {
     /// <summary>
     /// A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
     /// </summary>
-    public class ChoiceModel
+    public class ChoiceResponse
     {
         /// <summary>
         /// Choice text (answer).

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using QuizyfyAPI.Controllers;
 using QuizyfyAPI.Data;
-using QuizyfyAPI.Models;
 using QuizyfyAPI_Tests.Fakes;
 using System;
 using System.Threading.Tasks;

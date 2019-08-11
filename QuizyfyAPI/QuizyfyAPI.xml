@@ -4,6 +4,286 @@
         <name>QuizyfyAPI</name>
     </assembly>
     <members>
+        <member name="T:QuizyfyAPI.Contracts.Responses.ChoiceCreateRequest">
+            <summary>
+            A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.ChoiceCreateRequest.Text">
+            <summary>
+            Choice text (answer).
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.ChoiceCreateRequest.IsRight">
+            <summary>
+            Bool which defines whether this answer is right or not.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Responses.ChoiceUpdateRequest">
+            <summary>
+            A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.ChoiceUpdateRequest.Text">
+            <summary>
+            Choice text (answer).
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.ChoiceUpdateRequest.IsRight">
+            <summary>
+            Bool which defines whether this answer is right or not.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Responses.ChoiceResponse">
+            <summary>
+            A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.ChoiceResponse.Text">
+            <summary>
+            Choice text (answer).
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.ChoiceResponse.IsRight">
+            <summary>
+            Bool which defines whether this answer is right or not.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Responses.ErrorResponse">
+            <summary>
+            Error with status code and message.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.ErrorResponse.StatusCode">
+            <summary>
+            Int which tells us error status code.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.ErrorResponse.Message">
+            <summary>
+            Error message.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Responses.QuestionResponse">
+            <summary>
+            A question with text(actual question) and collection of choices. Used for displaying questions.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.QuestionResponse.Text">
+            <summary>
+            Question text.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.QuestionResponse.Choices">
+            <summary>
+            Possible question answers.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Responses.QuizResponse">
+            <summary>
+            A quiz with name , date of addition and questions properties. Used for displaying quizzes.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.QuizResponse.Id">
+            <summary>
+            Quiz id.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.QuizResponse.Name">
+            <summary>
+            Quiz name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.QuizResponse.Description">
+            <summary>
+            Quiz description.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.QuizResponse.DateAdded">
+            <summary>
+            Date of addition to database.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.QuizResponse.Questions">
+            <summary>
+            Collection of questions which belongs to quiz.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Responses.UserResponse">
+            <summary>
+            A user with username, password, role, token and full name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.UserResponse.FirstName">
+            <summary>
+            First name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.UserResponse.LastName">
+            <summary>
+            Last name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.UserResponse.Username">
+            <summary>
+            User name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.UserResponse.Password">
+            <summary>
+            User password.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.UserResponse.Role">
+            <summary>
+            User role. (Can be either admin or user)
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.UserResponse.JwtToken">
+            <summary>
+            JWT Token used for authentication
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Requests.QuestionCreateRequest">
+            <summary>
+            Question with text(actual question) only. Used for DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuestionCreateRequest.Text">
+            <summary>
+            Question text.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Requests.QuestionUpdateRequest">
+            <summary>
+            Question with text(actual question) only. Used for DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuestionUpdateRequest.Text">
+            <summary>
+            Question text.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Requests.QuizCreateRequest">
+            <summary>
+            A quiz with name and questions properties. Used for DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuizCreateRequest.Name">
+            <summary>
+            Quiz name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuizCreateRequest.Description">
+            <summary>
+            Quiz description.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuizCreateRequest.ImageId">
+            <summary>
+            Quiz image url which we get when we upload image.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuizCreateRequest.Questions">
+            <summary>
+            Collection of questions which belongs to quiz.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Requests.QuizUpdateRequest">
+            <summary>
+            A quiz with name and questions properties. Used for DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuizUpdateRequest.Name">
+            <summary>
+            Quiz name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuizUpdateRequest.Description">
+            <summary>
+            Quiz description.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuizUpdateRequest.ImageId">
+            <summary>
+            Quiz image url which we get when we upload image.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Requests.UserLoginRequest">
+            <summary>
+            A user credentials. Used for authentication
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserLoginRequest.Username">
+            <summary>
+            User name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserLoginRequest.Password">
+            <summary>
+            User password.
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Requests.UserRegisterRequest">
+            <summary>
+            A user with username, password, role and full name. Used for creating user.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserRegisterRequest.FirstName">
+            <summary>
+            First name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserRegisterRequest.LastName">
+            <summary>
+            Last name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserRegisterRequest.Username">
+            <summary>
+            User name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserRegisterRequest.Password">
+            <summary>
+            User password.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserRegisterRequest.Role">
+            <summary>
+            User role. (Can be either admin or user)
+            </summary>
+        </member>
+        <member name="T:QuizyfyAPI.Contracts.Requests.UserUpdateRequest">
+            <summary>
+            A user with username, password, role and full name. Used for creating user.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserUpdateRequest.FirstName">
+            <summary>
+            First name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserUpdateRequest.LastName">
+            <summary>
+            Last name of the user owner.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserUpdateRequest.Username">
+            <summary>
+            User name.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserUpdateRequest.Password">
+            <summary>
+            User password.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserUpdateRequest.Role">
+            <summary>
+            User role. (Can be either admin or user)
+            </summary>
+        </member>
         <member name="M:QuizyfyAPI.Controllers.ChoicesController.Get(System.Int32,System.Int32)">
             <summary>
             Get list of all choices for given quiz id and question id.
@@ -45,13 +325,13 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.ChoicesController.Post(System.Int32,System.Int32,QuizyfyAPI.Models.ChoiceModel)">
+        <member name="M:QuizyfyAPI.Controllers.ChoicesController.Post(System.Int32,System.Int32,QuizyfyAPI.Contracts.Responses.ChoiceCreateRequest)">
             <summary>
             Creates choice for given quiz and question with provided data.
             </summary>
             <param name="quizId">Id of quiz you want to get question from.</param>
             <param name="questionId">Id of question we want to attach choice to.</param>
-            <param name="model">Choice model.</param>
+            <param name="request">Choice model.</param>
             <returns>>An ActionResult of Choice</returns>
             <remarks>
             Sample request (this request returns **created choice**)  
@@ -69,14 +349,14 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.ChoicesController.Put(System.Int32,System.Int32,System.Int32,QuizyfyAPI.Models.ChoiceModel)">
+        <member name="M:QuizyfyAPI.Controllers.ChoicesController.Put(System.Int32,System.Int32,System.Int32,QuizyfyAPI.Contracts.Responses.ChoiceUpdateRequest)">
             <summary>
             Updates choice for given quiz and question with specified id and data.
             </summary>
             <param name="quizId">Id of quiz you want to update.</param>
             <param name="questionId">Id of question you want to update.</param>
             <param name="choiceId">Id of choice you want to update.</param>
-            <param name="model">New data for question.</param>
+            <param name="request">New data for question.</param>
             <returns>>An ActionResult of QuestionModel</returns>
             <remarks>
             Sample request (this request returns **updated choice**)  
@@ -291,12 +571,12 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuestionsController.Post(System.Int32,QuizyfyAPI.Models.QuestionCreateModel)">
+        <member name="M:QuizyfyAPI.Controllers.QuestionsController.Post(System.Int32,QuizyfyAPI.Contracts.Requests.QuestionCreateRequest)">
             <summary>
             Creates question for given quiz with provided data.
             </summary>
             <param name="quizId">Id of quiz you want to attach question to.</param>
-            <param name="model">Question model.</param>
+            <param name="request">Question model.</param>
             <returns>An ActionResult of Question</returns>
             <remarks>
             Sample request (this request returns **created question**)  
@@ -314,13 +594,13 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuestionsController.Put(System.Int32,System.Int32,QuizyfyAPI.Models.QuestionCreateModel)">
+        <member name="M:QuizyfyAPI.Controllers.QuestionsController.Put(System.Int32,System.Int32,QuizyfyAPI.Contracts.Requests.QuestionUpdateRequest)">
             <summary>
             Updates question for given quiz with specified id and data.
             </summary>
             <param name="quizId">Id of quiz you want to update.</param>
             <param name="questionId">Id of question you want to update.</param>
-            <param name="model">New data for question.</param>
+            <param name="request">New data for question.</param>
             <returns>>An ActionResult of QuestionModel</returns>
             <remarks>
             Sample request (this request returns **updated question**)  
@@ -360,7 +640,7 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Get(QuizyfyAPI.Models.PagingParams)">
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Get(QuizyfyAPI.Contracts.Responses.Pagination.PagingParams)">
             <summary>
             Get list of all quizes.
             </summary>
@@ -399,11 +679,11 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Post(QuizyfyAPI.Models.QuizCreateModel)">
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Post(QuizyfyAPI.Contracts.Requests.QuizCreateRequest)">
             <summary>
             Create quiz with provided info.
             </summary>
-            <param name="model">This is json representation of quiz you want to create.</param>
+            <param name="request">This is json representation of quiz you want to create.</param>
             <returns>>An ActionResult of QuizModel</returns>
             <remarks>
             Sample request (this request returns **created quiz**)  
@@ -421,12 +701,12 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Put(System.Int32,QuizyfyAPI.Models.QuizCreateModel)">
+        <member name="M:QuizyfyAPI.Controllers.QuizzesController.Put(System.Int32,QuizyfyAPI.Contracts.Requests.QuizUpdateRequest)">
             <summary>
             Updates quiz with specified id and data.
             </summary>
             <param name="id">Id of quiz you want to update.</param>
-            <param name="model">New data for quiz.</param>
+            <param name="request">New data for quiz.</param>
             <returns>>An ActionResult of QuizModel</returns>
             <remarks>
             Sample request (this request returns **updated quiz**)  
@@ -465,11 +745,11 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.UsersController.Login(QuizyfyAPI.Models.UserLoginModel)">
+        <member name="M:QuizyfyAPI.Controllers.UsersController.Login(QuizyfyAPI.Contracts.Requests.UserLoginRequest)">
             <summary>
             Authenticate user by checking if he is in database.
             </summary>
-            <param name="model">User credentials</param>
+            <param name="request">User credentials</param>
             <returns>Action Result with user model</returns>
             <remarks>
             Sample request (this request returns **user with token if authentication went well**)  
@@ -489,11 +769,11 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.UsersController.Register(QuizyfyAPI.Models.UserRegisterModel)">
+        <member name="M:QuizyfyAPI.Controllers.UsersController.Register(QuizyfyAPI.Contracts.Requests.UserRegisterRequest)">
             <summary>
             Create user with given credentials.
             </summary>
-            <param name="model">User credentials</param>
+            <param name="request">User credentials</param>
             <returns>Action Result of user model</returns>
             <remarks>
             Sample request (this request returns **user with token**)  
@@ -513,12 +793,12 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.UsersController.Put(System.Int32,QuizyfyAPI.Models.UserRegisterModel)">
+        <member name="M:QuizyfyAPI.Controllers.UsersController.Put(System.Int32,QuizyfyAPI.Contracts.Requests.UserUpdateRequest)">
             <summary>
             Updates user credentials.
             </summary>
             <param name="id">Id of user you want to update.</param>
-            <param name="model">New credentials.</param>
+            <param name="request">New credentials.</param>
             <returns>Action Result with user model</returns>
             <remarks>
             Sample request (this request returns **user**)  
@@ -560,11 +840,11 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
-        <member name="M:QuizyfyAPI.Controllers.UsersController.Refresh(QuizyfyAPI.Models.UserRefreshModel)">
+        <member name="M:QuizyfyAPI.Controllers.UsersController.Refresh(QuizyfyAPI.Contracts.Requests.UserRefreshRequest)">
             <summary>
             Refresh JWT token of a user.
             </summary>
-            <param name="model">Object with refresh token and JWT token</param>
+            <param name="request">Object with refresh token and JWT token</param>
             <returns>Action Result with user with refreshed JWT token</returns>
             <remarks>
             Sample request (this request returns **user with JWT token and refresh token**)  
@@ -582,196 +862,6 @@
             <response code="406">Request data type is not in acceptable format.</response>
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
-        </member>
-        <member name="T:QuizyfyAPI.Models.ChoiceModel">
-            <summary>
-            A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.ChoiceModel.Text">
-            <summary>
-            Choice text (answer).
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.ChoiceModel.IsRight">
-            <summary>
-            Bool which defines whether this answer is right or not.
-            </summary>
-        </member>
-        <member name="T:QuizyfyAPI.Models.ErrorModel">
-            <summary>
-            Error with status code and message.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.ErrorModel.StatusCode">
-            <summary>
-            Int which tells us error status code.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.ErrorModel.Message">
-            <summary>
-            Error message.
-            </summary>
-        </member>
-        <member name="T:QuizyfyAPI.Models.QuestionCreateModel">
-            <summary>
-            Question with text(actual question) only. Used for DTO.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuestionCreateModel.Text">
-            <summary>
-            Question text.
-            </summary>
-        </member>
-        <member name="T:QuizyfyAPI.Models.QuestionModel">
-            <summary>
-            A question with text(actual question) and collection of choices. Used for displaying questions.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuestionModel.Text">
-            <summary>
-            Question text.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuestionModel.Choices">
-            <summary>
-            Possible question answers.
-            </summary>
-        </member>
-        <member name="T:QuizyfyAPI.Models.QuizCreateModel">
-            <summary>
-            A quiz with name and questions properties. Used for DTO.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuizCreateModel.Name">
-            <summary>
-            Quiz name.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuizCreateModel.Description">
-            <summary>
-            Quiz description.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuizCreateModel.ImageId">
-            <summary>
-            Quiz image url which we get when we upload image.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuizCreateModel.Questions">
-            <summary>
-            Collection of questions which belongs to quiz.
-            </summary>
-        </member>
-        <member name="T:QuizyfyAPI.Models.QuizModel">
-            <summary>
-            A quiz with name , date of addition and questions properties. Used for displaying quizzes.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuizModel.Id">
-            <summary>
-            Quiz id.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuizModel.Name">
-            <summary>
-            Quiz name.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuizModel.Description">
-            <summary>
-            Quiz description.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuizModel.DateAdded">
-            <summary>
-            Date of addition to database.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.QuizModel.Questions">
-            <summary>
-            Collection of questions which belongs to quiz.
-            </summary>
-        </member>
-        <member name="T:QuizyfyAPI.Models.UserLoginModel">
-            <summary>
-            A user credentials. Used for authentication
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserLoginModel.Username">
-            <summary>
-            User name.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserLoginModel.Password">
-            <summary>
-            User password.
-            </summary>
-        </member>
-        <member name="T:QuizyfyAPI.Models.UserModel">
-            <summary>
-            A user with username, password, role, token and full name.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserModel.FirstName">
-            <summary>
-            First name of the user owner.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserModel.LastName">
-            <summary>
-            Last name of the user owner.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserModel.Username">
-            <summary>
-            User name.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserModel.Password">
-            <summary>
-            User password.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserModel.Role">
-            <summary>
-            User role. (Can be either admin or user)
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserModel.JwtToken">
-            <summary>
-            JWT Token used for authentication
-            </summary>
-        </member>
-        <member name="T:QuizyfyAPI.Models.UserRegisterModel">
-            <summary>
-            A user with username, password, role and full name. Used for creating user.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserRegisterModel.FirstName">
-            <summary>
-            First name of the user owner.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserRegisterModel.LastName">
-            <summary>
-            Last name of the user owner.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserRegisterModel.Username">
-            <summary>
-            User name.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserRegisterModel.Password">
-            <summary>
-            User password.
-            </summary>
-        </member>
-        <member name="P:QuizyfyAPI.Models.UserRegisterModel.Role">
-            <summary>
-            User role. (Can be either admin or user)
-            </summary>
         </member>
     </members>
 </doc>

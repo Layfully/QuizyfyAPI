@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Controllers;
 using QuizyfyAPI.Data;
-using QuizyfyAPI.Models;
 using QuizyfyAPI_Tests.Fakes;
 using System;
 using System.Threading.Tasks;
@@ -115,7 +114,7 @@ namespace QuizyfyAPI_Tests
             var result = await _choiceController.Get(100, 5);
 
             //Assert
-            Assert.IsType<ChoiceModel[]>(result.Value);
+            Assert.IsType<ChoiceResponse[]>(result.Value);
         }
         
         [Fact]
@@ -148,7 +147,7 @@ namespace QuizyfyAPI_Tests
             await _questionRepository.SaveChangesAsync();
             await _choiceRepository.SaveChangesAsync();
 
-            ActionResult<ChoiceModel[]> result = null;
+            ActionResult<ChoiceResponse[]> result = null;
 
             for (int i = 0; i < 10000; i++)
             {
@@ -207,7 +206,7 @@ namespace QuizyfyAPI_Tests
             var result = await _choiceController.Get(101, 150, 200);
 
             //Assert
-            Assert.IsType<ChoiceModel>(result.Value);
+            Assert.IsType<ChoiceResponse>(result.Value);
         }
 
         [Fact]
@@ -297,7 +296,7 @@ namespace QuizyfyAPI_Tests
             await _quizRepository.SaveChangesAsync();
 
             //Act
-            var result = await _choiceController.Post(101, 50, new ChoiceModel { Text = "Hello", IsRight = false });
+            var result = await _choiceController.Post(101, 50, new ChoiceCreateRequest { Text = "Hello", IsRight = false });
 
             //Assert
             Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -339,7 +338,7 @@ namespace QuizyfyAPI_Tests
             await _quizRepository.SaveChangesAsync();
 
             //Act
-            var result = await _choiceController.Post(1, 50, new ChoiceModel { Text = "Hello", IsRight = false });
+            var result = await _choiceController.Post(1, 50, new ChoiceCreateRequest { Text = "Hello", IsRight = false });
 
             //Assert
             Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -362,7 +361,7 @@ namespace QuizyfyAPI_Tests
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
 
-            var choice = new ChoiceModel { Text = "asd", IsRight = true };
+            var choice = new ChoiceCreateRequest { Text = "asd", IsRight = true };
             //Act
             var result = await _choiceController.Post(101, 102, choice);
 
@@ -386,7 +385,7 @@ namespace QuizyfyAPI_Tests
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
 
-            var choice = new ChoiceModel { Text = "asd", IsRight = true };
+            var choice = new ChoiceCreateRequest { Text = "asd", IsRight = true };
             //Act
             var result = await _choiceController.Post(101, 102, choice);
 
@@ -411,10 +410,10 @@ namespace QuizyfyAPI_Tests
             await _questionRepository.SaveChangesAsync();
             await _choiceRepository.SaveChangesAsync();
 
-            var result = await _choiceController.Put(1, 2, 3, new ChoiceModel { Text = "Pytanie" });
+            var result = await _choiceController.Put(1, 2, 3, new ChoiceUpdateRequest { Text = "Pytanie" });
 
             //Assert
-            Assert.IsType<ChoiceModel>(result.Value);
+            Assert.IsType<ChoiceResponse>(result.Value);
         }
 
         [Fact]
@@ -428,7 +427,7 @@ namespace QuizyfyAPI_Tests
             await _questionRepository.SaveChangesAsync();
             await _choiceRepository.SaveChangesAsync();
 
-            var result = await _choiceController.Put(1, 2, 3, new ChoiceModel { Text = "Pytanie" });
+            var result = await _choiceController.Put(1, 2, 3, new ChoiceUpdateRequest { Text = "Pytanie" });
 
             //Assert
             Assert.IsType<NotFoundResult>(result.Result);
@@ -445,7 +444,7 @@ namespace QuizyfyAPI_Tests
             await _questionRepository.SaveChangesAsync();
             await _choiceRepository.SaveChangesAsync();
 
-            var result = await _choiceController.Put(1, 2, 3, new ChoiceModel { Text = "Pytanie" });
+            var result = await _choiceController.Put(1, 2, 3, new ChoiceUpdateRequest { Text = "Pytanie" });
 
             //Assert
             Assert.IsType<NotFoundResult>(result.Result);
@@ -462,7 +461,7 @@ namespace QuizyfyAPI_Tests
             await _questionRepository.SaveChangesAsync();
             await _choiceRepository.SaveChangesAsync();
 
-            var result = await _choiceController.Put(1, 2, 3, new ChoiceModel { Text = "Pytanie" });
+            var result = await _choiceController.Put(1, 2, 3, new ChoiceUpdateRequest { Text = "Pytanie" });
 
             //Assert
             Assert.IsType<NotFoundResult>(result.Result);
@@ -500,7 +499,7 @@ namespace QuizyfyAPI_Tests
             await _choiceRepository.SaveChangesAsync();
 
 
-            var newChoice = new ChoiceModel { Text = "Pytanie na sniadanie" };
+            var newChoice = new ChoiceUpdateRequest { Text = "Pytanie na sniadanie" };
 
             var result = await _choiceController.Put(1, 2, 3, newChoice);
 

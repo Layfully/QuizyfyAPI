@@ -1,15 +1,11 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace QuizyfyAPI.Models
+namespace QuizyfyAPI.Contracts.Responses
 {
     /// <summary>
     /// Error with status code and message.
     /// </summary>
-    public class ErrorModel
+    public class ErrorResponse
     {
         /// <summary>
         /// Int which tells us error status code.
