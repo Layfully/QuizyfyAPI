@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace QuizyfyAPI.Models
+namespace QuizyfyAPI.Contracts.Responses
 {
     /// <summary>
     /// A question with text(actual question) and collection of choices. Used for displaying questions.
     /// </summary>
-    public class QuestionModel
+    public class QuestionResponse
     {
         /// <summary>
         /// Question text.
@@ -20,6 +17,6 @@ namespace QuizyfyAPI.Models
         /// <summary>
         /// Possible question answers.
         /// </summary>
-        public ICollection<ChoiceModel> Choices { get; set; }
+        public ICollection<QuestionResponse> Choices { get; set; }
     }
 }

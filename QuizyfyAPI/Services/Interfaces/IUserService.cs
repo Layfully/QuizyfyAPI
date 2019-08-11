@@ -1,21 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using QuizyfyAPI.Contracts.Requests;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using QuizyfyAPI.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services
 {
     public interface IUserService : IService
     {
-        Task<ObjectResult<UserModel>> Login(UserLoginModel model);
-        Task<BasicResult> Register(UserRegisterModel model);
-        Task<ObjectResult<UserModel>> Update(int userId, UserRegisterModel model);
+        Task<ObjectResult<UserResponse>> Login(UserLoginRequest request);
+        Task<BasicResult> Register(UserRegisterRequest request);
+        Task<ObjectResult<UserResponse>> Update(int userId, UserUpdateRequest request);
         Task<DetailedResult> Delete(int userId);
-        Task<ObjectResult<UserModel>> RefreshTokenAsync(UserRefreshModel model);
+        Task<ObjectResult<UserResponse>> RefreshTokenAsync(UserRefreshRequest request);
         Task<User> RequestToken(User user);
     }
 }

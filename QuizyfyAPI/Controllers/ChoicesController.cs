@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using QuizyfyAPI.Models;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Services;
 
 namespace QuizyfyAPI.Controllers
@@ -44,7 +44,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<ActionResult<ChoiceModel[]>> Get(int quizId, int questionId)
+        public async Task<ActionResult<ChoiceResponse[]>> Get(int quizId, int questionId)
         {
             var getAllResponse = await _choiceService.GetAll(quizId, questionId);
 
@@ -85,7 +85,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{choiceId}")]
-        public async Task<ActionResult<ChoiceModel>> Get(int quizId, int questionId, int choiceId)
+        public async Task<ActionResult<ChoiceResponse>> Get(int quizId, int questionId, int choiceId)
         {
             var getResponse = await _choiceService.Get(quizId, questionId, choiceId);
 
@@ -101,7 +101,7 @@ namespace QuizyfyAPI.Controllers
         /// </summary>
         /// <param name="quizId">Id of quiz you want to get question from.</param>
         /// <param name="questionId">Id of question we want to attach choice to.</param>
-        /// <param name="model">Choice model.</param>
+        /// <param name="request">Choice model.</param>
         /// <returns>>An ActionResult of Choice</returns>
         /// <remarks>
         /// Sample request (this request returns **created choice**)  
@@ -124,9 +124,9 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult<ChoiceModel>> Post(int quizId, int questionId, ChoiceModel model)
+        public async Task<ActionResult<ChoiceResponse>> Post(int quizId, int questionId, ChoiceCreateRequest request)
         {
-            var createResponse = await _choiceService.Create(quizId, questionId, model);
+            var createResponse = await _choiceService.Create(quizId, questionId, request);
 
             if (!createResponse.Success)
             {
@@ -142,7 +142,7 @@ namespace QuizyfyAPI.Controllers
         /// <param name="quizId">Id of quiz you want to update.</param>
         /// <param name="questionId">Id of question you want to update.</param>
         /// <param name="choiceId">Id of choice you want to update.</param>
-        /// <param name="model">New data for question.</param>
+        /// <param name="request">New data for question.</param>
         /// <returns>>An ActionResult of QuestionModel</returns>
         /// <remarks>
         /// Sample request (this request returns **updated choice**)  
@@ -170,9 +170,9 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesDefaultResponseType]
         [HttpPut("{choiceId}")]
-        public async Task<ActionResult<ChoiceModel>> Put(int quizId, int questionId, int choiceId, ChoiceModel model)
+        public async Task<ActionResult<ChoiceResponse>> Put(int quizId, int questionId, int choiceId, ChoiceUpdateRequest request)
         { 
-            var updateResponse = await _choiceService.Update(quizId, questionId, choiceId, model);
+            var updateResponse = await _choiceService.Update(quizId, questionId, choiceId, request);
 
             if (!updateResponse.Success)
             {

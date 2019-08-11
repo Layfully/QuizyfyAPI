@@ -1,15 +1,13 @@
-﻿using System;
+﻿using QuizyfyAPI.Contracts.Responses;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace QuizyfyAPI.Models
+namespace QuizyfyAPI.Contracts.Requests
 {
     /// <summary>
     /// Question with text(actual question) only. Used for DTO.
     /// </summary>
-    public class QuestionCreateModel
+    public class QuestionCreateRequest
     {
         /// <summary>
         /// Question text.
@@ -17,6 +15,6 @@ namespace QuizyfyAPI.Models
         [Required]
         [MaxLength(70)]
         public string Text { get; set; }
-        public ICollection<ChoiceModel> Choices { get; set; }
+        public virtual ICollection<ChoiceCreateRequest> Choices { get; set; }
     }
 }

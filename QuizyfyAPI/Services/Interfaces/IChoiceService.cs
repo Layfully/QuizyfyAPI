@@ -1,15 +1,15 @@
-﻿using QuizyfyAPI.Domain;
-using QuizyfyAPI.Models;
+﻿using QuizyfyAPI.Contracts.Responses;
+using QuizyfyAPI.Domain;
 using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services
 {
     public interface IChoiceService : IService
     {
-        Task<ObjectResult<ChoiceModel[]>> GetAll(int quizId, int questionId);
-        Task<ObjectResult<ChoiceModel>> Get(int quizId, int questionId, int choiceId);
-        Task<ObjectResult<ChoiceModel>> Create(int quizId, int questionId, ChoiceModel model);
-        Task<ObjectResult<ChoiceModel>> Update(int quizId, int questionId, int choiceId, ChoiceModel model);
+        Task<ObjectResult<ChoiceResponse[]>> GetAll(int quizId, int questionId);
+        Task<ObjectResult<ChoiceResponse>> Get(int quizId, int questionId, int choiceId);
+        Task<ObjectResult<ChoiceResponse>> Create(int quizId, int questionId, ChoiceCreateRequest request);
+        Task<ObjectResult<ChoiceResponse>> Update(int quizId, int questionId, int choiceId, ChoiceUpdateRequest request);
         Task<DetailedResult> Delete(int quizId, int questionId, int choiceId);
     }
 }

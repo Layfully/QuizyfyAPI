@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using QuizyfyAPI.Contracts.Requests;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 using QuizyfyAPI.Helpers;
-using QuizyfyAPI.Models;
 using QuizyfyAPI.Options;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -32,26 +33,26 @@ namespace QuizyfyAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<ObjectResult<UserModel>> Login(UserLoginModel model)
+        public async Task<ObjectResult<UserResponse>> Login(UserLoginRequest request)
         {
-            var user = await _userRepository.Authenticate(model.Username, model.Password);
+            var user = await _userRepository.Authenticate(request.Username, request.Password);
 
             if (user != null)
             {
-                return new ObjectResult<UserModel> { Success = true, Object = _mapper.Map<UserModel>(await RequestToken(user)) };
+                return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(await RequestToken(user)) };
             }
-            return new ObjectResult<UserModel> { Success = false, Errors = new[] { "Wrong user credentials" } };
+            return new ObjectResult<UserResponse> { Success = false, Errors = new[] { "Wrong user credentials" } };
         }
-        public async Task<BasicResult> Register(UserRegisterModel model)
+        public async Task<BasicResult> Register(UserRegisterRequest request)
         {
-            var user = _mapper.Map<User>(model);
+            var user = _mapper.Map<User>(request);
 
-            if (await _userRepository.GetUserByUsername(model.Username) != null)
+            if (await _userRepository.GetUserByUsername(request.Username) != null)
             {
                 return new BasicResult { Errors = new[] { "Username: " + user.Username + " is already taken" } };
             }
 
-            PasswordHash.Create(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            PasswordHash.Create(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
@@ -62,37 +63,37 @@ namespace QuizyfyAPI.Services
 
             return new BasicResult { Success = true };
         }
-        public async Task<ObjectResult<UserModel>> Update(int userId, UserRegisterModel model)
+        public async Task<ObjectResult<UserResponse>> Update(int userId, UserUpdateRequest request)
         {
             var user = await _userRepository.GetUserById(userId);
 
             if (user == null)
             {
-                return new ObjectResult<UserModel> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
             }
-            else if (user.Username != model.Username && await _userRepository.GetUserByUsername(model.Username) != null)
+            else if (user.Username != request.Username && await _userRepository.GetUserByUsername(request.Username) != null)
             {
-                return new ObjectResult<UserModel> { Errors = new[] { "User with this username already exists!" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "User with this username already exists!" } };
             }
 
             _userRepository.Update(user);
 
-            if (!string.IsNullOrEmpty(model.Password))
+            if (!string.IsNullOrEmpty(request.Password))
             {
-                PasswordHash.Create(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                PasswordHash.Create(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
             }
 
-            _mapper.Map(model, user);
+            _mapper.Map(request, user);
 
             if(await _userRepository.SaveChangesAsync())
             {
-                return new ObjectResult<UserModel> { Success = true, Object = _mapper.Map<UserModel>(user) };
+                return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
             }
 
-            return new ObjectResult<UserModel> { Errors = new[] { "No rows were affected" } };
+            return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
         }
         public async Task<DetailedResult> Delete(int userId)
         {
@@ -112,13 +113,13 @@ namespace QuizyfyAPI.Services
 
             return new DetailedResult {Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
-        public async Task<ObjectResult<UserModel>> RefreshTokenAsync(UserRefreshModel model)
+        public async Task<ObjectResult<UserResponse>> RefreshTokenAsync(UserRefreshRequest request)
         {
-            var validatedToken = GetPrincipalFromToken(model.JwtToken);
+            var validatedToken = GetPrincipalFromToken(request.JwtToken);
 
             if (validatedToken == null)
             {
-                return new ObjectResult<UserModel> { Errors = new[] { "Invalid token" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "Invalid token" } };
             }
 
             var expiryDateUnix = long.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
@@ -126,36 +127,36 @@ namespace QuizyfyAPI.Services
 
             if (expiryDateUtc > DateTime.UtcNow)
             {
-                return new ObjectResult<UserModel> { Errors = new[] { "This token hasn't expired yet" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "This token hasn't expired yet" } };
             }
 
             var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
 
-            var storedRefreshToken = await _refreshTokenRepository.GetRefreshToken(model.RefreshToken);
+            var storedRefreshToken = await _refreshTokenRepository.GetRefreshToken(request.RefreshToken);
 
             if (storedRefreshToken == null)
             {
-                return new ObjectResult<UserModel> { Errors = new[] { "This refresh token doesn't exist" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token doesn't exist" } };
             }
 
             if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
             {
-                return new ObjectResult<UserModel> { Errors = new[] { "This refresh token has expired" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token has expired" } };
             }
 
             if (storedRefreshToken.Invalidated)
             {
-                return new ObjectResult<UserModel> { Errors = new[] { "This refresh token has been invalidated" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token has been invalidated" } };
             }
 
             if (storedRefreshToken.Used)
             {
-                return new ObjectResult<UserModel> { Errors = new[] { "This refresh token has been used" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token has been used" } };
             }
 
             if (storedRefreshToken.JwtId != jti)
             {
-                return new ObjectResult<UserModel> { Errors = new[] { "This refresh token does not match this JWT" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token does not match this JWT" } };
             }
 
             storedRefreshToken.Used = true;
@@ -168,10 +169,10 @@ namespace QuizyfyAPI.Services
             user = await RequestToken(user);
 
 
-            return new ObjectResult<UserModel>
+            return new ObjectResult<UserResponse>
             {
                 Success = true,
-                Object = _mapper.Map<UserModel>(user)
+                Object = _mapper.Map<UserResponse>(user)
             };
         }
         public async Task<User> RequestToken(User user)

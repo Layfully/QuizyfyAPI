@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using QuizyfyAPI.Models;
+using QuizyfyAPI.Contracts.Requests;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Services;
 
 namespace QuizyfyAPI.Controllers
@@ -44,7 +45,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<ActionResult<QuestionModel[]>> Get(int quizId, bool includeChoices = false)
+        public async Task<ActionResult<QuestionResponse[]>> Get(int quizId, bool includeChoices = false)
         {
             var getAllResponse = await _questionService.GetAll(quizId, includeChoices);
 
@@ -83,7 +84,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<QuestionModel>> Get(int quizId, int questionId, bool includeChoices)
+        public async Task<ActionResult<QuestionResponse>> Get(int quizId, int questionId, bool includeChoices)
         {
             var getResponse = await _questionService.Get(quizId, questionId, includeChoices);
 
@@ -99,7 +100,7 @@ namespace QuizyfyAPI.Controllers
         /// Creates question for given quiz with provided data.
         /// </summary>
         /// <param name="quizId">Id of quiz you want to attach question to.</param>
-        /// <param name="model">Question model.</param>
+        /// <param name="request">Question model.</param>
         /// <returns>An ActionResult of Question</returns>
         /// <remarks>
         /// Sample request (this request returns **created question**)  
@@ -123,9 +124,9 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult<QuestionModel>> Post(int quizId, QuestionCreateModel model)
+        public async Task<ActionResult<QuestionResponse>> Post(int quizId, QuestionCreateRequest request)
         {
-            var createResponse = await _questionService.Create(quizId, model);
+            var createResponse = await _questionService.Create(quizId, request);
 
             if (!createResponse.Success)
             {
@@ -139,7 +140,7 @@ namespace QuizyfyAPI.Controllers
         /// </summary>
         /// <param name="quizId">Id of quiz you want to update.</param>
         /// <param name="questionId">Id of question you want to update.</param>
-        /// <param name="model">New data for question.</param>
+        /// <param name="request">New data for question.</param>
         /// <returns>>An ActionResult of QuestionModel</returns>
         /// <remarks>
         /// Sample request (this request returns **updated question**)  
@@ -166,9 +167,9 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut("{questionId}")]
-        public async Task<ActionResult<QuestionModel>> Put(int quizId, int questionId, QuestionCreateModel model)
+        public async Task<ActionResult<QuestionResponse>> Put(int quizId, int questionId, QuestionUpdateRequest request)
         {
-            var updateResponse = await _questionService.Update(quizId, questionId, model);
+            var updateResponse = await _questionService.Update(quizId, questionId, request);
 
             if (!updateResponse.Success)
             {

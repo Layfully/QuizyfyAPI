@@ -2,9 +2,10 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using QuizyfyAPI.Contracts.Requests;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Controllers;
 using QuizyfyAPI.Data;
-using QuizyfyAPI.Models;
 using QuizyfyAPI_Tests.Fakes;
 using System;
 using System.Threading.Tasks;
@@ -109,7 +110,7 @@ namespace QuizyfyAPI_Tests
             var result = await _questionsController.Get(100);
 
             //Assert
-            Assert.IsType<QuestionModel[]>(result.Value);
+            Assert.IsType<QuestionResponse[]>(result.Value);
         }
 
         [Fact]
@@ -181,7 +182,7 @@ namespace QuizyfyAPI_Tests
             var result = await _questionsController.Get(101, 1, false);
 
             //Assert
-            Assert.IsType<QuestionModel>(result.Value);
+            Assert.IsType<QuestionResponse>(result.Value);
         }
 
         [Fact]
@@ -217,7 +218,7 @@ namespace QuizyfyAPI_Tests
             var tempQuiz = new Quiz() { Id = 101, Name = "Elo", DateAdded = DateTime.Now };
             _quizRepository.Add(tempQuiz);
 
-            var question = new QuestionCreateModel() { Text = "Pytanko1" };
+            var question = new QuestionCreateRequest() { Text = "Pytanko1" };
                 
             await _quizRepository.SaveChangesAsync();
 
@@ -236,7 +237,7 @@ namespace QuizyfyAPI_Tests
             //Arrange
             _quizRepository.Empty<Quiz>();
 
-            var question = new QuestionCreateModel() { Text = "Pytanko1" };
+            var question = new QuestionCreateRequest() { Text = "Pytanko1" };
 
             await _quizRepository.SaveChangesAsync();
 
@@ -258,7 +259,7 @@ namespace QuizyfyAPI_Tests
             var tempQuiz = new Quiz() { Id = 101, Name = "Elo", DateAdded = DateTime.Now };
             _quizRepository.Add(tempQuiz);
 
-            var question = new QuestionCreateModel() { Text = "Pytanko1" };
+            var question = new QuestionCreateRequest() { Text = "Pytanko1" };
 
             await _quizRepository.SaveChangesAsync();
 
@@ -280,7 +281,7 @@ namespace QuizyfyAPI_Tests
             var tempQuiz = new Quiz() { Id = 101, Name = "Elo", DateAdded = DateTime.Now };
             _quizRepository.Add(tempQuiz);
 
-            var question = new QuestionCreateModel() { Text = "Pytanko1" };
+            var question = new QuestionCreateRequest() { Text = "Pytanko1" };
 
             await _quizRepository.SaveChangesAsync();
 
@@ -306,10 +307,10 @@ namespace QuizyfyAPI_Tests
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
 
-            var result = await _questionsController.Put(1, 2, new QuestionCreateModel { Text = "Pytanie" });
+            var result = await _questionsController.Put(1, 2, new QuestionUpdateRequest { Text = "Pytanie" });
 
             //Assert
-            Assert.IsType<QuestionModel>(result.Value);
+            Assert.IsType<QuestionResponse>(result.Value);
         }
 
         [Fact]
@@ -321,7 +322,7 @@ namespace QuizyfyAPI_Tests
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
 
-            var result = await _questionsController.Put(1, 2, new QuestionCreateModel { Text = "Pytanie" });
+            var result = await _questionsController.Put(1, 2, new QuestionUpdateRequest { Text = "Pytanie" });
 
             //Assert
             Assert.IsType<NotFoundResult>(result.Result);
@@ -353,7 +354,7 @@ namespace QuizyfyAPI_Tests
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
 
-            var newQuestion = new QuestionCreateModel { Text = "Pytanie na sniadanie"};
+            var newQuestion = new QuestionUpdateRequest { Text = "Pytanie na sniadanie"};
             
             var result = await _questionsController.Put(1, 2, newQuestion);
 

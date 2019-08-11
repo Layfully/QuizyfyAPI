@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using QuizyfyAPI.Data;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace QuizyfyAPI.Models
+namespace QuizyfyAPI.Contracts.Responses
 {
     /// <summary>
-    /// A user with username, password, role and full name. Used for creating user.
+    /// A user with username, password, role, token and full name.
     /// </summary>
-    public class UserRegisterModel
+    public class UserResponse
     {
         /// <summary>
         /// First name of the user owner.
@@ -34,5 +31,10 @@ namespace QuizyfyAPI.Models
         /// </summary>
         [Required]
         public string Role { get; set; }
+        /// <summary>
+        /// JWT Token used for authentication
+        /// </summary>
+        public string JwtToken { get; set; }
+        public RefreshToken RefreshToken { get; set; }
     }
 }
