@@ -1,20 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using QuizyfyAPI;
-using QuizyfyAPI.Data;
-using System;
+﻿using QuizyfyAPI.Data;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace QuizyfyAPI.Models
+namespace QuizyfyAPI.Contracts.Responses
 {
     /// <summary>
-    /// A quiz with name and questions properties. Used for DTO.
+    /// A quiz with name , date of addition and questions properties. Used for displaying quizzes.
     /// </summary>
-    public class QuizCreateModel
+    public class QuizResponse
     {
+        /// <summary>
+        /// Quiz id.
+        /// </summary>
+        [Required]
+        public int Id { get; set; }
         /// <summary>
         /// Quiz name.
         /// </summary>
@@ -26,14 +25,16 @@ namespace QuizyfyAPI.Models
         /// </summary>
         [Required]
         public string Description { get; set; }
+
+        public string ImageUrl { get; set; }
         /// <summary>
-        /// Quiz image url which we get when we upload image.
+        /// Date of addition to database.
         /// </summary>
         [Required]
-        public int ImageId { get; set; }
+        public string DateAdded { get; set; }
         /// <summary>
         /// Collection of questions which belongs to quiz.
         /// </summary>
-        public ICollection<QuestionCreateModel> Questions { get; set; }
+        public virtual ICollection<Question> Questions {get;set;}
     }
 }

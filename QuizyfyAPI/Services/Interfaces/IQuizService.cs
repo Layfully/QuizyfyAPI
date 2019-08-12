@@ -1,16 +1,18 @@
 ﻿using Microsoft.AspNetCore.Http;
+using QuizyfyAPI.Contracts.Requests;
+using QuizyfyAPI.Contracts.Responses;
+using QuizyfyAPI.Contracts.Responses.Pagination;
 using QuizyfyAPI.Domain;
-using QuizyfyAPI.Models;
 using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services
 {
     public interface IQuizService : IService
     {
-        Task<ObjectResult<QuizListModel>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext);
-        Task<ObjectResult<QuizModel>> Get(int id, bool includeQuestions);
-        Task<ObjectResult<QuizModel>> Create(QuizCreateModel model);
-        Task<ObjectResult<QuizModel>> Update(int quizId, QuizCreateModel model);
+        Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext);
+        Task<ObjectResult<QuizResponse>> Get(int id, bool includeQuestions);
+        Task<ObjectResult<QuizResponse>> Create(QuizCreateRequest request);
+        Task<ObjectResult<QuizResponse>> Update(int quizId, QuizUpdateRequest request);
         Task<DetailedResult> Delete(int quizId);
     }
 }

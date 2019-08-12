@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
+using QuizyfyAPI.Contracts.Requests;
+using QuizyfyAPI.Contracts.Responses;
+using QuizyfyAPI.Contracts.Responses.Pagination;
 using QuizyfyAPI.Controllers;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using QuizyfyAPI.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +31,7 @@ namespace QuizyfyAPI.Services
             _questionService = questionService;
 
         }
-        public async Task<ObjectResult<QuizModel>> Get(int id, bool includeQuestions)
+        public async Task<ObjectResult<QuizResponse>> Get(int id, bool includeQuestions)
         {
             if (!_cache.TryGetValue("Quizzes", out Quiz quiz))
             {
@@ -39,13 +41,13 @@ namespace QuizyfyAPI.Services
 
             if (quiz == null)
             {
-                return new ObjectResult<QuizModel> { Errors = new[] { "Couldn't find this quiz" } };
+                return new ObjectResult<QuizResponse> { Errors = new[] { "Couldn't find this quiz" } };
             }
-            return new ObjectResult<QuizModel> { Success = true, Found = true, Object = _mapper.Map<QuizModel>(quiz) };
+            return new ObjectResult<QuizResponse> { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
         }
-        public async Task<ObjectResult<QuizModel>> Create(QuizCreateModel model)
+        public async Task<ObjectResult<QuizResponse>> Create(QuizCreateRequest request)
         {
-            var quiz = _mapper.Map<Quiz>(model);
+            var quiz = _mapper.Map<Quiz>(request);
 
             if (quiz != null)
             {
@@ -54,13 +56,13 @@ namespace QuizyfyAPI.Services
                 _quizRepository.Add(quiz);
             }
 
-            quiz.Image = await _imageRepository.GetImage(model.ImageId);
+            quiz.Image = await _imageRepository.GetImage(request.ImageId);
 
             if (await _quizRepository.SaveChangesAsync())
             {
                 var questionController = new QuestionsController(_questionService);
 
-                foreach(var question in model.Questions)
+                foreach(var question in request.Questions)
                 {
                     await questionController.Post(quiz.Id, question);
                 }
@@ -70,30 +72,30 @@ namespace QuizyfyAPI.Services
 
                 await _quizRepository.SaveChangesAsync();
 
-                return new ObjectResult<QuizModel> { Object = _mapper.Map<QuizModel>(quiz), Found = true, Success = true };
+                return new ObjectResult<QuizResponse> { Object = _mapper.Map<QuizResponse>(quiz), Found = true, Success = true };
             }
-            return new ObjectResult<QuizModel> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+            return new ObjectResult<QuizResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
-        public async Task<ObjectResult<QuizModel>> Update(int quizId, QuizCreateModel model)
+        public async Task<ObjectResult<QuizResponse>> Update(int quizId, QuizUpdateRequest request)
         {
             var quiz = await _quizRepository.GetQuiz(quizId);
 
             if (quiz == null)
             {
-                return new ObjectResult<QuizModel> { Errors = new[] { "Couldn't find quiz this quiz" } };
+                return new ObjectResult<QuizResponse> { Errors = new[] { "Couldn't find quiz this quiz" } };
             }
 
             _quizRepository.Update(quiz);
 
-            quiz = _mapper.Map<Quiz>(model);
+            quiz = _mapper.Map<Quiz>(request);
 
             if (await _quizRepository.SaveChangesAsync())
             {
                 _cache.Set($"Quiz {quizId}", quiz);
                 _cache.Remove($"Quizzes");
-                return new ObjectResult<QuizModel> { Success = true, Found = true, Object = _mapper.Map<QuizModel>(quiz) };
+                return new ObjectResult<QuizResponse> { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
             }
-            return new ObjectResult<QuizModel> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+            return new ObjectResult<QuizResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
         public async Task<DetailedResult> Delete(int quizId)
         {
@@ -114,7 +116,7 @@ namespace QuizyfyAPI.Services
 
             return new DetailedResult { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
-        public async Task<ObjectResult<QuizListModel>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext)
+        public async Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext)
         {
             return await Task.Run(() =>
             {
@@ -122,17 +124,17 @@ namespace QuizyfyAPI.Services
 
                 if (obj.List.Count == 0)
                 {
-                    return new ObjectResult<QuizListModel> { Errors = new[] { "Couldn't find this quiz" } };
+                    return new ObjectResult<QuizListResponse> { Errors = new[] { "Couldn't find this quiz" } };
                 }
 
-                var output = new QuizListModel
+                var output = new QuizListResponse
                 {
                     Paging = obj.GetHeader(),
                     Links = GetLinks(obj, httpContext),
-                    Items = _mapper.Map<List<QuizModel>>(obj.List)
+                    Items = _mapper.Map<List<QuizResponse>>(obj.List)
                 };
 
-                return new ObjectResult<QuizListModel> { Success = true, Found = true, Object = output };
+                return new ObjectResult<QuizListResponse> { Success = true, Found = true, Object = output };
             });
         }
 

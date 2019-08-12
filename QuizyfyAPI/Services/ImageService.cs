@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using QuizyfyAPI.Models;
 using QuizyfyAPI.Options;
 using System.Collections.Generic;
 using System.IO;
@@ -28,7 +28,7 @@ namespace QuizyfyAPI.Services
             _appOptions = appOptions.Value;
         }
 
-        public async Task<ObjectResult<ImageModel[]>> GetAll()
+        public async Task<ObjectResult<ImageResponse[]>> GetAll()
         {
             if (!_cache.TryGetValue("Images", out ICollection<Image> images))
             {
@@ -38,12 +38,12 @@ namespace QuizyfyAPI.Services
 
             if (images == null || images.Count == 0)
             {
-                return new ObjectResult<ImageModel[]> { Errors = new[] { "There are no images" } };
+                return new ObjectResult<ImageResponse[]> { Errors = new[] { "There are no images" } };
             }
-            return new ObjectResult<ImageModel[]> { Object = _mapper.Map<ImageModel[]>(images).ToArray(), Found = true, Success = true };
+            return new ObjectResult<ImageResponse[]> { Object = _mapper.Map<ImageResponse[]>(images).ToArray(), Found = true, Success = true };
         }
 
-        public async Task<ObjectResult<ImageModel>> Get(int id)
+        public async Task<ObjectResult<ImageResponse>> Get(int id)
         {
             if (!_cache.TryGetValue("$Image {id}", out Image image))
             {
@@ -53,35 +53,35 @@ namespace QuizyfyAPI.Services
 
             if (image == null)
             {
-                return new ObjectResult<ImageModel> { Errors = new[] { "Couldn't find this image" } };
+                return new ObjectResult<ImageResponse> { Errors = new[] { "Couldn't find this image" } };
             }
 
-            return new ObjectResult<ImageModel> { Object = _mapper.Map<ImageModel>(image), Found = true, Success = true };
+            return new ObjectResult<ImageResponse> { Object = _mapper.Map<ImageResponse>(image), Found = true, Success = true };
         }
-        public async Task<ObjectResult<ImageModel>> Create(IFormFile file)
+        public async Task<ObjectResult<ImageResponse>> Create(IFormFile file)
         {
             if (file != null && file.Length > 0)
             { 
-                var model = new ImageModel { ImageUrl = await UploadFile(file) };
+                var model = new ImageResponse { ImageUrl = await UploadFile(file) };
                 var image = _mapper.Map<Image>(model);
 
                 _imageRepository.Add(image);
 
                 if (await _imageRepository.SaveChangesAsync())
                 {
-                    return new ObjectResult<ImageModel> { Success = true, Object = model };
+                    return new ObjectResult<ImageResponse> { Success = true, Object = model };
                 }
             }
 
-            return new ObjectResult<ImageModel> { Errors = new[] { "File couldn't be uploaded" } };
+            return new ObjectResult<ImageResponse> { Errors = new[] { "File couldn't be uploaded" } };
         }
-        public async Task<ObjectResult<ImageModel>> Update(int id, IFormFile file)
+        public async Task<ObjectResult<ImageResponse>> Update(int id, IFormFile file)
         {
             var image = await _imageRepository.GetImage(id);
 
             if (image == null)
             {
-                return new ObjectResult<ImageModel> { Errors = new[] { "Couldn't find the choice to update" } };
+                return new ObjectResult<ImageResponse> { Errors = new[] { "Couldn't find the choice to update" } };
             }
 
             _imageRepository.Update(image);
@@ -90,17 +90,17 @@ namespace QuizyfyAPI.Services
             path = path.Replace('/', '\\');
             File.Delete(path);
 
-            var model = new ImageModel { ImageUrl = await UploadFile(file) };
+            var model = new ImageResponse { ImageUrl = await UploadFile(file) };
 
             image = _mapper.Map<Image>(model);
 
             if (await _imageRepository.SaveChangesAsync())
             {
                 _cache.Set($"Image {image.Id}", image);
-                return new ObjectResult<ImageModel> { Object = _mapper.Map<ImageModel>(image), Found = true, Success = true };
+                return new ObjectResult<ImageResponse> { Object = _mapper.Map<ImageResponse>(image), Found = true, Success = true };
             }
 
-            return new ObjectResult<ImageModel> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+            return new ObjectResult<ImageResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
         public async Task<DetailedResult> Delete(int id)
         {

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using QuizyfyAPI.Models;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Services;
 
 namespace QuizyfyAPI.Controllers
@@ -42,7 +42,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<ActionResult<ImageModel[]>> Get()
+        public async Task<ActionResult<ImageResponse[]>> Get()
         {
             var getAllResponse = await _imageService.GetAll();
 
@@ -81,7 +81,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<ActionResult<ImageModel>> Get(int id)
+        public async Task<ActionResult<ImageResponse>> Get(int id)
         {
             var getResponse = await _imageService.Get(id);
 
@@ -114,7 +114,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult<ImageModel>> Post(IFormFile file)
+        public async Task<ActionResult<ImageResponse>> Post(IFormFile file)
         {
             var createResponse = await _imageService.Create(file);
 
@@ -153,7 +153,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesDefaultResponseType]
         [HttpPut("{id}")]
-        public async Task<ActionResult<ImageModel>> Put(int id, IFormFile file)
+        public async Task<ActionResult<ImageResponse>> Put(int id, IFormFile file)
         {
             var updateResponse = await _imageService.Update(id, file);
 
