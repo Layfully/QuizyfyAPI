@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using QuizyfyAPI.Models;
+using QuizyfyAPI.Contracts.Responses;
 using System;
 using System.Threading.Tasks;
 
@@ -35,7 +35,7 @@ namespace QuizyfyAPI.Middleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-            return context.Response.WriteAsync(new ErrorModel()
+            return context.Response.WriteAsync(new ErrorResponse()
             {
                 StatusCode = context.Response.StatusCode,
                 Message = $"Internal Server Error from the custom middleware. {exception.Message} \n {exception.StackTrace}"

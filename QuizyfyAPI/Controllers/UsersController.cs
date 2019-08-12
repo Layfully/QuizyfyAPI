@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using QuizyfyAPI.Contracts.Requests;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
-using QuizyfyAPI.Models;
 using QuizyfyAPI.Services;
 
 namespace QuizyfyAPI.Controllers
@@ -26,7 +27,7 @@ namespace QuizyfyAPI.Controllers
         /// <summary>
         /// Authenticate user by checking if he is in database.
         /// </summary>
-        /// <param name="model">User credentials</param>
+        /// <param name="request">User credentials</param>
         /// <returns>Action Result with user model</returns>
         /// <remarks>
         /// Sample request (this request returns **user with token if authentication went well**)  
@@ -53,9 +54,9 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<UserModel>> Login(UserLoginModel model)
+        public async Task<ActionResult<UserResponse>> Login(UserLoginRequest request)
         {
-            var loginResponse = await _userService.Login(model);
+            var loginResponse = await _userService.Login(request);
 
             if (!loginResponse.Success)
             {
@@ -67,7 +68,7 @@ namespace QuizyfyAPI.Controllers
         /// <summary>
         /// Create user with given credentials.
         /// </summary>
-        /// <param name="model">User credentials</param>
+        /// <param name="request">User credentials</param>
         /// <returns>Action Result of user model</returns>
         /// <remarks>
         /// Sample request (this request returns **user with token**)  
@@ -93,22 +94,22 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<UserModel>> Register(UserRegisterModel model)
+        public async Task<ActionResult<UserResponse>> Register(UserRegisterRequest request)
         {
-            var registerResponse = await _userService.Register(model);
+            var registerResponse = await _userService.Register(request);
 
             if (!registerResponse.Success)
             {
                 return BadRequest(registerResponse.Errors);
             }
-            return CreatedAtAction(nameof(Login), model);
+            return CreatedAtAction(nameof(Login), request);
         }
 
         /// <summary>
         /// Updates user credentials.
         /// </summary>
         /// <param name="id">Id of user you want to update.</param>
-        /// <param name="model">New credentials.</param>
+        /// <param name="request">New credentials.</param>
         /// <returns>Action Result with user model</returns>
         /// <remarks>
         /// Sample request (this request returns **user**)  
@@ -138,14 +139,14 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<UserModel>> Put(int id, UserRegisterModel model)
+        public async Task<ActionResult<UserResponse>> Put(int id, UserUpdateRequest request)
         {
             if (!User.IsInRole(Role.Admin) && User.Claims.Single(x => x.Type == "Id").Value != id.ToString())
             {
                 return Forbid("Only admin can change other users data.");
             }
 
-            var updateResponse = await _userService.Update(id, model);
+            var updateResponse = await _userService.Update(id, request);
 
             if (!updateResponse.Success)
             {
@@ -207,7 +208,7 @@ namespace QuizyfyAPI.Controllers
         /// <summary>
         /// Refresh JWT token of a user.
         /// </summary>
-        /// <param name="model">Object with refresh token and JWT token</param>
+        /// <param name="request">Object with refresh token and JWT token</param>
         /// <returns>Action Result with user with refreshed JWT token</returns>
         /// <remarks>
         /// Sample request (this request returns **user with JWT token and refresh token**)  
@@ -232,9 +233,9 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<UserModel>> Refresh(UserRefreshModel model)
+        public async Task<ActionResult<UserResponse>> Refresh(UserRefreshRequest request)
         {
-            var refreshResponse = await _userService.RefreshTokenAsync(model);
+            var refreshResponse = await _userService.RefreshTokenAsync(request);
 
             if (!refreshResponse.Success)
             {

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using QuizyfyAPI.Models;
+using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Services;
 
 namespace QuizyfyAPI.Controllers
@@ -50,7 +50,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<ActionResult<LikeModel>> Put(int quizId)
+        public async Task<ActionResult<LikeResponse>> Put(int quizId)
         {
             var likeResponse = await _likeService.Like(quizId, UserId);
 

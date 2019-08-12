@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace QuizyfyAPI.Models
+namespace QuizyfyAPI.Contracts.Requests
 {
     /// <summary>
     /// A user credentials. Used for authentication
     /// </summary>
-    public class UserLoginModel
+    public class UserLoginRequest
     {
         /// <summary>
         /// User name.

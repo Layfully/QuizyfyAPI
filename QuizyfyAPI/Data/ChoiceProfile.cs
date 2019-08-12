@@ -1,9 +1,5 @@
 ﻿using AutoMapper;
-using QuizyfyAPI.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using QuizyfyAPI.Contracts.Responses;
 
 namespace QuizyfyAPI.Data
 {
@@ -11,7 +7,7 @@ namespace QuizyfyAPI.Data
     {
         public ChoiceProfile()
         {
-            CreateMap<Choice, ChoiceModel>().ReverseMap();
+            CreateMap<Choice, ChoiceResponse>().ReverseMap();
         }
     }
 }

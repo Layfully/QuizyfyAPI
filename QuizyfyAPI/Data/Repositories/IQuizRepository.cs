@@ -1,7 +1,4 @@
-﻿using QuizyfyAPI.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using QuizyfyAPI.Contracts.Responses.Pagination;
 using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Data
