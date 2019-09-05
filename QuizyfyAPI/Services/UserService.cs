@@ -141,7 +141,7 @@ namespace QuizyfyAPI.Services
 
             if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
             {
-                return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token has expired" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "Token Expired" } };
             }
 
             if (storedRefreshToken.Invalidated)
