@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using QuizyfyAPI.Services;
 using QuizyfyAPI.Middleware;
 using QuizyfyAPI.Options;
+using PwnedPasswords.Client;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace QuizyfyAPI
@@ -70,6 +71,8 @@ namespace QuizyfyAPI
             {
                 return new UrlHelper(factory.GetService<IActionContextAccessor>().ActionContext);
             });
+
+            services.AddTransient<IPwnedPasswordsClient, PwnedPasswordsClient>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
