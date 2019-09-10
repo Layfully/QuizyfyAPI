@@ -11,10 +11,7 @@ namespace QuizyfyAPI.Contracts.Responses.Pagination
             TotalItems = source.Count();
             PageNumber = pageNumber;
             PageSize = pageSize;
-            List = source
-                            .Skip(pageSize * (pageNumber - 1))
-                            .Take(pageSize)
-                            .ToList();
+            List = source.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
         }
 
         public int TotalItems { get; }
