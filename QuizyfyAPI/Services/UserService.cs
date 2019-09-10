@@ -35,7 +35,7 @@ namespace QuizyfyAPI.Services
 
         public async Task<ObjectResult<UserResponse>> Login(UserLoginRequest request)
         {
-            var user = await _userRepository.Authenticate(request.Username, request.Password);
+            var user = await _userRepository.Authenticate(request.Username, request.Password.Normalize(NormalizationForm.FormKC));
 
             if (user != null)
             {
@@ -52,7 +52,7 @@ namespace QuizyfyAPI.Services
                 return new BasicResult { Errors = new[] { "Username: " + user.Username + " is already taken" } };
             }
 
-            PasswordHash.Create(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            PasswordHash.Create(request.Password.Normalize(NormalizationForm.FormKC), out byte[] passwordHash, out byte[] passwordSalt);
 
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
@@ -141,7 +141,7 @@ namespace QuizyfyAPI.Services
 
             if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
             {
-                return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token has expired" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { "Token Expired" } };
             }
 
             if (storedRefreshToken.Invalidated)

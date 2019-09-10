@@ -25,6 +25,7 @@ namespace QuizyfyAPI.Data
                 query = query.Include(quiz => quiz.Questions).ThenInclude(question => question.Choices);
             }
 
+            query = query.Include(quiz => quiz.Image);
             PagedList<Quiz> pagedQuizzes = new PagedList<Quiz>(query, pagingParams.PageNumber, pagingParams.PageSize);
 
             return pagedQuizzes;
