@@ -13,6 +13,8 @@ using QuizyfyAPI.Services;
 using QuizyfyAPI.Middleware;
 using QuizyfyAPI.Options;
 using PwnedPasswords.Client;
+using AspNetCoreRateLimit;
+using Microsoft.AspNetCore.Http;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace QuizyfyAPI
@@ -42,6 +44,8 @@ namespace QuizyfyAPI
             services.Configure<AppOptions>(Configuration.GetSection(nameof(AppOptions)));
             services.Configure<JwtOptions>(Configuration.GetSection(nameof(JwtOptions)));
             services.Configure<SwaggerOptions>(Configuration.GetSection(nameof(SwaggerOptions)));
+            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
+            services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
 
             services.AddCors();
 
@@ -55,6 +59,9 @@ namespace QuizyfyAPI
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+            services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+
             services.ConfigureMvcForApi(AppOptions);
 
             services.ConfigureValidationErrorResponse();
@@ -66,17 +73,20 @@ namespace QuizyfyAPI
             services.AddMemoryCache();
 
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddScoped<IUrlHelper>(factory =>
-            {
-                return new UrlHelper(factory.GetService<IActionContextAccessor>().ActionContext);
-            });
+            // configuration (resolvers, counter key builders)
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+            services.AddScoped<IUrlHelper>(factory => new UrlHelper(factory.GetService<IActionContextAccessor>().ActionContext));
 
             services.AddTransient<IPwnedPasswordsClient, PwnedPasswordsClient>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseIpRateLimiting();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
