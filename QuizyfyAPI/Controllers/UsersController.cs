@@ -7,6 +7,7 @@ using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Services;
+using reCAPTCHA.AspNetCore;
 
 namespace QuizyfyAPI.Controllers
 {
@@ -18,10 +19,12 @@ namespace QuizyfyAPI.Controllers
     public class UsersController : ControllerBase
     {   
         private readonly IUserService _userService;
+        private readonly IRecaptchaService _recaptcha;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IRecaptchaService recaptcha)
         {
             _userService = userService;
+            _recaptcha = recaptcha;
         }
 
         /// <summary>
@@ -56,6 +59,13 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserResponse>> Login(UserLoginRequest request)
         {
+            var recaptcha = await _recaptcha.Validate(request.RecaptchaToken);
+
+            if (!recaptcha.success && recaptcha.score >= 0.8M)
+            {
+                return Ok("Recaptcha failed");
+            }
+
             var loginResponse = await _userService.Login(request);
 
             if (!loginResponse.Success)
@@ -96,6 +106,13 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserResponse>> Register(UserRegisterRequest request)
         {
+            var recaptcha = await _recaptcha.Validate(request.RecaptchaToken);
+
+            if (!recaptcha.success && recaptcha.score >= 0.8M)
+            {
+                return Ok("Recaptcha failed");
+            }
+
             var registerResponse = await _userService.Register(request);
 
             if (!registerResponse.Success)

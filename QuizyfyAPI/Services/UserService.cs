@@ -8,6 +8,7 @@ using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 using QuizyfyAPI.Helpers;
 using QuizyfyAPI.Options;
+using reCAPTCHA.AspNetCore;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -23,10 +24,10 @@ namespace QuizyfyAPI.Services
         private readonly IUserRepository _userRepository;
         private readonly JwtOptions _jwtOptions;
         private readonly TokenValidationParameters _tokenValidationParameters;
-        private readonly IPwnedPasswordsClient _pwnedPasswordsClient;
+        private readonly PwnedPasswordsClient _pwnedPasswordsClient;
         private readonly IMapper _mapper;
 
-        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, IPwnedPasswordsClient pwnedPasswordsClient, IMapper mapper)
+        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, PwnedPasswordsClient pwnedPasswordsClient, IMapper mapper)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _userRepository = userRepository;

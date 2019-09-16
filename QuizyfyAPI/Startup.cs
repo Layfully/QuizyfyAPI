@@ -15,6 +15,8 @@ using QuizyfyAPI.Options;
 using PwnedPasswords.Client;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Http;
+using reCAPTCHA.AspNetCore;
+using System.Net.Http;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace QuizyfyAPI
@@ -46,6 +48,7 @@ namespace QuizyfyAPI
             services.Configure<SwaggerOptions>(Configuration.GetSection(nameof(SwaggerOptions)));
             services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
             services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
+            services.Configure<RecaptchaSettings>(Configuration.GetSection("RecaptchaSettings"));
 
             services.AddCors();
 
@@ -80,7 +83,9 @@ namespace QuizyfyAPI
 
             services.AddScoped<IUrlHelper>(factory => new UrlHelper(factory.GetService<IActionContextAccessor>().ActionContext));
 
-            services.AddTransient<IPwnedPasswordsClient, PwnedPasswordsClient>();
+            services.AddTransient<HttpClient>();
+            services.AddTransient<PwnedPasswordsClient>();
+            services.AddTransient<IRecaptchaService, RecaptchaService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

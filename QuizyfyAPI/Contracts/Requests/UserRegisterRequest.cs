@@ -30,5 +30,7 @@ namespace QuizyfyAPI.Contracts.Requests
         /// </summary>
         [Required]
         public string Role { get; set; }
+        [Required]
+        public string RecaptchaToken { get; set; }
     }
 }
