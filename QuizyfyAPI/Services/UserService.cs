@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using PwnedPasswords.Client;
 using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 using QuizyfyAPI.Helpers;
 using QuizyfyAPI.Options;
+using reCAPTCHA.AspNetCore;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -22,14 +24,16 @@ namespace QuizyfyAPI.Services
         private readonly IUserRepository _userRepository;
         private readonly JwtOptions _jwtOptions;
         private readonly TokenValidationParameters _tokenValidationParameters;
+        private readonly PwnedPasswordsClient _pwnedPasswordsClient;
         private readonly IMapper _mapper;
 
-        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, IMapper mapper)
+        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, PwnedPasswordsClient pwnedPasswordsClient, IMapper mapper)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _userRepository = userRepository;
             _jwtOptions = jwtOptions.Value;
             _tokenValidationParameters = tokenValidationParameters;
+            _pwnedPasswordsClient = pwnedPasswordsClient;
             _mapper = mapper;
         }
 
@@ -50,6 +54,11 @@ namespace QuizyfyAPI.Services
             if (await _userRepository.GetUserByUsername(request.Username) != null)
             {
                 return new BasicResult { Errors = new[] { "Username: " + user.Username + " is already taken" } };
+            }
+
+            if (await _pwnedPasswordsClient.HasPasswordBeenPwned(request.Password))
+            {
+                return new BasicResult { Errors = new[] { "This password has been leaked in data leak. Please use different password." } };
             }
 
             PasswordHash.Create(request.Password.Normalize(NormalizationForm.FormKC), out byte[] passwordHash, out byte[] passwordSalt);
