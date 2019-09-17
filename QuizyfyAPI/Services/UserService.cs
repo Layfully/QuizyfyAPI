@@ -24,10 +24,10 @@ namespace QuizyfyAPI.Services
         private readonly IUserRepository _userRepository;
         private readonly JwtOptions _jwtOptions;
         private readonly TokenValidationParameters _tokenValidationParameters;
-        private readonly PwnedPasswordsClient _pwnedPasswordsClient;
+        private readonly IPwnedPasswordsClient _pwnedPasswordsClient;
         private readonly IMapper _mapper;
 
-        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, PwnedPasswordsClient pwnedPasswordsClient, IMapper mapper)
+        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, IPwnedPasswordsClient pwnedPasswordsClient, IMapper mapper)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _userRepository = userRepository;

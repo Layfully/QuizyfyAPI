@@ -83,9 +83,9 @@ namespace QuizyfyAPI
 
             services.AddScoped<IUrlHelper>(factory => new UrlHelper(factory.GetService<IActionContextAccessor>().ActionContext));
 
-            services.AddTransient<HttpClient>();
-            services.AddTransient<PwnedPasswordsClient>();
             services.AddTransient<IRecaptchaService, RecaptchaService>();
+            services.AddPwnedPasswordHttpClient();
+
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
