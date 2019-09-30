@@ -12,11 +12,10 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using QuizyfyAPI.Services;
 using QuizyfyAPI.Middleware;
 using QuizyfyAPI.Options;
-using PwnedPasswords.Client;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Http;
 using reCAPTCHA.AspNetCore;
-using System.Net.Http;
+using SendGrid;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace QuizyfyAPI
@@ -37,19 +36,21 @@ namespace QuizyfyAPI
             SwaggerOptions = new SwaggerOptions();
             var AppOptions = new AppOptions();
             var JwtOptions = new JwtOptions();
+            var SendGridOptions = new SendGridClientOptions();
 
             Configuration.GetSection(nameof(SwaggerOptions)).Bind(SwaggerOptions);
             Configuration.GetSection(nameof(AppOptions)).Bind(AppOptions);
             Configuration.GetSection(nameof(JwtOptions)).Bind(JwtOptions);
+            Configuration.GetSection(nameof(SendGridClientOptions)).Bind(SendGridOptions);
 
             services.AddOptions();
+            services.Configure<SendGridOptions>(Configuration.GetSection(nameof(SendGridOptions)));
             services.Configure<AppOptions>(Configuration.GetSection(nameof(AppOptions)));
             services.Configure<JwtOptions>(Configuration.GetSection(nameof(JwtOptions)));
             services.Configure<SwaggerOptions>(Configuration.GetSection(nameof(SwaggerOptions)));
             services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
             services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
             services.Configure<RecaptchaSettings>(Configuration.GetSection("RecaptchaSettings"));
-
             services.AddCors();
 
             services.ConfigureDbContext(AppOptions);
@@ -85,7 +86,8 @@ namespace QuizyfyAPI
 
             services.AddTransient<IRecaptchaService, RecaptchaService>();
             services.AddPwnedPasswordHttpClient();
-
+            services.AddSingleton<ISendGridClient, SendGridClient>(factory => new SendGridClient(SendGridOptions));
+            services.AddSingleton<ISendGridService, SendGridService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
