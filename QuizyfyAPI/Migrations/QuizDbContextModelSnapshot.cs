@@ -139,6 +139,8 @@ namespace QuizyfyAPI.Migrations
 
                     b.Property<string>("Email");
 
+                    b.Property<bool>("EmailConfirmed");
+
                     b.Property<string>("FirstName");
 
                     b.Property<string>("JwtToken");
@@ -152,6 +154,8 @@ namespace QuizyfyAPI.Migrations
                     b.Property<string>("Role");
 
                     b.Property<string>("Username");
+
+                    b.Property<string>("VerificationToken");
 
                     b.HasKey("Id");
 
