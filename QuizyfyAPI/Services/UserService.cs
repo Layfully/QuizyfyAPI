@@ -8,10 +8,10 @@ using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 using QuizyfyAPI.Helpers;
 using QuizyfyAPI.Options;
-using reCAPTCHA.AspNetCore;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,10 +24,11 @@ namespace QuizyfyAPI.Services
         private readonly IUserRepository _userRepository;
         private readonly JwtOptions _jwtOptions;
         private readonly TokenValidationParameters _tokenValidationParameters;
-        private readonly PwnedPasswordsClient _pwnedPasswordsClient;
+        private readonly IPwnedPasswordsClient _pwnedPasswordsClient;
         private readonly IMapper _mapper;
+        private readonly ISendGridService _mailService;
 
-        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, PwnedPasswordsClient pwnedPasswordsClient, IMapper mapper)
+        public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, IPwnedPasswordsClient pwnedPasswordsClient, IMapper mapper, ISendGridService mailService)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _userRepository = userRepository;
@@ -35,17 +36,22 @@ namespace QuizyfyAPI.Services
             _tokenValidationParameters = tokenValidationParameters;
             _pwnedPasswordsClient = pwnedPasswordsClient;
             _mapper = mapper;
+            _mailService = mailService;
         }
 
         public async Task<ObjectResult<UserResponse>> Login(UserLoginRequest request)
         {
             var user = await _userRepository.Authenticate(request.Username, request.Password.Normalize(NormalizationForm.FormKC));
 
-            if (user != null)
+            if (user == null)
             {
-                return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(await RequestToken(user)) };
+                return new ObjectResult<UserResponse> { Success = false, Errors = new[] { "Wrong user credentials" } };
             }
-            return new ObjectResult<UserResponse> { Success = false, Errors = new[] { "Wrong user credentials" } };
+            else if (!user.EmailConfirmed)
+            {
+                return new ObjectResult<UserResponse> { Success = false, Errors = new[] { "Email is not verified" } };
+            }
+            return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(await RequestToken(user)) };
         }
         public async Task<BasicResult> Register(UserRegisterRequest request)
         {
@@ -56,19 +62,37 @@ namespace QuizyfyAPI.Services
                 return new BasicResult { Errors = new[] { "Username: " + user.Username + " is already taken" } };
             }
 
+            if (await _userRepository.GetUserByEmail(request.Email) != null)
+            {
+                return new BasicResult { Errors = new[] { "Email: " + user.Email + " is already taken" } };
+            }
+
             if (await _pwnedPasswordsClient.HasPasswordBeenPwned(request.Password))
             {
                 return new BasicResult { Errors = new[] { "This password has been leaked in data leak. Please use different password." } };
             }
 
-            PasswordHash.Create(request.Password.Normalize(NormalizationForm.FormKC), out byte[] passwordHash, out byte[] passwordSalt);
+            Hash.Create(request.Password.Normalize(NormalizationForm.FormKC), out byte[] passwordHash, out byte[] passwordSalt);
 
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+            user.VerificationToken = Guid.NewGuid().ToString();
 
             _userRepository.Add(user);
 
-            await _userRepository.SaveChangesAsync();
+            if(!await _userRepository.SaveChangesAsync())
+            {
+                return new BasicResult { Errors = new[] { "User registration failed." } };
+            }
+
+            var sendConfirmationResponse = await _mailService.SendEmailTo(user);
+
+            if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted)
+            {
+                _userRepository.Delete(user);
+                await _userRepository.SaveChangesAsync();
+                return new BasicResult { Errors = new[] { "Sending registration email failed." + await sendConfirmationResponse.Body.ReadAsStringAsync() + " ----- Headers ------ " + sendConfirmationResponse.Headers.ToString()} };
+            }
 
             return new BasicResult { Success = true };
         }
@@ -80,16 +104,22 @@ namespace QuizyfyAPI.Services
             {
                 return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
             }
-            else if (user.Username != request.Username && await _userRepository.GetUserByUsername(request.Username) != null)
+
+            if (user.Username != request.Username && await _userRepository.GetUserByUsername(request.Username) != null)
             {
                 return new ObjectResult<UserResponse> { Errors = new[] { "User with this username already exists!" } };
+            }
+
+            if (user.Email != request.Email && await _userRepository.GetUserByEmail(request.Email) != null)
+            {
+                return new ObjectResult<UserResponse> { Errors = new[] { "User with this email already exists!" } };
             }
 
             _userRepository.Update(user);
 
             if (!string.IsNullOrEmpty(request.Password))
             {
-                PasswordHash.Create(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                Hash.Create(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
@@ -97,7 +127,7 @@ namespace QuizyfyAPI.Services
 
             _mapper.Map(request, user);
 
-            if(await _userRepository.SaveChangesAsync())
+            if (await _userRepository.SaveChangesAsync())
             {
                 return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
             }
@@ -115,12 +145,12 @@ namespace QuizyfyAPI.Services
 
             _userRepository.Delete(user);
 
-            if(await _userRepository.SaveChangesAsync())
+            if (await _userRepository.SaveChangesAsync())
             {
                 return new DetailedResult { Success = true, Found = true };
             }
 
-            return new DetailedResult {Found = true, Errors = new[] { "Action didn't affect any rows" } };
+            return new DetailedResult { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
         public async Task<ObjectResult<UserResponse>> RefreshTokenAsync(UserRefreshRequest request)
         {
@@ -217,7 +247,32 @@ namespace QuizyfyAPI.Services
             await _refreshTokenRepository.SaveChangesAsync();
             return user;
         }
+        public async Task<ObjectResult<UserResponse>> VerifyEmail(int userId, string token)
+        {
+            var user = await _userRepository.GetUserById(userId);
 
+            if (user == null)
+            {
+                return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
+            }
+
+            if (user.VerificationToken != token)
+            {
+                return new ObjectResult<UserResponse> { Errors = new[] { "Email verification token is invalid!" } };
+            }
+
+            _userRepository.Update(user);
+
+            user.EmailConfirmed = true;
+
+            if (await _userRepository.SaveChangesAsync())
+            {
+                return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
+            }
+
+            return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
+
+        }
         private ClaimsPrincipal GetPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();

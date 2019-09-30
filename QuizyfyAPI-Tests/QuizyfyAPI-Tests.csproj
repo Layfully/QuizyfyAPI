@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="PwnedPasswords.Client" Version="1.1.0" />
     <PackageReference Include="reCAPTCHA.AspNetCore" Version="2.2.3" />
+    <PackageReference Include="Sendgrid" Version="9.12.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
   </ItemGroup>

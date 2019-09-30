@@ -8,6 +8,7 @@ using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Services;
 using reCAPTCHA.AspNetCore;
+using SendGrid;
 
 namespace QuizyfyAPI.Controllers
 {
@@ -19,12 +20,12 @@ namespace QuizyfyAPI.Controllers
     public class UsersController : ControllerBase
     {   
         private readonly IUserService _userService;
-        private readonly IRecaptchaService _recaptcha;
+        private readonly IRecaptchaService _recaptchaService;
 
-        public UsersController(IUserService userService, IRecaptchaService recaptcha)
+        public UsersController(IUserService userService, IRecaptchaService recaptchaService)
         {
             _userService = userService;
-            _recaptcha = recaptcha;
+            _recaptchaService = recaptchaService;
         }
 
         /// <summary>
@@ -59,7 +60,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserResponse>> Login(UserLoginRequest request)
         {
-            var recaptcha = await _recaptcha.Validate(request.RecaptchaToken);
+            var recaptcha = await _recaptchaService.Validate(request.RecaptchaToken);
 
             if (!recaptcha.success && recaptcha.score >= 0.8M)
             {
@@ -106,7 +107,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserResponse>> Register(UserRegisterRequest request)
         {
-            var recaptcha = await _recaptcha.Validate(request.RecaptchaToken);
+            var recaptcha = await _recaptchaService.Validate(request.RecaptchaToken);
 
             if (!recaptcha.success && recaptcha.score >= 0.8M)
             {
@@ -174,6 +175,19 @@ namespace QuizyfyAPI.Controllers
                 return BadRequest(updateResponse.Errors);
             }
             return updateResponse.Object;
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<UserResponse>> EmailVerification(int id, [FromQuery] string token)
+        {
+            var verificationResponse = await _userService.VerifyEmail(id, token);
+
+            if (!verificationResponse.Success)
+            {
+                return BadRequest(verificationResponse.Errors);
+            }
+
+            return verificationResponse.Object;
         }
 
         /// <summary>

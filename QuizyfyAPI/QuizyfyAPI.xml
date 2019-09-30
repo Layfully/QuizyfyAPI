@@ -284,6 +284,11 @@
             User role. (Can be either admin or user)
             </summary>
         </member>
+        <member name="P:QuizyfyAPI.Contracts.Requests.UserUpdateRequest.Email">
+            <summary>
+            User email. (Must be unique)
+            </summary>
+        </member>
         <member name="M:QuizyfyAPI.Controllers.ChoicesController.Get(System.Int32,System.Int32)">
             <summary>
             Get list of all choices for given quiz id and question id.
