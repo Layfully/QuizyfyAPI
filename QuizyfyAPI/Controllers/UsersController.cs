@@ -177,10 +177,11 @@ namespace QuizyfyAPI.Controllers
             return updateResponse.Object;
         }
 
-        [HttpPatch("{id}")]
-        public async Task<ActionResult<UserResponse>> EmailVerification(int id, [FromQuery] string token)
+        [HttpPatch("EmailVerification/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserResponse>> EmailVerification(int id, VerifyEmailRequest request)
         {
-            var verificationResponse = await _userService.VerifyEmail(id, token);
+            var verificationResponse = await _userService.VerifyEmail(id, request.Token);
 
             if (!verificationResponse.Success)
             {

@@ -34,6 +34,16 @@
             Bool which defines whether this answer is right or not.
             </summary>
         </member>
+        <member name="T:QuizyfyAPI.Contracts.Responses.VerifyEmailRequest">
+            <summary>
+            A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
+            </summary>
+        </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.VerifyEmailRequest.Token">
+            <summary>
+            Token.
+            </summary>
+        </member>
         <member name="T:QuizyfyAPI.Contracts.Responses.ChoiceResponse">
             <summary>
             A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
