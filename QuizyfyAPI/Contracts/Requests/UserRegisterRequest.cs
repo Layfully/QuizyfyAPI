@@ -30,8 +30,15 @@ namespace QuizyfyAPI.Contracts.Requests
         /// </summary>
         [Required]
         public string Role { get; set; }
+        /// <summary>
+        /// Token used for checking if request was made by bot or real person.
+        /// </summary>
         [Required]
         public string RecaptchaToken { get; set; }
+
+        /// <summary>
+        /// Email address on which we will send confirmation message.
+        /// </summary>
         [EmailAddress]
         [Required]
         public string Email { get; set; }

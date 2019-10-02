@@ -35,6 +35,9 @@ namespace QuizyfyAPI.Contracts.Responses
         /// JWT Token used for authentication
         /// </summary>
         public string JwtToken { get; set; }
+        /// <summary>
+        /// Token used for refreshing JWT token.
+        /// </summary>
         public RefreshToken RefreshToken { get; set; }
     }
 }
