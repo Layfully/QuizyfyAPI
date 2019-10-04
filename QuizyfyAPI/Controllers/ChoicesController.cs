@@ -130,7 +130,7 @@ namespace QuizyfyAPI.Controllers
 
             if (!createResponse.Success)
             {
-                return BadRequest(createResponse.Errors); 
+                return BadRequest(createResponse.Errors);
             }
 
             return CreatedAtAction(nameof(Get), createResponse.Object);
@@ -171,7 +171,7 @@ namespace QuizyfyAPI.Controllers
         [ProducesDefaultResponseType]
         [HttpPut("{choiceId}")]
         public async Task<ActionResult<ChoiceResponse>> Put(int quizId, int questionId, int choiceId, ChoiceUpdateRequest request)
-        { 
+        {
             var updateResponse = await _choiceService.Update(quizId, questionId, choiceId, request);
 
             if (!updateResponse.Success)

@@ -7,16 +7,19 @@ namespace QuizyfyAPI.Data
     {
         protected readonly QuizDbContext _context;
         protected readonly ILogger<Repository> _logger;
+
         protected Repository(QuizDbContext context, ILogger<Repository> logger)
-        { 
+        {
             _context = context;
             _logger = logger;
         }
+
         public void Delete<T>(T entity) where T : class
         {
             _logger.LogInformation($"Removing an object of type {entity.GetType()} to the context.");
             _context.Remove(entity);
         }
+
         public void Update<T>(T entity) where T : class
         {
             _context.Update(entity);

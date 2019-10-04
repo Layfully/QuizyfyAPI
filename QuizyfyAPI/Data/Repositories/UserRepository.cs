@@ -8,23 +8,22 @@ namespace QuizyfyAPI.Data
 {
     public class UserRepository : Repository, IUserRepository
     {
-
         public UserRepository(QuizDbContext context, ILogger<UserRepository> logger) : base(context, logger)
         {
         }
 
-        public async Task<User> GetUserById(int userId)
+        public Task<User> GetUserById(int userId)
         {
-
             _logger.LogInformation($"Getting user by id");
 
             IQueryable<User> query = _context.Users;
 
             query = query.Where(user => user.Id == userId);
 
-            return await query.FirstOrDefaultAsync();
+            return query.FirstOrDefaultAsync();
         }
-        public async Task<User> GetUserByUsername(string username)
+
+        public Task<User> GetUserByUsername(string username)
         {
             _logger.LogInformation($"Getting user by id");
 
@@ -32,9 +31,10 @@ namespace QuizyfyAPI.Data
 
             query = query.Where(user => user.Username == username);
 
-            return await query.FirstOrDefaultAsync();
+            return query.FirstOrDefaultAsync();
         }
-        public async Task<User> GetUserByEmail(string email)
+
+        public Task<User> GetUserByEmail(string email)
         {
             _logger.LogInformation($"Getting user by email");
 
@@ -42,8 +42,9 @@ namespace QuizyfyAPI.Data
 
             query = query.Where(user => user.Email == email);
 
-            return await query.FirstOrDefaultAsync();
+            return query.FirstOrDefaultAsync();
         }
+
         public async Task<User> Authenticate(string username, string password)
         {
             _logger.LogInformation($"Authenticating user");
@@ -57,7 +58,6 @@ namespace QuizyfyAPI.Data
 
             var user = await query.Where(userDb => userDb.Username == username).FirstOrDefaultAsync();
 
-            
             if (user == null || !Hash.Verify(password, user?.PasswordHash, user?.PasswordSalt))
             {
                 return null;

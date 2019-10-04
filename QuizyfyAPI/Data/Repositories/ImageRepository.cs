@@ -11,15 +11,16 @@ namespace QuizyfyAPI.Data
         {
         }
 
-        public async Task<Image[]> GetImages()
+        public Task<Image[]> GetImages()
         {
             _logger.LogInformation($"Getting all images");
 
             IQueryable<Image> query = _context.Images;
 
-            return await query.ToArrayAsync();
+            return query.ToArrayAsync();
         }
-        public async Task<Image> GetImage(int imageId)
+
+        public Task<Image> GetImage(int imageId)
         {
             _logger.LogInformation($"Getting one image");
 
@@ -27,7 +28,7 @@ namespace QuizyfyAPI.Data
 
             query = query.Where(image => image.Id == imageId);
 
-            return await query.FirstOrDefaultAsync();
+            return query.FirstOrDefaultAsync();
         }
     }
 }
