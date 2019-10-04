@@ -17,6 +17,7 @@ namespace QuizyfyAPI.Services
             _sendGridClient = sendGridClient;
             _sendGridOptions = sendGridOptions.Value;
         }
+
         public Task<Response> SendEmailTo(User user)
         {
             var from = new EmailAddress(_sendGridOptions.HostEmail);
@@ -29,4 +30,3 @@ namespace QuizyfyAPI.Services
         }
     }
 }
- 

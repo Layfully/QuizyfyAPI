@@ -49,6 +49,7 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<ChoiceResponse[]> { Object = _mapper.Map<ChoiceResponse[]>(choices).ToArray(), Found = true, Success = true };
         }
+
         public async Task<ObjectResult<ChoiceResponse>> Get(int quizId, int questionId, int choiceId)
         {
             var question = await _questionRepository.GetQuestion(quizId, questionId);
@@ -66,6 +67,7 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<ChoiceResponse> { Object = _mapper.Map<ChoiceResponse>(choice), Found = true, Success = true };
         }
+
         public async Task<ObjectResult<ChoiceResponse>> Create(int quizId, int questionId, ChoiceCreateRequest request)
         {
             var question = await _questionRepository.GetQuestion(quizId, questionId);
@@ -92,6 +94,7 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<ChoiceResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
+
         public async Task<ObjectResult<ChoiceResponse>> Update(int quizId, int questionId, int choiceId, ChoiceUpdateRequest request)
         {
             var choice = await _choiceRepository.GetChoice(questionId, choiceId);
@@ -114,6 +117,7 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<ChoiceResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
+
         public async Task<DetailedResult> Delete(int quizId, int questionId, int choiceId)
         {
             var choice = await _choiceRepository.GetChoice(questionId, choiceId);

@@ -13,10 +13,12 @@ namespace QuizyfyAPI.Contracts.Requests
         /// </summary>
         [MaxLength(70)]
         public string Name { get; set; }
+
         /// <summary>
         /// Quiz description.
         /// </summary>
         public string Description { get; set; }
+
         /// <summary>
         /// Quiz image url which we get when we upload image.
         /// </summary>

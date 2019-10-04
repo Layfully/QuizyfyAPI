@@ -9,6 +9,7 @@
         /// Image id.
         /// </summary>
         public int Id { get; set; }
+
         /// <summary>
         /// URL to image resource on server.
         /// </summary>

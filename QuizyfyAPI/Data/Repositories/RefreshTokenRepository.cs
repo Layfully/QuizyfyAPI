@@ -10,9 +10,9 @@ namespace QuizyfyAPI.Data
         {
         }
 
-        public async Task<RefreshToken> GetRefreshToken(string refreshToken)
+        public Task<RefreshToken> GetRefreshToken(string refreshToken)
         {
-            return await _context.RefreshTokens.SingleOrDefaultAsync(storedRefreshToken => storedRefreshToken.Token == refreshToken);
+            return _context.RefreshTokens.SingleOrDefaultAsync(storedRefreshToken => storedRefreshToken.Token == refreshToken);
         }
 
         public void UpdateRefreshToken(RefreshToken refreshToken)

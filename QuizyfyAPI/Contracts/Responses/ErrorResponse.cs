@@ -11,6 +11,7 @@ namespace QuizyfyAPI.Contracts.Responses
         /// Int which tells us error status code.
         /// </summary>
         public int StatusCode { get; set; }
+
         /// <summary>
         /// Error message.
         /// </summary>
