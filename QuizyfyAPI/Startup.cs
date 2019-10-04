@@ -26,7 +26,6 @@ namespace QuizyfyAPI
         public IConfiguration Configuration { get; }
         private SwaggerOptions SwaggerOptions;
 
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -87,7 +86,7 @@ namespace QuizyfyAPI
 
             services.AddTransient<IRecaptchaService, RecaptchaService>();
             services.AddPwnedPasswordHttpClient();
-            services.AddSingleton<ISendGridClient, SendGridClient>(factory => new SendGridClient(SendGridOptions));
+            _ = services.AddSingleton<ISendGridClient, SendGridClient>(_ => new SendGridClient(SendGridOptions));
             services.AddSingleton<ISendGridService, SendGridService>();
         }
 
@@ -123,10 +122,7 @@ namespace QuizyfyAPI
                 setupAction.RoutePrefix = SwaggerOptions.RoutePrefix;
             });
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
     }
 }
