@@ -9,6 +9,7 @@
         /// Refresh token which lasts for long time.
         /// </summary>
         public string RefreshToken { get; set; }
+
         /// <summary>
         /// Already expired previous JWT token which needs to be refreshed.
         /// </summary>

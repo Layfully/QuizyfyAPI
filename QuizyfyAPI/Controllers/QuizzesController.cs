@@ -20,7 +20,6 @@ namespace QuizyfyAPI.Controllers
             _quizService = quizService;
         }
 
-
         /// <summary>
         /// Get list of all quizes.
         /// </summary>
@@ -178,7 +177,6 @@ namespace QuizyfyAPI.Controllers
             }
             return updateResponse.Object;
         }
-
 
         /// <summary>
         /// Deletes quiz with specified id.

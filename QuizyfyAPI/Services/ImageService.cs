@@ -58,10 +58,11 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<ImageResponse> { Object = _mapper.Map<ImageResponse>(image), Found = true, Success = true };
         }
+
         public async Task<ObjectResult<ImageResponse>> Create(IFormFile file)
         {
-            if (file != null && file.Length > 0)
-            { 
+            if (file?.Length > 0)
+            {
                 var model = new ImageResponse { ImageUrl = await UploadFile(file) };
                 var image = _mapper.Map<Image>(model);
 
@@ -75,6 +76,7 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<ImageResponse> { Errors = new[] { "File couldn't be uploaded" } };
         }
+
         public async Task<ObjectResult<ImageResponse>> Update(int id, IFormFile file)
         {
             var image = await _imageRepository.GetImage(id);
@@ -102,6 +104,7 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<ImageResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
+
         public async Task<DetailedResult> Delete(int id)
         {
             var image = await _imageRepository.GetImage(id);
@@ -121,6 +124,7 @@ namespace QuizyfyAPI.Services
 
             return new DetailedResult { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
+
         private async Task<string> UploadFile(IFormFile file)
         {
             var fileName = Path.GetFileName(file.FileName);

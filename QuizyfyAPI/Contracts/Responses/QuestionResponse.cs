@@ -14,6 +14,7 @@ namespace QuizyfyAPI.Contracts.Responses
         [Required]
         [MaxLength(70)]
         public string Text { get; set; }
+
         /// <summary>
         /// Possible question answers.
         /// </summary>

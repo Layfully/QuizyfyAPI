@@ -28,6 +28,7 @@ namespace QuizyfyAPI
                 options.AssumeDefaultVersionWhenUnspecified = swaggerOptions.SupplyDefaultVersion;
             });
         }
+
         public static void ConfigureDbContext(this IServiceCollection services, AppOptions appOptions)
         {
             services.AddDbContextPool<QuizDbContext>(
@@ -35,6 +36,7 @@ namespace QuizyfyAPI
                     appOptions.ConnectionString
                 ));
         }
+
         public static void ConfigureJWTAuth(this IServiceCollection services, JwtOptions jwtOptions)
         {
             // configure jwt authentication
@@ -78,6 +80,7 @@ namespace QuizyfyAPI
                 x.TokenValidationParameters = tokenValidationParameters;
             });
         }
+
         public static void ConfigureControllersForApi(this IServiceCollection services, AppOptions appOptions)
         {
             services.AddControllers(setupAction =>
@@ -87,12 +90,13 @@ namespace QuizyfyAPI
                 setupAction.ReturnHttpNotAcceptable = appOptions.ReturnHttpNotAcceptable;
 
                 var jsonFormatter = setupAction.OutputFormatters.OfType<SystemTextJsonOutputFormatter>().FirstOrDefault();
-                if (jsonFormatter != null && jsonFormatter.SupportedMediaTypes.Contains("text/json"))
+                if (jsonFormatter?.SupportedMediaTypes.Contains("text/json") == true)
                 {
                     jsonFormatter.SupportedMediaTypes.Remove("text/json");
                 }
             }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
+
         public static void ConfigureSwagger(this IServiceCollection services, SwaggerOptions swaggerOptions)
         {
             services.AddSwaggerGen(setupAction =>
@@ -139,6 +143,7 @@ namespace QuizyfyAPI
                 setupAction.IncludeXmlComments(xmlCommentsPath);
             });
         }
+
         public static void ConfigureValidationErrorResponse(this IServiceCollection services)
         {
             services.Configure<ApiBehaviorOptions>(options =>

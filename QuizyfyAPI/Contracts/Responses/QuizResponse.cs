@@ -14,12 +14,14 @@ namespace QuizyfyAPI.Contracts.Responses
         /// </summary>
         [Required]
         public int Id { get; set; }
+
         /// <summary>
         /// Quiz name.
         /// </summary>
         [Required]
         [MaxLength(70)]
         public string Name { get; set; }
+
         /// <summary>
         /// Quiz description.
         /// </summary>
@@ -27,11 +29,13 @@ namespace QuizyfyAPI.Contracts.Responses
         public string Description { get; set; }
 
         public string ImageUrl { get; set; }
+
         /// <summary>
         /// Date of addition to database.
         /// </summary>
         [Required]
         public string DateAdded { get; set; }
+
         /// <summary>
         /// Collection of questions which belongs to quiz.
         /// </summary>

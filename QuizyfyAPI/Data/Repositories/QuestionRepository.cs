@@ -11,7 +11,7 @@ namespace QuizyfyAPI.Data
         {
         }
 
-        public async Task<Question[]> GetQuestions(int quizId, bool includeChoices = false)
+        public Task<Question[]> GetQuestions(int quizId, bool includeChoices = false)
         {
             _logger.LogInformation($"Getting all Questions for a Quiz");
 
@@ -25,10 +25,10 @@ namespace QuizyfyAPI.Data
             query = query
               .Where(question => question.QuizId == quizId);
 
-            return await query.ToArrayAsync();
+            return query.ToArrayAsync();
         }
 
-        public async Task<Question> GetQuestion(int quizId, int questionId, bool includeChoices = false)
+        public Task<Question> GetQuestion(int quizId, int questionId, bool includeChoices = false)
         {
             _logger.LogInformation($"Getting one Question for a Quiz");
 
@@ -42,7 +42,7 @@ namespace QuizyfyAPI.Data
             query = query
               .Where(question => question.Id == questionId && question.QuizId == quizId);
 
-            return await query.FirstOrDefaultAsync();
+            return query.FirstOrDefaultAsync();
         }
     }
 }

@@ -9,6 +9,7 @@
         /// This id specifies to which quiz like belongs to.
         /// </summary>
         public int QuizId { get; set; }
+
         /// <summary>
         /// This id specifies to which user liked quiz.
         /// </summary>

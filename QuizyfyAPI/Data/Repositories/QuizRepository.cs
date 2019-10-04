@@ -8,7 +8,6 @@ namespace QuizyfyAPI.Data
 {
     public class QuizRepository : Repository, IQuizRepository
     {
-
         public QuizRepository(QuizDbContext context, ILogger<QuizRepository> logger) : base(context, logger)
         {
         }
@@ -26,12 +25,10 @@ namespace QuizyfyAPI.Data
             }
 
             query = query.Include(quiz => quiz.Image);
-            PagedList<Quiz> pagedQuizzes = new PagedList<Quiz>(query, pagingParams.PageNumber, pagingParams.PageSize);
-
-            return pagedQuizzes;
+            return new PagedList<Quiz>(query, pagingParams.PageNumber, pagingParams.PageSize);
         }
 
-        public async Task<Quiz> GetQuiz(int id, bool includeQuestions = false)
+        public Task<Quiz> GetQuiz(int id, bool includeQuestions = false)
         {
             _logger.LogInformation($"Getting one quiz");
 
@@ -45,7 +42,7 @@ namespace QuizyfyAPI.Data
 
             query = query.Where(quiz => quiz.Id == id);
 
-            return await query.FirstOrDefaultAsync();
+            return query.FirstOrDefaultAsync();
         }
     }
 }

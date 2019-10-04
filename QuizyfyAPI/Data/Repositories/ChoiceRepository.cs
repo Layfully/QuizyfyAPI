@@ -7,12 +7,11 @@ namespace QuizyfyAPI.Data
 {
     public class ChoiceRepository : Repository, IChoiceRepository
     {
-
         public ChoiceRepository(QuizDbContext context, ILogger<ChoiceRepository> logger) : base(context, logger)
         {
         }
 
-        public async Task<Choice[]> GetChoices(int questionId)
+        public Task<Choice[]> GetChoices(int questionId)
         {
             _logger.LogInformation($"Getting all choices for a Question for a Quiz");
 
@@ -20,9 +19,10 @@ namespace QuizyfyAPI.Data
 
             query = query.Where(choice => choice.QuestionId == questionId);
 
-            return await query.ToArrayAsync();
+            return query.ToArrayAsync();
         }
-        public async Task<Choice> GetChoice(int questionId, int choiceId)
+
+        public Task<Choice> GetChoice(int questionId, int choiceId)
         {
             _logger.LogInformation($"Getting one choice");
 
@@ -30,7 +30,7 @@ namespace QuizyfyAPI.Data
 
             query = query.Where(choice => choice.QuestionId == questionId && choice.Id == choiceId);
 
-            return await query.FirstOrDefaultAsync();
+            return query.FirstOrDefaultAsync();
         }
     }
 }
