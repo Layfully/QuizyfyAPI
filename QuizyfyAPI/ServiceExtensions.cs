@@ -15,7 +15,6 @@ using System.Reflection;
 using System.IO;
 using Microsoft.OpenApi.Models;
 using QuizyfyAPI.Options;
-
 namespace QuizyfyAPI
 {
     public static class ServiceExtensions
@@ -79,20 +78,20 @@ namespace QuizyfyAPI
                 x.TokenValidationParameters = tokenValidationParameters;
             });
         }
-        public static void ConfigureMvcForApi(this IServiceCollection services, AppOptions appOptions)
+        public static void ConfigureControllersForApi(this IServiceCollection services, AppOptions appOptions)
         {
-            services.AddMvc(setupAction =>
+            services.AddControllers(setupAction =>
             {
                 setupAction.Filters.Add(new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
 
                 setupAction.ReturnHttpNotAcceptable = appOptions.ReturnHttpNotAcceptable;
 
-                var jsonFormatter = setupAction.OutputFormatters.OfType<JsonOutputFormatter>().FirstOrDefault();
+                var jsonFormatter = setupAction.OutputFormatters.OfType<SystemTextJsonOutputFormatter>().FirstOrDefault();
                 if (jsonFormatter != null && jsonFormatter.SupportedMediaTypes.Contains("text/json"))
                 {
                     jsonFormatter.SupportedMediaTypes.Remove("text/json");
                 }
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
         public static void ConfigureSwagger(this IServiceCollection services, SwaggerOptions swaggerOptions)
         {
