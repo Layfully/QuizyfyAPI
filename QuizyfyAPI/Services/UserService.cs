@@ -53,6 +53,7 @@ namespace QuizyfyAPI.Services
             }
             return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(await RequestToken(user)) };
         }
+
         public async Task<BasicResult> Register(UserRegisterRequest request)
         {
             var user = _mapper.Map<User>(request);
@@ -96,6 +97,7 @@ namespace QuizyfyAPI.Services
 
             return new BasicResult { Success = true };
         }
+
         public async Task<ObjectResult<UserResponse>> Update(int userId, UserUpdateRequest request)
         {
             var user = await _userRepository.GetUserById(userId);
@@ -134,6 +136,7 @@ namespace QuizyfyAPI.Services
 
             return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
         }
+
         public async Task<DetailedResult> Delete(int userId)
         {
             var user = await _userRepository.GetUserById(userId);
@@ -152,6 +155,7 @@ namespace QuizyfyAPI.Services
 
             return new DetailedResult { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
+
         public async Task<ObjectResult<UserResponse>> RefreshTokenAsync(UserRefreshRequest request)
         {
             var validatedToken = GetPrincipalFromToken(request.JwtToken);
@@ -207,13 +211,13 @@ namespace QuizyfyAPI.Services
 
             user = await RequestToken(user);
 
-
             return new ObjectResult<UserResponse>
             {
                 Success = true,
                 Object = _mapper.Map<UserResponse>(user)
             };
         }
+
         public async Task<User> RequestToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -247,6 +251,7 @@ namespace QuizyfyAPI.Services
             await _refreshTokenRepository.SaveChangesAsync();
             return user;
         }
+
         public async Task<ObjectResult<UserResponse>> VerifyEmail(int userId, string token)
         {
             var user = await _userRepository.GetUserById(userId);
@@ -271,8 +276,8 @@ namespace QuizyfyAPI.Services
             }
 
             return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
-
         }
+
         private ClaimsPrincipal GetPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -294,6 +299,7 @@ namespace QuizyfyAPI.Services
                 return null;
             }
         }
+
         private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
         {
             return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
