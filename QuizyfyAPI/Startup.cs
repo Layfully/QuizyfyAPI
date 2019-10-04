@@ -16,6 +16,7 @@ using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Http;
 using reCAPTCHA.AspNetCore;
 using SendGrid;
+using Microsoft.Extensions.Hosting;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace QuizyfyAPI
@@ -66,7 +67,7 @@ namespace QuizyfyAPI
             services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 
-            services.ConfigureMvcForApi(AppOptions);
+            services.ConfigureControllersForApi(AppOptions);
 
             services.ConfigureValidationErrorResponse();
 
@@ -90,7 +91,7 @@ namespace QuizyfyAPI
             services.AddSingleton<ISendGridService, SendGridService>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseIpRateLimiting();
 
@@ -105,12 +106,14 @@ namespace QuizyfyAPI
             }
 
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+            app.UseCors("default");
 
             app.UseMiddleware<ExceptionMiddleware>();
-
-            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseSwagger();
 
@@ -119,9 +122,11 @@ namespace QuizyfyAPI
                 setupAction.SwaggerEndpoint(SwaggerOptions.UIEndpoint, SwaggerOptions.Title);
                 setupAction.RoutePrefix = SwaggerOptions.RoutePrefix;
             });
-            app.UseStaticFiles();
 
-            app.UseMvc();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }
