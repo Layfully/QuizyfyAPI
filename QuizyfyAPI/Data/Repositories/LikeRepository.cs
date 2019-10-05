@@ -11,17 +11,16 @@ namespace QuizyfyAPI.Data.Repositories
         {
         }
 
-        public async Task<Like> GetLike(int quizId, int userId)
+        public Task<Like> GetLike(int quizId, int userId)
         {
             _logger.LogInformation($"Getting one like for a Quiz");
 
             IQueryable<Like> query = _context.Likes;
 
-            return await query.SingleOrDefaultAsync(like => like.QuizId == quizId && like.UserId == userId);
-
+            return query.SingleOrDefaultAsync(like => like.QuizId == quizId && like.UserId == userId);
         }
 
-        public async Task<Like[]> GetLikes(int quizId)
+        public Task<Like[]> GetLikes(int quizId)
         {
             _logger.LogInformation($"Getting all likes for a Quiz");
 
@@ -29,8 +28,7 @@ namespace QuizyfyAPI.Data.Repositories
 
             query = query.Where(like => like.QuizId == quizId);
 
-            return await query.ToArrayAsync();
+            return query.ToArrayAsync();
         }
-
     }
 }

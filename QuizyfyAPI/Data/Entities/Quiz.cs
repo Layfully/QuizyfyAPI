@@ -8,6 +8,7 @@ namespace QuizyfyAPI.Data
     {
         [Key]
         public int Id { get; set; }
+
         public Image Image { get;set; }
         public string Name { get; set; }
         public string Description { get; set; }

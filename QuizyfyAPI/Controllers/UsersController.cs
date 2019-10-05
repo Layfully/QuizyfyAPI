@@ -18,7 +18,7 @@ namespace QuizyfyAPI.Controllers
     [Consumes("application/json")]
     [ApiController]
     public class UsersController : ControllerBase
-    {   
+    {
         private readonly IUserService _userService;
         private readonly IRecaptchaService _recaptchaService;
 

@@ -9,7 +9,6 @@ using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services
@@ -29,8 +28,8 @@ namespace QuizyfyAPI.Services
             _cache = cache;
             _mapper = mapper;
             _questionService = questionService;
-
         }
+
         public async Task<ObjectResult<QuizResponse>> Get(int id, bool includeQuestions)
         {
             if (!_cache.TryGetValue("Quizzes", out Quiz quiz))
@@ -45,6 +44,7 @@ namespace QuizyfyAPI.Services
             }
             return new ObjectResult<QuizResponse> { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
         }
+
         public async Task<ObjectResult<QuizResponse>> Create(QuizCreateRequest request)
         {
             var quiz = _mapper.Map<Quiz>(request);
@@ -76,6 +76,7 @@ namespace QuizyfyAPI.Services
             }
             return new ObjectResult<QuizResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
+
         public async Task<ObjectResult<QuizResponse>> Update(int quizId, QuizUpdateRequest request)
         {
             var quiz = await _quizRepository.GetQuiz(quizId);
@@ -97,6 +98,7 @@ namespace QuizyfyAPI.Services
             }
             return new ObjectResult<QuizResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
+
         public async Task<DetailedResult> Delete(int quizId)
         {
             var quiz = await _quizRepository.GetQuiz(quizId);
@@ -116,9 +118,10 @@ namespace QuizyfyAPI.Services
 
             return new DetailedResult { Found = true, Errors = new[] { "Action didn't affect any rows" } };
         }
-        public async Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext)
+
+        public Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext)
         {
-            return await Task.Run(() =>
+            return Task.Run(() =>
             {
                 PagedList<Quiz> obj = _quizRepository.GetQuizzes(pagingParams);
 
@@ -138,21 +141,24 @@ namespace QuizyfyAPI.Services
             });
         }
 
-
         private List<LinkInfo> GetLinks(PagedList<Quiz> list, HttpContext HttpContext)
         {
             var links = new List<LinkInfo>();
 
             if (list.HasPreviousPage)
+            {
                 links.Add(CreateLink(HttpContext, list.PreviousPageNumber,
                            list.PageSize, "previousPage", "GET"));
+            }
 
             links.Add(CreateLink(HttpContext, list.PageNumber,
                            list.PageSize, "self", "GET"));
 
             if (list.HasNextPage)
+            {
                 links.Add(CreateLink(HttpContext, list.NextPageNumber,
                            list.PageSize, "nextPage", "GET"));
+            }
 
             return links;
         }
@@ -171,6 +177,5 @@ namespace QuizyfyAPI.Services
                 Method = method
             };
         }
-
     }
 }
