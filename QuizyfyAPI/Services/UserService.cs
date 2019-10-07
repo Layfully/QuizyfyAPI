@@ -322,7 +322,7 @@ namespace QuizyfyAPI.Services
 
             _userRepository.Update(user);
 
-            user.RecoveryToken = new Guid().ToString();
+            user.RecoveryToken = Guid.NewGuid().ToString();
 
             var sendConfirmationResponse = await _mailService.SendEmailTo(user);
 
