@@ -13,6 +13,8 @@ namespace QuizyfyAPI.Services
         Task<ObjectResult<UserResponse>> Update(int userId, UserUpdateRequest request);
         Task<DetailedResult> Delete(int userId);
         Task<ObjectResult<UserResponse>> VerifyEmail(int userId, string token);
+        Task<ObjectResult<UserResponse>> RecoverPassword(int userId, string token, string password);
+        Task<ObjectResult<UserResponse>> GenerateRecoveryToken(int userId);
         Task<ObjectResult<UserResponse>> RefreshTokenAsync(UserRefreshRequest request);
         Task<User> RequestToken(User user);
     }

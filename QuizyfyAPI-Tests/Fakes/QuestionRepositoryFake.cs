@@ -15,10 +15,10 @@ namespace QuizyfyAPI_Tests.Fakes
 
         public QuestionRepositoryFake()
         {
-            DbContextOptions<QuizDbContext> options = new DbContextOptionsBuilder<QuizDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
+           // DbContextOptions<QuizDbContext> options = new DbContextOptionsBuilder<QuizDbContext>()
+             //   .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
 
-            _context = new QuizDbContext(options: options);
+            //_context = new QuizDbContext(options: options);
         }
 
         public void Add<T>(T entity) where T : class

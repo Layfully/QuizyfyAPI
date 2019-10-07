@@ -8,7 +8,6 @@ using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Services;
 using reCAPTCHA.AspNetCore;
-using SendGrid;
 
 namespace QuizyfyAPI.Controllers
 {
@@ -189,6 +188,34 @@ namespace QuizyfyAPI.Controllers
             }
 
             return verificationResponse.Object;
+        }
+
+        [HttpPatch("PasswordRecovery/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserResponse>> PasswordRecovery(int id, RecoverPasswordRequest request)
+        {
+            var recoveryResponse = await _userService.RecoverPassword(id, request.Token, request.Password);
+
+            if (!recoveryResponse.Success)
+            {
+                return BadRequest(recoveryResponse.Errors);
+            }
+
+            return recoveryResponse.Object;
+        }
+
+        [HttpPatch("GenerateRecoveryToken/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserResponse>> RecoveryTokenGeneration(int id)
+        {
+            var recoveryGenerateResponse = await _userService.GenerateRecoveryToken(id);
+
+            if (!recoveryGenerateResponse.Success)
+            {
+                return BadRequest(recoveryGenerateResponse.Errors);
+            }
+
+            return recoveryGenerateResponse.Object;
         }
 
         /// <summary>
