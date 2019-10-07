@@ -8,7 +8,6 @@ using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Services;
 using reCAPTCHA.AspNetCore;
-using SendGrid;
 
 namespace QuizyfyAPI.Controllers
 {
@@ -177,10 +176,11 @@ namespace QuizyfyAPI.Controllers
             return updateResponse.Object;
         }
 
-        [HttpPatch("{id}")]
-        public async Task<ActionResult<UserResponse>> EmailVerification(int id, [FromQuery] string token)
+        [HttpPatch("EmailVerification/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserResponse>> EmailVerification(int id, VerifyEmailRequest request)
         {
-            var verificationResponse = await _userService.VerifyEmail(id, token);
+            var verificationResponse = await _userService.VerifyEmail(id, request.Token);
 
             if (!verificationResponse.Success)
             {
@@ -188,6 +188,34 @@ namespace QuizyfyAPI.Controllers
             }
 
             return verificationResponse.Object;
+        }
+
+        [HttpPatch("PasswordRecovery/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserResponse>> PasswordRecovery(int id, RecoverPasswordRequest request)
+        {
+            var recoveryResponse = await _userService.RecoverPassword(id, request.Token, request.Password);
+
+            if (!recoveryResponse.Success)
+            {
+                return BadRequest(recoveryResponse.Errors);
+            }
+
+            return recoveryResponse.Object;
+        }
+
+        [HttpPatch("GenerateRecoveryToken/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserResponse>> RecoveryTokenGeneration(int id)
+        {
+            var recoveryGenerateResponse = await _userService.GenerateRecoveryToken(id);
+
+            if (!recoveryGenerateResponse.Success)
+            {
+                return BadRequest(recoveryGenerateResponse.Errors);
+            }
+
+            return recoveryGenerateResponse.Object;
         }
 
         /// <summary>

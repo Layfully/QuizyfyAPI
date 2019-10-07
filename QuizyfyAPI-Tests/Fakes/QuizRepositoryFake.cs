@@ -13,13 +13,13 @@ namespace QuizyfyAPI_Tests.Fakes
     {
         private readonly QuizDbContext _context;
 
-        public QuizRepositoryFake()
-        {
-            DbContextOptions<QuizDbContext> options = new DbContextOptionsBuilder<QuizDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
+        public QuizRepositoryFake() { }
+        
+         //   DbContextOptions<QuizDbContext> options = new DbContextOptionsBuilder<QuizDbContext>()
+              //  .//UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
 
-            _context = new QuizDbContext(options: options);
-        }
+         //   _context = new QuizDbContext(options: options);
+        
 
         public void Add<T>(T entity) where T : class
         {
@@ -43,7 +43,7 @@ namespace QuizyfyAPI_Tests.Fakes
         {
             IQueryable<Quiz> _query = _context.Quizzes;
 
-            _query = _query.Where(quiz => quiz.Id == id);
+            _query = _query.Where(quiz => quiz.Id == id).OrderBy(q => q.Id);
 
             _query = _query.OrderBy(q => q.Id);
 

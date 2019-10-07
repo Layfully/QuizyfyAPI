@@ -18,5 +18,6 @@ namespace QuizyfyAPI.Data
         public string JwtToken { get; set; }
         public RefreshToken RefreshToken { get; set; }
         public string VerificationToken { get; set; }
+        public string RecoveryToken { get; set; }
     }
 }
