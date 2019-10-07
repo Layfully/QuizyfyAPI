@@ -278,6 +278,67 @@ namespace QuizyfyAPI.Services
             return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
         }
 
+        public async Task<ObjectResult<UserResponse>> RecoverPassword(int userId, string token, string password)
+        {
+            var user = await _userRepository.GetUserById(userId);
+
+            if (user == null)
+            {
+                return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
+            }
+
+            if (user.RecoveryToken != token)
+            {
+                return new ObjectResult<UserResponse> { Errors = new[] { "Password recovery token is invalid!" } };
+            }
+
+            _userRepository.Update(user);
+
+            if (!string.IsNullOrEmpty(password))
+            {
+                Hash.Create(password, out byte[] passwordHash, out byte[] passwordSalt);
+
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordSalt;
+                user.RecoveryToken = null;
+            }
+
+            if (await _userRepository.SaveChangesAsync())
+            {
+                return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
+            }
+
+            return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
+        }
+
+        public async Task<ObjectResult<UserResponse>> GenerateRecoveryToken(int userId)
+        {
+            var user = await _userRepository.GetUserById(userId);
+
+            if (user == null)
+            {
+                return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
+            }
+
+            _userRepository.Update(user);
+
+            user.RecoveryToken = new Guid().ToString();
+
+            var sendConfirmationResponse = await _mailService.SendEmailTo(user);
+
+            if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted)
+            {
+                user.RecoveryToken = null;
+            }
+
+            if (await _userRepository.SaveChangesAsync())
+            {
+                return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
+            }
+
+            return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
+        }
+
         private ClaimsPrincipal GetPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();

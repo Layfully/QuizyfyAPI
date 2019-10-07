@@ -24,7 +24,7 @@ namespace QuizyfyAPI.Services
             var to = new EmailAddress(user.Email);
             var subject = _sendGridOptions.RegistrationInfo.Subject;
             var plainContent = _sendGridOptions.RegistrationInfo.PlainContent;
-            var htmlContent = $"<a href='127.0.0.1/api/users/{user.Id}/EmailVerification?token={user.VerificationToken}'>Potwierdź email.</a>";
+            var htmlContent = $"<a href='http://localhost:8080/confirm/{user.Id}/{user.VerificationToken}'>Potwierdź test.</a>";
             var email = MailHelper.CreateSingleEmail(from, to, subject, plainContent, htmlContent);
             return _sendGridClient.SendEmailAsync(email);
         }
