@@ -4,6 +4,7 @@
     {
         public string HostEmail { get; set; }
         public MailInfo RegistrationInfo { get; set; }
+        public MailInfo PasswordResetInfo { get; set; }
     }
 
     public class MailInfo
