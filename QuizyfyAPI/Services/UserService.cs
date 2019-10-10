@@ -86,7 +86,7 @@ namespace QuizyfyAPI.Services
                 return new BasicResult { Errors = new[] { "User registration failed." } };
             }
 
-            var sendConfirmationResponse = await _mailService.SendEmailTo(user);
+            var sendConfirmationResponse = await _mailService.SendConfirmationEmailTo(user);
 
             if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted)
             {
@@ -324,7 +324,7 @@ namespace QuizyfyAPI.Services
 
             user.RecoveryToken = Guid.NewGuid().ToString();
 
-            var sendConfirmationResponse = await _mailService.SendEmailTo(user);
+            var sendConfirmationResponse = await _mailService.SendPasswordResetEmailTo(user);
 
             if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted)
             {
