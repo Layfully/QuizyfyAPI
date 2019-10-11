@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace QuizyfyAPI.Contracts.Responses
+namespace QuizyfyAPI.Contracts.Requests
 {
     /// <summary>
     /// Request used to provide data for email verification.

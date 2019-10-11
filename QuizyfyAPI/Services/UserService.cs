@@ -311,13 +311,14 @@ namespace QuizyfyAPI.Services
             return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
         }
 
-        public async Task<ObjectResult<UserResponse>> GenerateRecoveryToken(int userId)
+        public async Task<ObjectResult<UserResponse>> GenerateRecoveryToken(RecoveryTokenGenerationRequest request)
         {
-            var user = await _userRepository.GetUserById(userId);
+
+            var user = await _userRepository.GetUserByEmail(request.Email);
 
             if (user == null)
             {
-                return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
+                return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with email: {request.Email}" } };
             }
 
             _userRepository.Update(user);
