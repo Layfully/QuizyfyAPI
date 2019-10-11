@@ -107,7 +107,10 @@ namespace QuizyfyAPI
             app.UseStaticFiles();
 
             app.UseRouting();
-            app.UseCors("default");
+            app.UseCors(options =>
+            {
+                options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+            });
 
             app.UseMiddleware<ExceptionMiddleware>();
             app.UseAuthentication();
