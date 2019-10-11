@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Services;
 

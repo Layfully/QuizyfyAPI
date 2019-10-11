@@ -204,11 +204,11 @@ namespace QuizyfyAPI.Controllers
             return recoveryResponse.Object;
         }
 
-        [HttpPatch("GenerateRecoveryToken/{id}")]
+        [HttpPatch("GenerateRecoveryToken")]
         [AllowAnonymous]
-        public async Task<ActionResult<UserResponse>> RecoveryTokenGeneration(int id)
+        public async Task<ActionResult<UserResponse>> RecoveryTokenGeneration(RecoveryTokenGenerationRequest request)
         {
-            var recoveryGenerateResponse = await _userService.GenerateRecoveryToken(id);
+            var recoveryGenerateResponse = await _userService.GenerateRecoveryToken(request);
 
             if (!recoveryGenerateResponse.Success)
             {

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
+using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
