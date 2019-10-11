@@ -6,8 +6,7 @@ namespace QuizyfyAPI.Helpers
     {
         public static void Create(string stringToHash, out byte[] generatedHash, out byte[] generatedSalt)
         {
-            if (stringToHash == null) throw new ArgumentNullException(nameof(stringToHash));
-            if (string.IsNullOrWhiteSpace(stringToHash)) throw new ArgumentException("Value cannot be empty or whitespace only string.", nameof(stringToHash));
+            if (string.IsNullOrEmpty(stringToHash)) throw new ArgumentException("Value cannot be null, empty or whitespace only string.", nameof(stringToHash));
 
             using var hmac = new System.Security.Cryptography.HMACSHA512();
             generatedSalt = hmac.Key;

@@ -6,6 +6,7 @@ namespace QuizyfyAPI.Services
 {
     public interface ISendGridService
     {
-        Task<Response> SendEmailTo(User user);
+        Task<Response> SendConfirmationEmailTo(User user);
+        Task<Response> SendPasswordResetEmailTo(User user);
     }
 }
