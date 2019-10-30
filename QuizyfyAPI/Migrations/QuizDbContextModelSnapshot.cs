@@ -50,6 +50,7 @@ namespace QuizyfyAPI.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("ImageUrl")
+
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
