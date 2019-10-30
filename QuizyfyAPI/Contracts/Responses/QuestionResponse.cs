@@ -16,6 +16,11 @@ namespace QuizyfyAPI.Contracts.Responses
         public string Text { get; set; }
 
         /// <summary>
+        /// Url to optional image for question.
+        /// </summary>
+        public string ImageUrl { get; set; }
+
+        /// <summary>
         /// Possible question answers.
         /// </summary>
         public ICollection<QuestionResponse> Choices { get; set; }

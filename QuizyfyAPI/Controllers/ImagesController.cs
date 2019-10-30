@@ -9,6 +9,7 @@ namespace QuizyfyAPI.Controllers
 {
     [Route("api/[controller]")]
     [Produces("application/json")]
+    [Consumes("multipart/form-data")]
     [ApiController]
     public class ImagesController : ControllerBase
     {
@@ -114,9 +115,9 @@ namespace QuizyfyAPI.Controllers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult<ImageResponse>> Post(IFormFile file)
+        public async Task<ActionResult<ImageResponse>> Post(IFormFile image)
         {
-            var createResponse = await _imageService.Create(file);
+            var createResponse = await _imageService.Create(image);
 
             if (!createResponse.Success)
             {

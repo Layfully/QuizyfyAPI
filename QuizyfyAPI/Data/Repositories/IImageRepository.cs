@@ -9,5 +9,6 @@ namespace QuizyfyAPI.Data
     {
         Task<Image[]> GetImages();
         Task<Image> GetImage(int imageId);
+        Task<Image> GetImageByUrl(string url);
     }
 }
