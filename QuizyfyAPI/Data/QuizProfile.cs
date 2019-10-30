@@ -8,7 +8,7 @@ namespace QuizyfyAPI.Data
     {
         public QuizProfile()
         {
-            CreateMap<Quiz, QuizResponse>().ForMember(quiz => quiz.ImageUrl, opt => opt.MapFrom(src => src.Image.Url)).ReverseMap();
+            CreateMap<Quiz, QuizResponse>().ForMember(quiz => quiz.ImageUrl, opt => opt.MapFrom(src => src.Image.ImageUrl)).ReverseMap();
 
             CreateMap<Quiz, QuizCreateRequest>().ReverseMap();
         }

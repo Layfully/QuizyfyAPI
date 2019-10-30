@@ -304,6 +304,11 @@
             Question text.
             </summary>
         </member>
+        <member name="P:QuizyfyAPI.Contracts.Responses.QuestionResponse.ImageUrl">
+            <summary>
+            Url to optional image for question.
+            </summary>
+        </member>
         <member name="P:QuizyfyAPI.Contracts.Responses.QuestionResponse.Choices">
             <summary>
             Possible question answers.
