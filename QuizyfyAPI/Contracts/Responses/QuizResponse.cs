@@ -39,6 +39,6 @@ namespace QuizyfyAPI.Contracts.Responses
         /// <summary>
         /// Collection of questions which belongs to quiz.
         /// </summary>
-        public virtual ICollection<Question> Questions {get;set;}
+        public ICollection<QuestionResponse> Questions { get; set; }
     }
 }

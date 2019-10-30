@@ -13,5 +13,7 @@ namespace QuizyfyAPI.Contracts.Requests
         [Required]
         [MaxLength(70)]
         public string Text { get; set; }
+
+        public int ImageId { get; set; }
     }
 }

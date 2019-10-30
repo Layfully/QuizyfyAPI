@@ -30,5 +30,16 @@ namespace QuizyfyAPI.Data
 
             return query.FirstOrDefaultAsync();
         }
+
+        public Task<Image> GetImageByUrl(string url)
+        {
+            _logger.LogInformation($"Getting one image");
+
+            IQueryable<Image> query = _context.Images;
+
+            query = query.Where(image => image.ImageUrl == url);
+
+            return query.FirstOrDefaultAsync();
+        }
     }
 }

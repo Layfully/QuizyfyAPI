@@ -16,6 +16,8 @@ namespace QuizyfyAPI.Contracts.Requests
         [MaxLength(70)]
         public string Text { get; set; }
 
+        public int ImageId { get; set; } 
+
         public virtual ICollection<ChoiceCreateRequest> Choices { get; set; }
     }
 }

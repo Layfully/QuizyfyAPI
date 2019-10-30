@@ -63,14 +63,23 @@ namespace QuizyfyAPI.Services
         {
             if (file?.Length > 0)
             {
-                var model = new ImageResponse { ImageUrl = await UploadFile(file) };
-                var image = _mapper.Map<Image>(model);
+                var ImageUrl = await UploadFile(file);
+
+                var image = await _imageRepository.GetImageByUrl(ImageUrl);
+
+                if (image != null)
+                {
+                    return new ObjectResult<ImageResponse> { Success = true, Object = _mapper.Map<ImageResponse>(image) };
+                }
+
+                image = new Image();
+                image.ImageUrl = ImageUrl;
 
                 _imageRepository.Add(image);
 
                 if (await _imageRepository.SaveChangesAsync())
                 {
-                    return new ObjectResult<ImageResponse> { Success = true, Object = model };
+                    return new ObjectResult<ImageResponse> { Success = true, Object = _mapper.Map<ImageResponse>(image) };
                 }
             }
 
@@ -88,7 +97,7 @@ namespace QuizyfyAPI.Services
 
             _imageRepository.Update(image);
 
-            var path = image.Url;
+            var path = image.ImageUrl;
             path = path.Replace('/', '\\');
             File.Delete(path);
 
@@ -130,9 +139,12 @@ namespace QuizyfyAPI.Services
             var fileName = Path.GetFileName(file.FileName);
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\quizzes", fileName);
 
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            if (!File.Exists(filePath))
             {
-                await file.CopyToAsync(fileStream);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
             }
 
             filePath = Path.Combine(_appOptions.ServerPath, "images\\quizzes", fileName);
