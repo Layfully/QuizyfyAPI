@@ -4,9 +4,6 @@ using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services;
 public class ChoiceService : IChoiceService

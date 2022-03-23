@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-
-namespace QuizyfyAPI.Data;
+﻿namespace QuizyfyAPI.Data;
 public abstract class Repository : IRepository
 {
     protected readonly QuizDbContext _context;

@@ -3,7 +3,6 @@ using QuizyfyAPI.Data;
 using QuizyfyAPI.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services;
 public class SendGridService : ISendGridService

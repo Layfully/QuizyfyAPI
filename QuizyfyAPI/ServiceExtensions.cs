@@ -1,18 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using QuizyfyAPI.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Http;
 using System.Reflection;
-using System.IO;
 using Microsoft.OpenApi.Models;
 using QuizyfyAPI.Options;
 

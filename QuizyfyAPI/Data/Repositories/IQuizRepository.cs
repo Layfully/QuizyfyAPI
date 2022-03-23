@@ -1,5 +1,4 @@
 ﻿using QuizyfyAPI.Contracts.Responses.Pagination;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Data;
 public interface IQuizRepository : IRepository

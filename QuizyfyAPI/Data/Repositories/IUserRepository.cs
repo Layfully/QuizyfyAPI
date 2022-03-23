@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace QuizyfyAPI.Data;
+﻿namespace QuizyfyAPI.Data;
 public interface IUserRepository : IRepository
 {
     Task<User> GetUserById(int userId);

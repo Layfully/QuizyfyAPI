@@ -8,13 +8,10 @@ using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 using QuizyfyAPI.Helpers;
 using QuizyfyAPI.Options;
-using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services;
 public class UserService : IUserService

@@ -1,7 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Data.Repositories;
 public class LikeRepository : Repository, ILikeRepository

@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using QuizyfyAPI.Contracts.Responses;
-using System;
-using System.Threading.Tasks;
+﻿using QuizyfyAPI.Contracts.Responses;
 
 namespace QuizyfyAPI.Middleware;
 public class ExceptionMiddleware

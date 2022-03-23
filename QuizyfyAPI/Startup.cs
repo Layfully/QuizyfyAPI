@@ -1,10 +1,5 @@
-﻿using System;
-using AutoMapper;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using QuizyfyAPI.Data;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -12,10 +7,8 @@ using QuizyfyAPI.Services;
 using QuizyfyAPI.Middleware;
 using QuizyfyAPI.Options;
 using AspNetCoreRateLimit;
-using Microsoft.AspNetCore.Http;
 using reCAPTCHA.AspNetCore;
 using SendGrid;
-using Microsoft.Extensions.Hosting;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace QuizyfyAPI;

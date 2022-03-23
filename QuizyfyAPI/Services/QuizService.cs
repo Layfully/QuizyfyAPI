@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
@@ -7,9 +6,6 @@ using QuizyfyAPI.Contracts.Responses.Pagination;
 using QuizyfyAPI.Controllers;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services;
 public class QuizService : IQuizService

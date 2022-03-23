@@ -5,7 +5,6 @@ using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Controllers;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services;
 public class QuestionService : IQuestionService

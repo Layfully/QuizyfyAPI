@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace QuizyfyAPI.Contracts.Responses.Pagination;
+﻿namespace QuizyfyAPI.Contracts.Responses.Pagination;
 public class QuizListResponse
 {
     public PagingHeader Paging { get; set; }

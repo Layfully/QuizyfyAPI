@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace QuizyfyAPI.Helpers;
+﻿namespace QuizyfyAPI.Helpers;
 public static class Hash
 {
     public static void Create(string stringToHash, out byte[] generatedHash, out byte[] generatedSalt)

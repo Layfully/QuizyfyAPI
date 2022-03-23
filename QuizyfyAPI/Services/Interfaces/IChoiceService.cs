@@ -1,7 +1,6 @@
 ﻿using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Domain;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services;
 public interface IChoiceService : IService

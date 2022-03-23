@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Data;
 public class RefreshTokenRepository : Repository, IRefreshTokenRepository

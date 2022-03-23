@@ -1,6 +1,4 @@
-﻿using QuizyfyAPI.Contracts.Responses;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace QuizyfyAPI.Contracts.Requests;
 /// <summary>

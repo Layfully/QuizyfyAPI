@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Mvc;
 using QuizyfyAPI.Contracts.Responses.Pagination;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Services;

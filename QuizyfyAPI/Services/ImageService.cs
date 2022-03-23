@@ -1,15 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 using QuizyfyAPI.Options;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services;
 public class ImageService : IImageService

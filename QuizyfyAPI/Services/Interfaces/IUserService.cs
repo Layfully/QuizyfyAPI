@@ -2,7 +2,6 @@
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services;
 public interface IUserService : IService

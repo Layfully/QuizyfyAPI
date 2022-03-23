@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using QuizyfyAPI.Contracts.Requests;
+﻿using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Contracts.Responses.Pagination;
 using QuizyfyAPI.Domain;
-using System.Threading.Tasks;
 
 namespace QuizyfyAPI.Services;
 public interface IQuizService : IService

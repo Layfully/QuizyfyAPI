@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace QuizyfyAPI.Data;
+﻿namespace QuizyfyAPI.Data;
 public interface IQuestionRepository : IRepository
 {
     Task<Question[]> GetQuestions(int quizId, bool includeChoices = false);

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace QuizyfyAPI.Domain;
+﻿namespace QuizyfyAPI.Domain;
 public class BasicResult
 {
     public bool Success { get; set; }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace QuizyfyAPI.Contracts.Responses.Pagination;
+﻿namespace QuizyfyAPI.Contracts.Responses.Pagination;
 public class PagedList<T>
 {
     public PagedList(IQueryable<T> source, int pageNumber, int pageSize)
