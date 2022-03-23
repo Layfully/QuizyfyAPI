@@ -57,7 +57,7 @@ public class UsersController : ControllerBase
     {
         var recaptcha = await _recaptchaService.Validate(request.RecaptchaToken);
 
-        if (!recaptcha.success && recaptcha.score >= 0.8M)
+        if (!recaptcha.success && recaptcha.score >= 0.8)
         {
             return Ok("Recaptcha failed");
         }
@@ -104,7 +104,7 @@ public class UsersController : ControllerBase
     {
         var recaptcha = await _recaptchaService.Validate(request.RecaptchaToken);
 
-        if (!recaptcha.success && recaptcha.score >= 0.8M)
+        if (!recaptcha.success && recaptcha.score >= 0.8)
         {
             return Ok("Recaptcha failed");
         }

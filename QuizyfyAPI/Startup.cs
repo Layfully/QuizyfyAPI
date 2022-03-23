@@ -57,6 +57,7 @@ public class Startup
 
         services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
         services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+        services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
         services.ConfigureControllersForApi(AppOptions);
 
