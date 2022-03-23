@@ -2,11 +2,9 @@
 using SendGrid;
 using System.Threading.Tasks;
 
-namespace QuizyfyAPI.Services
+namespace QuizyfyAPI.Services;
+public interface ISendGridService
 {
-    public interface ISendGridService
-    {
-        Task<Response> SendConfirmationEmailTo(User user);
-        Task<Response> SendPasswordResetEmailTo(User user);
-    }
+    Task<Response> SendConfirmationEmailTo(User user);
+    Task<Response> SendPasswordResetEmailTo(User user);
 }

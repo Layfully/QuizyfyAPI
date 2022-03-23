@@ -1,12 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace QuizyfyAPI.Data
+namespace QuizyfyAPI.Data;
+public class Image
 {
-    public class Image
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        public string ImageUrl { get; set; }
-    }
+    public string ImageUrl { get; set; }
 }

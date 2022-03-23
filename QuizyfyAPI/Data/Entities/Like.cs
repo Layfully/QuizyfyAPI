@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace QuizyfyAPI.Data
+namespace QuizyfyAPI.Data;
+public class Like
 {
-    public class Like
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        public int QuizId { get; set; }
-        public int UserId { get; set; }
-    }
+    public int QuizId { get; set; }
+    public int UserId { get; set; }
 }

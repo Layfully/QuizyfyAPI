@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
 using QuizyfyAPI.Contracts.Responses;
 
-namespace QuizyfyAPI.Data
+namespace QuizyfyAPI.Data;
+public class ImageProfile : Profile
 {
-    public class ImageProfile : Profile
+    public ImageProfile()
     {
-        public ImageProfile()
-        {
-            CreateMap<Image, ImageResponse>().ReverseMap();
-        }
+        CreateMap<Image, ImageResponse>().ReverseMap();
     }
 }

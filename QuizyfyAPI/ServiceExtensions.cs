@@ -15,155 +15,154 @@ using System.Reflection;
 using System.IO;
 using Microsoft.OpenApi.Models;
 using QuizyfyAPI.Options;
-namespace QuizyfyAPI
+
+namespace QuizyfyAPI;
+public static class ServiceExtensions
 {
-    public static class ServiceExtensions
+    public static void ConfigureApiVersioning(this IServiceCollection services, SwaggerOptions swaggerOptions)
     {
-        public static void ConfigureApiVersioning(this IServiceCollection services, SwaggerOptions swaggerOptions)
+        services.AddApiVersioning(options =>
         {
-            services.AddApiVersioning(options =>
-            {
-                options.DefaultApiVersion = new ApiVersion(swaggerOptions.APIVersionMajor, swaggerOptions.APIVersionMinor);
-                options.ReportApiVersions = swaggerOptions.ReportAPIVersion;
-                options.AssumeDefaultVersionWhenUnspecified = swaggerOptions.SupplyDefaultVersion;
-            });
-        }
+            options.DefaultApiVersion = new ApiVersion(swaggerOptions.APIVersionMajor, swaggerOptions.APIVersionMinor);
+            options.ReportApiVersions = swaggerOptions.ReportAPIVersion;
+            options.AssumeDefaultVersionWhenUnspecified = swaggerOptions.SupplyDefaultVersion;
+        });
+    }
 
-        public static void ConfigureDbContext(this IServiceCollection services, AppOptions appOptions)
-        {
-            services.AddDbContextPool<QuizDbContext>(
-                options => options.UseSqlServer(
-                    appOptions.ConnectionString
-                ));
-        }
+    public static void ConfigureDbContext(this IServiceCollection services, AppOptions appOptions)
+    {
+        services.AddDbContextPool<QuizDbContext>(
+            options => options.UseSqlServer(
+                appOptions.ConnectionString
+            ));
+    }
 
-        public static void ConfigureJWTAuth(this IServiceCollection services, JwtOptions jwtOptions)
+    public static void ConfigureJWTAuth(this IServiceCollection services, JwtOptions jwtOptions)
+    {
+        // configure jwt authentication
+        var key = Encoding.ASCII.GetBytes(jwtOptions.Secret);
+        var tokenValidationParameters = new TokenValidationParameters
         {
-            // configure jwt authentication
-            var key = Encoding.ASCII.GetBytes(jwtOptions.Secret);
-            var tokenValidationParameters = new TokenValidationParameters
+            ValidateIssuerSigningKey = jwtOptions.ValidateIssuerSigningKey,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = jwtOptions.ValidateIssuer,
+            ValidateAudience = jwtOptions.ValidateAudience,
+            ValidateLifetime = jwtOptions.ValidateLifetime,
+            RequireExpirationTime = jwtOptions.RequireExpirationTime
+        };
+
+        services.AddSingleton(tokenValidationParameters);
+
+        services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(x =>
+        {
+            x.Events = new JwtBearerEvents
             {
-                ValidateIssuerSigningKey = jwtOptions.ValidateIssuerSigningKey,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = jwtOptions.ValidateIssuer,
-                ValidateAudience = jwtOptions.ValidateAudience,
-                ValidateLifetime = jwtOptions.ValidateLifetime,
-                RequireExpirationTime = jwtOptions.RequireExpirationTime
+                OnTokenValidated = async (context) =>
+                {
+                    var userService = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+                    var userId = int.Parse(context.Principal.Identity.Name);
+                    var user = await userService.GetUserById(userId);
+                    if (user == null)
+                    {
+                        context.Fail("Unauthorized");
+                    }
+                }
             };
 
-            services.AddSingleton(tokenValidationParameters);
+            x.RequireHttpsMetadata = jwtOptions.RequireHttpsMetadata;
+            x.SaveToken = jwtOptions.SaveToken;
+            x.TokenValidationParameters = tokenValidationParameters;
+        });
+    }
 
-            services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(x =>
-            {
-                x.Events = new JwtBearerEvents
-                {
-                    OnTokenValidated = async (context) =>
-                    {
-                        var userService = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
-                        var userId = int.Parse(context.Principal.Identity.Name);
-                        var user = await userService.GetUserById(userId);
-                        if (user == null)
-                        {
-                            context.Fail("Unauthorized");
-                        }
-                    }
-                };
-
-                x.RequireHttpsMetadata = jwtOptions.RequireHttpsMetadata;
-                x.SaveToken = jwtOptions.SaveToken;
-                x.TokenValidationParameters = tokenValidationParameters;
-            });
-        }
-
-        public static void ConfigureControllersForApi(this IServiceCollection services, AppOptions appOptions)
+    public static void ConfigureControllersForApi(this IServiceCollection services, AppOptions appOptions)
+    {
+        services.AddControllers(setupAction =>
         {
-            services.AddControllers(setupAction =>
+            setupAction.Filters.Add(new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
+
+            setupAction.ReturnHttpNotAcceptable = appOptions.ReturnHttpNotAcceptable;
+
+            var jsonFormatter = setupAction.OutputFormatters.OfType<SystemTextJsonOutputFormatter>().FirstOrDefault();
+            if (jsonFormatter?.SupportedMediaTypes.Contains("text/json") == true)
             {
-                setupAction.Filters.Add(new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
+                jsonFormatter.SupportedMediaTypes.Remove("text/json");
+            }
+        }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+    }
 
-                setupAction.ReturnHttpNotAcceptable = appOptions.ReturnHttpNotAcceptable;
-
-                var jsonFormatter = setupAction.OutputFormatters.OfType<SystemTextJsonOutputFormatter>().FirstOrDefault();
-                if (jsonFormatter?.SupportedMediaTypes.Contains("text/json") == true)
+    public static void ConfigureSwagger(this IServiceCollection services, SwaggerOptions swaggerOptions)
+    {
+        services.AddSwaggerGen(setupAction =>
+        {
+            setupAction.SwaggerDoc(swaggerOptions.DocumentName, new OpenApiInfo()
+            {
+                Title = swaggerOptions.Title,
+                Version = swaggerOptions.APIVersion,
+                Description = swaggerOptions.Description,
+                Contact = new OpenApiContact()
                 {
-                    jsonFormatter.SupportedMediaTypes.Remove("text/json");
+                    Email = swaggerOptions.ContactEmail,
+                    Name = swaggerOptions.ContactName,
+                },
+                License = new OpenApiLicense()
+                {
+                    Name = swaggerOptions.LicenseName,
+                    Url = new Uri(swaggerOptions.LicenseURI)
                 }
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-        }
+            });
 
-        public static void ConfigureSwagger(this IServiceCollection services, SwaggerOptions swaggerOptions)
-        {
-            services.AddSwaggerGen(setupAction =>
+            setupAction.AddSecurityDefinition("JWT bearer", new OpenApiSecurityScheme
             {
-                setupAction.SwaggerDoc(swaggerOptions.DocumentName, new OpenApiInfo()
-                {
-                    Title = swaggerOptions.Title,
-                    Version = swaggerOptions.APIVersion,
-                    Description = swaggerOptions.Description,
-                    Contact = new OpenApiContact()
-                    {
-                        Email = swaggerOptions.ContactEmail,
-                        Name = swaggerOptions.ContactName,
-                    },
-                    License = new OpenApiLicense()
-                    {
-                        Name = swaggerOptions.LicenseName,
-                        Url = new Uri(swaggerOptions.LicenseURI)
-                    }
-                });
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+            });
 
-                setupAction.AddSecurityDefinition("JWT bearer", new OpenApiSecurityScheme
+            setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement {
                 {
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                });
-
-                setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
+                        Reference = new OpenApiReference
                         {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "JWT bearer"
-                            }
-                        }, new List<string>()
-                    }
-                });
-
-                var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlCommentsPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
-
-                setupAction.IncludeXmlComments(xmlCommentsPath);
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "JWT bearer"
+                        }
+                    }, new List<string>()
+                }
             });
-        }
 
-        public static void ConfigureValidationErrorResponse(this IServiceCollection services)
+            var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlCommentsPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+
+            setupAction.IncludeXmlComments(xmlCommentsPath);
+        });
+    }
+
+    public static void ConfigureValidationErrorResponse(this IServiceCollection services)
+    {
+        services.Configure<ApiBehaviorOptions>(options =>
         {
-            services.Configure<ApiBehaviorOptions>(options =>
+            options.InvalidModelStateResponseFactory = actionContext =>
             {
-                options.InvalidModelStateResponseFactory = actionContext =>
+                var actionExecutionContext = actionContext as ActionExecutingContext;
+
+                if (actionContext.ModelState.ErrorCount > 0 && actionExecutionContext?.ActionArguments.Count == actionContext.ActionDescriptor.Parameters.Count)
                 {
-                    var actionExecutionContext = actionContext as ActionExecutingContext;
+                    string messages = string.Join("; ", actionContext.ModelState.Values
+                                    .SelectMany(x => x.Errors)
+                                    .Select(x => x.ErrorMessage));
+                    Console.WriteLine(messages);
+                    return new UnprocessableEntityObjectResult(actionContext.ModelState);
+                }
 
-                    if (actionContext.ModelState.ErrorCount > 0 && actionExecutionContext?.ActionArguments.Count == actionContext.ActionDescriptor.Parameters.Count)
-                    {
-                        string messages = string.Join("; ", actionContext.ModelState.Values
-                                        .SelectMany(x => x.Errors)
-                                        .Select(x => x.ErrorMessage));
-                        Console.WriteLine(messages);
-                        return new UnprocessableEntityObjectResult(actionContext.ModelState);
-                    }
-
-                    return new BadRequestObjectResult(actionContext.ModelState);
-                };
-            });
-        }
+                return new BadRequestObjectResult(actionContext.ModelState);
+            };
+        });
     }
 }
