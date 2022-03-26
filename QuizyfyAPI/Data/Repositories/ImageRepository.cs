@@ -1,45 +1,40 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace QuizyfyAPI.Data
+namespace QuizyfyAPI.Data;
+public class ImageRepository : Repository, IImageRepository
 {
-    public class ImageRepository : Repository, IImageRepository
+    public ImageRepository(QuizDbContext context, ILogger<ImageRepository> logger) : base(context, logger)
     {
-        public ImageRepository(QuizDbContext context, ILogger<ImageRepository> logger) : base(context, logger)
-        {
-        }
+    }
 
-        public Task<Image[]> GetImages()
-        {
-            _logger.LogInformation($"Getting all images");
+    public Task<Image[]> GetImages()
+    {
+        _logger.LogInformation($"Getting all images");
 
-            IQueryable<Image> query = _context.Images;
+        IQueryable<Image> query = _context.Images;
 
-            return query.ToArrayAsync();
-        }
+        return query.ToArrayAsync();
+    }
 
-        public Task<Image> GetImage(int imageId)
-        {
-            _logger.LogInformation($"Getting one image");
+    public Task<Image> GetImage(int imageId)
+    {
+        _logger.LogInformation($"Getting one image");
 
-            IQueryable<Image> query = _context.Images;
+        IQueryable<Image> query = _context.Images;
 
-            query = query.Where(image => image.Id == imageId);
+        query = query.Where(image => image.Id == imageId);
 
-            return query.FirstOrDefaultAsync();
-        }
+        return query.FirstOrDefaultAsync();
+    }
 
-        public Task<Image> GetImageByUrl(string url)
-        {
-            _logger.LogInformation($"Getting one image");
+    public Task<Image> GetImageByUrl(string url)
+    {
+        _logger.LogInformation($"Getting one image");
 
-            IQueryable<Image> query = _context.Images;
+        IQueryable<Image> query = _context.Images;
 
-            query = query.Where(image => image.ImageUrl == url);
+        query = query.Where(image => image.ImageUrl == url);
 
-            return query.FirstOrDefaultAsync();
-        }
+        return query.FirstOrDefaultAsync();
     }
 }

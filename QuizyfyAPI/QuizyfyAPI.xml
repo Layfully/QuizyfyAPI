@@ -69,7 +69,7 @@
             Quiz description.
             </summary>
         </member>
-        <member name="P:QuizyfyAPI.Contracts.Requests.QuizCreateRequest.ImageId">
+        <member name="P:QuizyfyAPI.Contracts.Requests.QuizCreateRequest.ImageUrl">
             <summary>
             Quiz image url which we get when we upload image.
             </summary>

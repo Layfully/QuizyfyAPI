@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
 using QuizyfyAPI.Contracts.Responses;
 
-namespace QuizyfyAPI.Data
+namespace QuizyfyAPI.Data;
+public class LikeProfile : Profile
 {
-    public class LikeProfile : Profile
+    public LikeProfile()
     {
-        public LikeProfile()
-        {
-            CreateMap<Like, LikeResponse>().ReverseMap();
-        }
+        CreateMap<Like, LikeResponse>().ReverseMap();
     }
 }
