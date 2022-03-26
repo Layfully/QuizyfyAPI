@@ -1,19 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace QuizyfyAPI.Contracts.Requests
+namespace QuizyfyAPI.Contracts.Requests;
+/// <summary>
+/// Question with text(actual question) only. Used for DTO.
+/// </summary>
+public class QuestionUpdateRequest
 {
     /// <summary>
-    /// Question with text(actual question) only. Used for DTO.
+    /// Question text.
     /// </summary>
-    public class QuestionUpdateRequest
-    {
-        /// <summary>
-        /// Question text.
-        /// </summary>
-        [Required]
-        [MaxLength(70)]
-        public string Text { get; set; }
+    [Required]
+    [MaxLength(70)]
+    public string Text { get; set; }
 
-        public int ImageId { get; set; }
-    }
+    public int ImageId { get; set; }
 }

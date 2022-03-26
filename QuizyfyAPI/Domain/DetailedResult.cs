@@ -1,7 +1,5 @@
-﻿namespace QuizyfyAPI.Domain
+﻿namespace QuizyfyAPI.Domain;
+public class DetailedResult : BasicResult
 {
-    public class DetailedResult : BasicResult
-    {
-        public bool Found { get; set; }
-    }
+    public bool Found { get; set; }
 }

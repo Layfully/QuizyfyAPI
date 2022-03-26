@@ -2,15 +2,12 @@
 using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 
-namespace QuizyfyAPI.Data
+namespace QuizyfyAPI.Data;
+public class QuizProfile : Profile
 {
-    public class QuizProfile : Profile
+    public QuizProfile()
     {
-        public QuizProfile()
-        {
-            CreateMap<Quiz, QuizResponse>().ForMember(quiz => quiz.ImageUrl, opt => opt.MapFrom(src => src.Image.ImageUrl)).ReverseMap();
-
-            CreateMap<Quiz, QuizCreateRequest>().ReverseMap();
-        }
+        CreateMap<Quiz, QuizResponse>().ForMember(quiz => quiz.ImageUrl, opt => opt.MapFrom(src => src.Image.ImageUrl)).ReverseMap();
+        CreateMap<Quiz, QuizCreateRequest>().ReverseMap();
     }
 }

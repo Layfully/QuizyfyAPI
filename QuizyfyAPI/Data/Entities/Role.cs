@@ -1,8 +1,6 @@
-﻿namespace QuizyfyAPI.Data
+﻿namespace QuizyfyAPI.Data;
+public static class Role
 {
-    public static class Role
-    {
-        public const string Admin = "Admin";
-        public const string User = "User";
-    }
+    public const string Admin = "Admin";
+    public const string User = "User";
 }

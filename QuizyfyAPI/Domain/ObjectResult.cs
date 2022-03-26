@@ -1,7 +1,5 @@
-﻿namespace QuizyfyAPI.Domain
+﻿namespace QuizyfyAPI.Domain;
+public class ObjectResult<T> : DetailedResult
 {
-    public class ObjectResult<T> : DetailedResult
-    {
-        public T Object { get; set; }
-    }
+    public T Object { get; set; }
 }

@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
+using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 
-namespace QuizyfyAPI.Data
+namespace QuizyfyAPI.Data;
+public class ChoiceProfile : Profile
 {
-    public class ChoiceProfile : Profile
+    public ChoiceProfile()
     {
-        public ChoiceProfile()
-        {
-            CreateMap<Choice, ChoiceResponse>().ReverseMap();
-        }
+        CreateMap<Choice, ChoiceCreateRequest>().ReverseMap();
+
+        CreateMap<Choice, ChoiceResponse>().ReverseMap();
     }
 }
