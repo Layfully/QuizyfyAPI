@@ -24,7 +24,7 @@ public class QuizCreateRequest
     /// Quiz image url which we get when we upload image.
     /// </summary>
     [Required]
-    public int ImageId { get; set; }
+    public string ImageUrl { get; set; }
 
     /// <summary>
     /// Collection of questions which belongs to quiz.

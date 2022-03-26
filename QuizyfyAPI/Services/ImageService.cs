@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using QuizyfyAPI.Contracts.Responses;
@@ -13,13 +14,15 @@ public class ImageService : IImageService
     private readonly IMemoryCache _cache;
     private readonly IMapper _mapper;
     private readonly AppOptions _appOptions;
+    private readonly IWebHostEnvironment _webHostEnvironment;
 
-    public ImageService(IImageRepository imageRepository, IMemoryCache cache, IMapper mapper, IOptions<AppOptions> appOptions)
+    public ImageService(IImageRepository imageRepository, IMemoryCache cache, IMapper mapper, IOptions<AppOptions> appOptions, IWebHostEnvironment webHostEnvironment)
     {
         _imageRepository = imageRepository;
         _cache = cache;
         _mapper = mapper;
         _appOptions = appOptions.Value;
+        _webHostEnvironment = webHostEnvironment;
     }
 
     public async Task<ObjectResult<ImageResponse[]>> GetAll()
@@ -131,7 +134,7 @@ public class ImageService : IImageService
     private async Task<string> UploadFile(IFormFile file)
     {
         var fileName = Path.GetFileName(file.FileName);
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\quizzes", fileName);
+        var filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images\\quizzes", fileName);
 
         if (!File.Exists(filePath))
         {

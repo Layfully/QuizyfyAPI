@@ -21,5 +21,5 @@ public class QuestionResponse
     /// <summary>
     /// Possible question answers.
     /// </summary>
-    public ICollection<QuestionResponse> Choices { get; set; }
+    public ICollection<ChoiceResponse> Choices { get; set; }
 }

@@ -42,7 +42,8 @@ public static class ServiceExtensions
             ValidateIssuer = jwtOptions.ValidateIssuer,
             ValidateAudience = jwtOptions.ValidateAudience,
             ValidateLifetime = jwtOptions.ValidateLifetime,
-            RequireExpirationTime = jwtOptions.RequireExpirationTime
+            RequireExpirationTime = jwtOptions.RequireExpirationTime,
+            ClockSkew = TimeSpan.Zero
         };
 
         services.AddSingleton(tokenValidationParameters);

@@ -200,7 +200,7 @@ public class UsersController : ControllerBase
         return recoveryResponse.Object;
     }
 
-    [HttpPatch("GenerateRecoveryToken")]
+    [HttpPatch("RecoveryTokenGeneration")]
     [AllowAnonymous]
     public async Task<ActionResult<UserResponse>> RecoveryTokenGeneration(RecoveryTokenGenerationRequest request)
     {

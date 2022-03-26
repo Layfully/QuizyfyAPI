@@ -47,25 +47,15 @@ public class QuizService : IQuizService
         if (quiz != null)
         {
             quiz.DateAdded = DateTime.Now;
-
             _quizRepository.Add(quiz);
         }
 
-        quiz.Image = await _imageRepository.GetImage(request.ImageId);
+        quiz.Image = await _imageRepository.GetImageByUrl(request.ImageUrl);
 
         if (await _quizRepository.SaveChangesAsync())
         {
-            var questionController = new QuestionsController(_questionService);
-
-            foreach(var question in request.Questions)
-            {
-                await questionController.Post(quiz.Id, question);
-            }
-
             _cache.Set($"Quiz {quiz.Id}", quiz);
             _cache.Remove($"Quizzes");
-
-            await _quizRepository.SaveChangesAsync();
 
             return new ObjectResult<QuizResponse> { Object = _mapper.Map<QuizResponse>(quiz), Found = true, Success = true };
         }

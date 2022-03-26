@@ -29,10 +29,12 @@ public class UserService : IUserService
         _refreshTokenRepository = refreshTokenRepository;
         _userRepository = userRepository;
         _jwtOptions = jwtOptions.Value;
-        _tokenValidationParameters = tokenValidationParameters;
+        _tokenValidationParameters = tokenValidationParameters.Clone();
         _pwnedPasswordsClient = pwnedPasswordsClient;
         _mapper = mapper;
         _mailService = mailService;
+
+        _tokenValidationParameters.ValidateLifetime = false;
     }
 
     public async Task<ObjectResult<UserResponse>> Login(UserLoginRequest request)
@@ -341,8 +343,7 @@ public class UserService : IUserService
         var tokenHandler = new JwtSecurityTokenHandler();
 
         try
-        {
-            _tokenValidationParameters.ValidateLifetime = false;
+        {       
             var principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out var validatedToken);
             if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
             {
