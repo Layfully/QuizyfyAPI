@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>51c7539e-6ca9-401a-ae19-4a640ad8eb84</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -56,7 +57,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\images\quizzes\" />
     <Folder Include="wwwroot\images\quizzes\" />
   </ItemGroup>
 

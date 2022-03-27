@@ -144,7 +144,7 @@ public class ImageService : IImageService
             }
         }
 
-        filePath = Path.Combine(_appOptions.ServerPath, "images\\quizzes", fileName);
+        //filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images\\quizzes", fileName);
         filePath = filePath.Replace('\\', '/');
 
         return filePath;
