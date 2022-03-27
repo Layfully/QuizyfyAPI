@@ -5,12 +5,7 @@
     <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>51c7539e-6ca9-401a-ae19-4a640ad8eb84</UserSecretsId>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>QuizyfyAPI.xml</DocumentationFile>
-    <NoWarn>1701;1702;1591;RCS1090;</NoWarn>
-    <PlatformTarget>x64</PlatformTarget>
+     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
