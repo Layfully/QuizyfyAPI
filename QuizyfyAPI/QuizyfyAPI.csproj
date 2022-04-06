@@ -5,7 +5,8 @@
     <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>51c7539e-6ca9-401a-ae19-4a640ad8eb84</UserSecretsId>
-     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -53,6 +54,10 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\images\quizzes\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

@@ -45,7 +45,7 @@ public class QuestionService : IQuestionService
 
     public async Task<ObjectResult<QuestionResponse>> Get(int quizId, int questionId, bool includeChoices = false)
     {
-        if (!_cache.TryGetValue("$Choice {choiceId}", out Question question))
+        if (!_cache.TryGetValue("$Choice {choiceId}", out Question? question))
         {
             question = await _questionRepository.GetQuestion(quizId, questionId, includeChoices);
             _cache.Set("$Question {questionId}", question);
@@ -74,21 +74,21 @@ public class QuestionService : IQuestionService
             question.QuizId = quiz.Id;
 
             _questionRepository.Add(question);
+
+            await _questionRepository.SaveChangesAsync();
+
+            var choicesController = new ChoicesController(_choiceService);
+
+            foreach (var choice in request.Choices)
+            {
+                await choicesController.Post(quiz.Id, question.Id, choice);
+            }
         }
-
-        await _questionRepository.SaveChangesAsync();
-
-        var choicesController = new ChoicesController(_choiceService);
-
-        foreach (var choice in request.Choices)
-        {
-            await choicesController.Post(quiz.Id, question.Id, choice);
-        }
-
-        _cache.Set($"Question {question.Id}", question);
 
         if (await _questionRepository.SaveChangesAsync())
         {
+            _cache.Set($"Question {question!.Id}", question);
+
             return new ObjectResult<QuestionResponse> { Success = true, Found = true, Object = _mapper.Map<QuestionResponse>(question)  };
         }
         return new ObjectResult<QuestionResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };

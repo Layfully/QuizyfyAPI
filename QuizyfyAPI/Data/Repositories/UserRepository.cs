@@ -8,40 +8,55 @@ public class UserRepository : Repository, IUserRepository
     {
     }
 
-    public Task<User> GetUserById(int userId)
+    public async Task<User?> GetUserById(int? userId)
     {
         _logger.LogInformation($"Getting user by id");
+
+        if (userId == null)
+        {
+            return null;
+        }
 
         IQueryable<User> query = _context.Users;
 
         query = query.Where(user => user.Id == userId);
 
-        return query.FirstOrDefaultAsync();
+        return await query.FirstOrDefaultAsync();
     }
 
-    public Task<User> GetUserByUsername(string username)
+    public async Task<User?> GetUserByUsername(string? username)
     {
         _logger.LogInformation($"Getting user by id");
+
+        if (string.IsNullOrEmpty(username)) 
+        {
+            return null;
+        }
 
         IQueryable<User> query = _context.Users;
 
         query = query.Where(user => user.Username == username);
 
-        return query.FirstOrDefaultAsync();
+        return await query.FirstOrDefaultAsync();
     }
 
-    public Task<User> GetUserByEmail(string email)
+    public async Task<User?> GetUserByEmail(string? email)
     {
         _logger.LogInformation($"Getting user by email");
+
+        if (string.IsNullOrEmpty(email))
+        {
+            return null;
+        }
 
         IQueryable<User> query = _context.Users;
 
         query = query.Where(user => user.Email == email);
 
-        return query.FirstOrDefaultAsync();
+        return await query.FirstOrDefaultAsync();
     }
 
-    public async Task<User> Authenticate(string username, string password)
+    public async Task<User?> Authenticate(string? username, string? password)
     {
         _logger.LogInformation($"Authenticating user");
 
@@ -54,7 +69,7 @@ public class UserRepository : Repository, IUserRepository
 
         var user = await query.Where(userDb => userDb.Username == username).FirstOrDefaultAsync();
 
-        if (user == null || !Hash.Verify(password, user?.PasswordHash, user?.PasswordSalt))
+        if (user == null || !Hash.Verify(password, user.PasswordHash!, user.PasswordSalt!))
         {
             return null;
         }

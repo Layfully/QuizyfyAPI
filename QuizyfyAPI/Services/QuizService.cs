@@ -27,7 +27,7 @@ public class QuizService : IQuizService
 
     public async Task<ObjectResult<QuizResponse>> Get(int id, bool includeQuestions)
     {
-        if (!_cache.TryGetValue("Quizzes", out Quiz quiz))
+        if (!_cache.TryGetValue("Quizzes", out Quiz? quiz))
         {
             quiz = await _quizRepository.GetQuiz(id, includeQuestions);
             _cache.Set($"Quiz {id}", quiz);
@@ -48,13 +48,18 @@ public class QuizService : IQuizService
         {
             quiz.DateAdded = DateTime.Now;
             _quizRepository.Add(quiz);
-        }
 
-        quiz.Image = await _imageRepository.GetImageByUrl(request.ImageUrl);
+            var image = await _imageRepository.GetImageByUrl(request.ImageUrl);
+
+            if (image != null)
+            {
+                quiz.Image = image;
+            }
+        }
 
         if (await _quizRepository.SaveChangesAsync())
         {
-            _cache.Set($"Quiz {quiz.Id}", quiz);
+            _cache.Set($"Quiz {quiz!.Id}", quiz);
             _cache.Remove($"Quizzes");
 
             return new ObjectResult<QuizResponse> { Object = _mapper.Map<QuizResponse>(quiz), Found = true, Success = true };

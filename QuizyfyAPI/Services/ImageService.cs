@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
-using QuizyfyAPI.Options;
 
 namespace QuizyfyAPI.Services;
 public class ImageService : IImageService
@@ -13,15 +10,13 @@ public class ImageService : IImageService
     private readonly IImageRepository _imageRepository;
     private readonly IMemoryCache _cache;
     private readonly IMapper _mapper;
-    private readonly AppOptions _appOptions;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
-    public ImageService(IImageRepository imageRepository, IMemoryCache cache, IMapper mapper, IOptions<AppOptions> appOptions, IWebHostEnvironment webHostEnvironment)
+    public ImageService(IImageRepository imageRepository, IMemoryCache cache, IMapper mapper, IWebHostEnvironment webHostEnvironment)
     {
         _imageRepository = imageRepository;
         _cache = cache;
         _mapper = mapper;
-        _appOptions = appOptions.Value;
         _webHostEnvironment = webHostEnvironment;
     }
 
@@ -42,7 +37,7 @@ public class ImageService : IImageService
 
     public async Task<ObjectResult<ImageResponse>> Get(int id)
     {
-        if (!_cache.TryGetValue("$Image {id}", out Image image))
+        if (!_cache.TryGetValue("$Image {id}", out Image? image))
         {
             image = await _imageRepository.GetImage(id);
             _cache.Set("$Image {id}", image);
@@ -69,8 +64,10 @@ public class ImageService : IImageService
                 return new ObjectResult<ImageResponse> { Success = true, Object = _mapper.Map<ImageResponse>(image) };
             }
 
-            image = new Image();
-            image.ImageUrl = ImageUrl;
+            image = new Image
+            {
+                ImageUrl = ImageUrl
+            };
 
             _imageRepository.Add(image);
 
@@ -138,10 +135,8 @@ public class ImageService : IImageService
 
         if (!File.Exists(filePath))
         {
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(fileStream);
-            }
+            using var fileStream = new FileStream(filePath, FileMode.Create);
+            await file.CopyToAsync(fileStream);
         }
 
         //filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images\\quizzes", fileName);

@@ -18,7 +18,7 @@ public class ChoiceRepository : Repository, IChoiceRepository
         return query.ToArrayAsync();
     }
 
-    public Task<Choice> GetChoice(int questionId, int choiceId)
+    public Task<Choice?> GetChoice(int questionId, int choiceId)
     {
         _logger.LogInformation($"Getting one choice");
 

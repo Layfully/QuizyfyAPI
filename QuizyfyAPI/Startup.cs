@@ -16,33 +16,33 @@ namespace QuizyfyAPI;
 public class Startup
 {
     public IConfiguration Configuration { get; }
-    private SwaggerOptions SwaggerOptions;
+    private readonly SwaggerOptions SwaggerOptions;
 
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
+        SwaggerOptions = new();
     }
 
     public void ConfigureServices(IServiceCollection services)
     {
-        SwaggerOptions = new SwaggerOptions();
-        var AppOptions = new AppOptions();
-        var JwtOptions = new JwtOptions();
-        var SendGridOptions = new SendGridClientOptions();
+        AppOptions AppOptions = new();
+        JwtOptions JwtOptions = new();
+        SendGridClientOptions SendGridOptions = new();
 
         Configuration.GetSection(nameof(SwaggerOptions)).Bind(SwaggerOptions);
         Configuration.GetSection(nameof(AppOptions)).Bind(AppOptions);
         Configuration.GetSection(nameof(JwtOptions)).Bind(JwtOptions);
         Configuration.GetSection(nameof(SendGridClientOptions)).Bind(SendGridOptions);
 
-        services.AddOptions();
-        services.Configure<SendGridOptions>(Configuration.GetSection(nameof(SendGridOptions)));
-        services.Configure<AppOptions>(Configuration.GetSection(nameof(AppOptions)));
-        services.Configure<JwtOptions>(Configuration.GetSection(nameof(JwtOptions)));
-        services.Configure<SwaggerOptions>(Configuration.GetSection(nameof(SwaggerOptions)));
-        services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
-        services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
-        services.Configure<RecaptchaSettings>(Configuration.GetSection("RecaptchaSettings"));
+        services.AddOptions<SendGridOptions>().Bind(Configuration.GetSection(nameof(SendGridOptions))).ValidateDataAnnotations();
+        services.AddOptions<AppOptions>().Bind(Configuration.GetSection(nameof(AppOptions))).ValidateDataAnnotations();
+        services.AddOptions<JwtOptions>().Bind(Configuration.GetSection(nameof(JwtOptions))).ValidateDataAnnotations();
+        services.AddOptions<SwaggerOptions>().Bind(Configuration.GetSection(nameof(SwaggerOptions))).ValidateDataAnnotations();
+        services.AddOptions<IpRateLimitOptions>().Bind(Configuration.GetSection("IpRateLimiting")).ValidateDataAnnotations();
+        services.AddOptions<IpRateLimitPolicies>().Bind(Configuration.GetSection("IpRateLimitPolicies")).ValidateDataAnnotations();
+        services.AddOptions<IpRateLimitPolicies>().Bind(Configuration.GetSection(nameof(RecaptchaSettings))).ValidateDataAnnotations();
+
         services.AddCors();
 
         services.ConfigureDbContext(AppOptions);
@@ -72,14 +72,13 @@ public class Startup
         services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-        // configuration (resolvers, counter key builders)
         services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
-        services.AddScoped<IUrlHelper>(factory => new UrlHelper(factory.GetService<IActionContextAccessor>().ActionContext));
+        services.AddScoped<IUrlHelper>(factory => new UrlHelper(factory.GetService<IActionContextAccessor>()!.ActionContext!));
 
         services.AddTransient<IRecaptchaService, RecaptchaService>();
         services.AddPwnedPasswordHttpClient();
-        _ = services.AddSingleton<ISendGridClient, SendGridClient>(_ => new SendGridClient(SendGridOptions));
+        services.AddSingleton<ISendGridClient, SendGridClient>(_ => new SendGridClient(SendGridOptions));
         services.AddSingleton<ISendGridService, SendGridService>();
     }
 
@@ -114,8 +113,8 @@ public class Startup
 
         app.UseSwaggerUI(setupAction =>
         {
-            setupAction.SwaggerEndpoint(SwaggerOptions.UIEndpoint, SwaggerOptions.Title);
-            setupAction.RoutePrefix = SwaggerOptions.RoutePrefix;
+            setupAction.SwaggerEndpoint(SwaggerOptions.JsonEndpoint, SwaggerOptions.Title);
+            setupAction.RoutePrefix = SwaggerOptions.RoutePrefix ?? string.Empty;
         });
 
         app.UseEndpoints(endpoints => endpoints.MapControllers());

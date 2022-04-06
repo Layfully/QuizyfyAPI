@@ -18,13 +18,12 @@ public class QuestionRepository : Repository, IQuestionRepository
             query = query.Include(question => question.Choices);
         }
 
-        query = query
-          .Where(question => question.QuizId == quizId);
+        query = query.Where(question => question.QuizId == quizId);
 
         return query.ToArrayAsync();
     }
 
-    public Task<Question> GetQuestion(int quizId, int questionId, bool includeChoices = false)
+    public Task<Question?> GetQuestion(int quizId, int questionId, bool includeChoices = false)
     {
         _logger.LogInformation($"Getting one Question for a Quiz");
 
@@ -35,8 +34,7 @@ public class QuestionRepository : Repository, IQuestionRepository
             query = query.Include(question => question.Choices);
         }
 
-        query = query
-          .Where(question => question.Id == questionId && question.QuizId == quizId);
+        query = query.Where(question => question.Id == questionId && question.QuizId == quizId);
 
         return query.FirstOrDefaultAsync();
     }

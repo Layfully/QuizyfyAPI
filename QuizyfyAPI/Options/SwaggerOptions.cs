@@ -1,19 +1,24 @@
-﻿namespace QuizyfyAPI.Options;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace QuizyfyAPI.Options;
 public class SwaggerOptions
 {
-    public string DocumentName { get; set; }
-    public int APIVersionMajor { get; set; }
-    public int APIVersionMinor { get; set; }
+    [Required]
+    public string DocumentName { get; set; } = null!;
+    public int APIVersionMajor { get; set; } = 1;
+    public int APIVersionMinor { get; set; } = 0;
     public string APIVersion => $"{APIVersionMajor}.{APIVersionMinor}";
-    public bool SupplyDefaultVersion { get; set; }
-    public bool ReportAPIVersion { get; set; }
-    public string JsonRoute { get; set; }
-    public string UIEndpoint { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public string RoutePrefix { get; set; }
-    public string LicenseName { get; set; }
-    public string LicenseURI { get; set; }
-    public string ContactName { get; set; }
-    public string ContactEmail { get; set; }
+    public bool SupplyDefaultVersion { get; set; } = true;
+    public bool ReportAPIVersion { get; set; } = true;
+    [Required]
+    public string JsonEndpoint { get; set; } = null!;
+    [Required]
+    public string Title { get; set; } = null!;
+    [Required]
+    public string Description { get; set; } = null!;
+    public string? RoutePrefix { get; set; }
+    public string? LicenseName { get; set; }
+    public string? LicenseURI { get; set; }
+    public string? ContactName { get; set; }
+    public string? ContactEmail { get; set; }
 }

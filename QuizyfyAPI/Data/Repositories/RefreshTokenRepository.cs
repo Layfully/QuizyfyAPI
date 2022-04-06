@@ -7,7 +7,7 @@ public class RefreshTokenRepository : Repository, IRefreshTokenRepository
     {
     }
 
-    public Task<RefreshToken> GetRefreshToken(string refreshToken)
+    public Task<RefreshToken?> GetRefreshToken(string refreshToken)
     {
         return _context.RefreshTokens.SingleOrDefaultAsync(storedRefreshToken => storedRefreshToken.Token == refreshToken);
     }
