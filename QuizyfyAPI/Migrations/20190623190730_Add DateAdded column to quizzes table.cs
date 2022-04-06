@@ -1,5 +1,6 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
 
 namespace QuizyfyAPI.Migrations
 {
@@ -12,13 +13,6 @@ namespace QuizyfyAPI.Migrations
                 table: "Quizzes",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
-
-            migrationBuilder.UpdateData(
-                table: "Quizzes",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "DateAdded",
-                value: new DateTime(2019, 6, 23, 21, 7, 30, 475, DateTimeKind.Local).AddTicks(2168));
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
