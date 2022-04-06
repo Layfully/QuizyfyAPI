@@ -52,8 +52,8 @@ namespace QuizyfyAPI_Tests
             _quizRepository.Empty<Quiz>();
             _questionRepository.Empty<Question>();
 
-            var quiz = new Quiz { Id = 1, DateAdded = DateTime.Now, Name = "Test", Questions = null };
-            var question = new Question { Id = 2, QuizId = 1, Text = "Pytanko", Choices = null };
+            var quiz = new Quiz { Id = 1, DateAdded = DateTime.Now, Name = "Test" };
+            var question = new Question { Id = 2, QuizId = 1, Text = "Pytanko" };
             _quizRepository.Add(quiz);
             _questionRepository.Add(question);
 
@@ -96,10 +96,9 @@ namespace QuizyfyAPI_Tests
                 Id = 100,
                 Name = "Elo",
                 DateAdded = DateTime.Now,
-                Questions = null
             };
 
-            var question = new Question { Id = 5, QuizId = 100, Text = "Pytanko", Choices = null };
+            var question = new Question { Id = 5, QuizId = 100, Text = "Pytanko" };
 
             var choice = new Choice { Id = 2, QuestionId = 5, IsRight = true, Text = "Odp1." };
 
@@ -128,10 +127,9 @@ namespace QuizyfyAPI_Tests
                 Id = 100,
                 Name = "Elo",
                 DateAdded = DateTime.Now,
-                Questions = null
             };
 
-            var question = new Question { Id = 5, QuizId = 100, Text = "Pytanko", Choices = null };
+            var question = new Question { Id = 5, QuizId = 100, Text = "Pytanko" };
 
             var choice = new Choice { Id = 2, QuestionId = 5, IsRight = true, Text = "Odp1." };
             var choice1 = new Choice { Id = 3, QuestionId = 5, IsRight = true, Text = "Odp2." };
