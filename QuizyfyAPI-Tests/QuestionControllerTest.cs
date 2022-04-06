@@ -53,7 +53,7 @@ namespace QuizyfyAPI_Tests
             _quizRepository.Empty<Quiz>();
             _questionRepository.Empty<Question>();
 
-            var quiz = new Quiz {Id = 1, DateAdded = DateTime.Now, Name = "Test", Questions = null };
+            var quiz = new Quiz {Id = 1, DateAdded = DateTime.Now, Name = "Test"};
 
             _quizRepository.Add(quiz);
 
@@ -95,10 +95,9 @@ namespace QuizyfyAPI_Tests
                 Id = 100,
                 Name = "Elo",
                 DateAdded = DateTime.Now,
-                Questions = null
             };
 
-            var question = new Question() { Id = 1, QuizId = 100, Text = "Pytanko", Choices = null };
+            var question = new Question() { Id = 1, QuizId = 100, Text = "Pytanko"};
 
             _quizRepository.Add(quiz);
             _questionRepository.Add(question);
@@ -120,9 +119,9 @@ namespace QuizyfyAPI_Tests
 
             var tempQuiz = new Quiz() { Id = 101, Name = "Elo", DateAdded = DateTime.Now };
 
-            var question = new Question() { Id = 1, QuizId = 101, Text = "Pytanko", Choices = null };
+            var question = new Question() { Id = 1, QuizId = 101, Text = "Pytanko" };
 
-            var question1 = new Question() { Id = 2, QuizId = 101, Text = "Pytanko1", Choices = null };
+            var question1 = new Question() { Id = 2, QuizId = 101, Text = "Pytanko1" };
 
             //Arrange
             _quizRepository.Empty<Quiz>();
@@ -170,7 +169,7 @@ namespace QuizyfyAPI_Tests
             _quizRepository.Empty<Quiz>();
 
             var tempQuiz = new Quiz() { Id = 101, Name = "Elo", DateAdded = DateTime.Now };
-            var question = new Question() { Id = 1, QuizId = 101, Text = "pytanko", Choices = null};
+            var question = new Question() { Id = 1, QuizId = 101, Text = "pytanko" };
 
             _quizRepository.Add(tempQuiz);
             _questionRepository.Add(question);
@@ -193,7 +192,7 @@ namespace QuizyfyAPI_Tests
             _quizRepository.Empty<Quiz>();
 
             var tempQuiz = new Quiz() { Id = 101, Name = "Elo", DateAdded = DateTime.Now };
-            var question = new Question() { Id = 1, QuizId = 101, Text = "pytanko", Choices = null };
+            var question = new Question() { Id = 1, QuizId = 101, Text = "pytanko" };
 
             _quizRepository.Add(tempQuiz);
             _questionRepository.Add(question);
@@ -302,7 +301,7 @@ namespace QuizyfyAPI_Tests
         public async Task Put_Returns_Ok_And_Updated_Model_If_Sucessfully_Updated()
         {
             _quizRepository.Add(new Quiz { Id = 1, Name = "asd", DateAdded = DateTime.Now });
-            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytankoo", Choices = null });
+            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytankoo" });
 
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
@@ -333,7 +332,7 @@ namespace QuizyfyAPI_Tests
         public async Task Put_Returns_BadRequest_If_Passed_Null()
         {
             _quizRepository.Add(new Quiz { Id = 1, Name = "asd", DateAdded = DateTime.Now });
-            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytankoo", Choices = null });
+            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytankoo" });
 
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
@@ -349,7 +348,7 @@ namespace QuizyfyAPI_Tests
         public async Task Put_Updates_Question()
         {
             _quizRepository.Add(new Quiz { Id = 1, Name = "asd", DateAdded = DateTime.Now });
-            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytankoo", Choices = null });
+            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytankoo" });
 
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
@@ -370,7 +369,7 @@ namespace QuizyfyAPI_Tests
 
             _quizRepository.Add(new Quiz { Id = 1, Name = "asd", DateAdded = DateTime.Now });
 
-            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytanko", Choices = null });
+            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytanko" });
 
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
@@ -391,7 +390,7 @@ namespace QuizyfyAPI_Tests
 
             _quizRepository.Add(new Quiz { Id = 1, Name = "asd", DateAdded = DateTime.Now });
 
-            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytanko", Choices = null });
+            _questionRepository.Add(new Question { Id = 2, QuizId = 1, Text = "Pytanko" });
 
             await _quizRepository.SaveChangesAsync();
             await _questionRepository.SaveChangesAsync();
