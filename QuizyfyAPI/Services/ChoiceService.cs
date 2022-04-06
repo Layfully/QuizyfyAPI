@@ -51,7 +51,7 @@ public class ChoiceService : IChoiceService
     {
         var question = await _questionRepository.GetQuestion(quizId, questionId);
 
-        if (!_cache.TryGetValue("$Choice {choiceId}", out Choice choice))
+        if (!_cache.TryGetValue("$Choice {choiceId}", out Choice? choice))
         {
             choice = await _choiceRepository.GetChoice(questionId, choiceId);
             _cache.Set("$Choice {choiceId}", choice);
@@ -85,7 +85,7 @@ public class ChoiceService : IChoiceService
 
         if (await _choiceRepository.SaveChangesAsync())
         {
-            _cache.Set($"Choice {choice.Id}", choice);
+            _cache.Set($"Choice {choice!.Id}", choice);
             return new ObjectResult<ChoiceResponse> { Object = _mapper.Map<ChoiceResponse>(choice), Found = true, Success = true };
         }
 

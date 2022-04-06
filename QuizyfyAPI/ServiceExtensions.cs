@@ -43,7 +43,7 @@ public static class ServiceExtensions
             ValidateAudience = jwtOptions.ValidateAudience,
             ValidateLifetime = jwtOptions.ValidateLifetime,
             RequireExpirationTime = jwtOptions.RequireExpirationTime,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
         };
 
         services.AddSingleton(tokenValidationParameters);
@@ -60,10 +60,10 @@ public static class ServiceExtensions
             {
                 OnTokenValidated = async (context) =>
                 {
-                    var userService = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
-                    var userId = int.Parse(context.Principal.Identity.Name);
-                    var user = await userService.GetUserById(userId);
-                    if (user == null)
+                    var userService = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();                    
+                    var userId = context.Principal?.Identity?.Name?.ParseToNullableInt();
+
+                    if (await userService.GetUserById(userId) == null)
                     {
                         context.Fail("Unauthorized");
                     }
@@ -89,7 +89,7 @@ public static class ServiceExtensions
             {
                 jsonFormatter.SupportedMediaTypes.Remove("text/json");
             }
-        }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+        });
     }
 
     public static void ConfigureSwagger(this IServiceCollection services, SwaggerOptions swaggerOptions)
@@ -109,7 +109,7 @@ public static class ServiceExtensions
                 License = new OpenApiLicense()
                 {
                     Name = swaggerOptions.LicenseName,
-                    Url = new Uri(swaggerOptions.LicenseURI)
+                    Url = !string.IsNullOrEmpty(swaggerOptions.LicenseURI) ? new Uri(swaggerOptions.LicenseURI) : null
                 }
             });
 

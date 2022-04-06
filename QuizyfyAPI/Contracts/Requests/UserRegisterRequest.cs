@@ -9,41 +9,36 @@ public class UserRegisterRequest
     /// <summary>
     /// First name of the user owner.
     /// </summary>
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     /// <summary>
     /// Last name of the user owner.
     /// </summary>
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
 
     /// <summary>
     /// User name.
     /// </summary>
-    [Required]
-    public string Username { get; set; }
+    public string Username { get; set; } = null!;
 
     /// <summary>
     /// User password.
     /// </summary>
-    [Required]
-    public string Password { get; set; }
+    public string Password { get; set; } = null!;
 
     /// <summary>
     /// User role. (Can be either admin or user)
     /// </summary>
-    [Required]
-    public string Role { get; set; }
+    public string Role { get; set; } = null!;
 
     /// <summary>
     /// Token used for checking if request was made by bot or real person.
     /// </summary>
-    [Required]
-    public string RecaptchaToken { get; set; }
+    public string RecaptchaToken { get; set; } = null!;
 
     /// <summary>
     /// Email address on which we will send confirmation message.
     /// </summary>
     [EmailAddress]
-    [Required]
-    public string Email { get; set; }
+    public string Email { get; set; } = null!;
 }

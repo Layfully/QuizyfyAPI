@@ -1,6 +1,4 @@
-﻿using QuizyfyAPI.Contracts.Responses;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace QuizyfyAPI.Contracts.Requests
 {
@@ -12,12 +10,17 @@ namespace QuizyfyAPI.Contracts.Requests
         /// <summary>
         /// Question text.
         /// </summary>
-        [Required]
         [MaxLength(70)]
-        public string Text { get; set; }
+        public string Text { get; set; } = null!;
 
-        public int ImageId { get; set; } 
+        /// <summary>
+        /// Id of an image which gives additional information about the question.
+        /// </summary>
+        public int? ImageId { get; set; } 
 
-        public virtual ICollection<ChoiceCreateRequest> Choices { get; set; }
+        /// <summary>
+        /// List of possible choices to the question.
+        /// </summary>
+        public virtual ICollection<ChoiceCreateRequest> Choices { get; } = new List<ChoiceCreateRequest>();
     }
 }

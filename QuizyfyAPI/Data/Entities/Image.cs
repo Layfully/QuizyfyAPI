@@ -1,10 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Data;
+﻿namespace QuizyfyAPI.Data;
+/// <summary>
+/// An Image model, which is a representation of row from Images table.
+/// </summary>
 public class Image
 {
-    [Key]
+    /// <summary>
+    /// Id of an image.
+    /// </summary>
     public int Id { get; set; }
 
-    public string ImageUrl { get; set; }
+    /// <summary>
+    /// URL which specifies path to image on a server.
+    /// </summary>
+    public string ImageUrl { get; set; } = null!;
 }

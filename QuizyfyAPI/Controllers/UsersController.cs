@@ -88,6 +88,7 @@ public class UsersController : ControllerBase
     ///     }    
     ///     
     /// </remarks> 
+    /// <response code="200">Recaptcha failed.</response>
     /// <response code="201">User sucessfully created. Now you can login on login action.</response>
     /// <response code="400">User is already taken or there was no records in db saved.</response>
     /// <response code="406">Request data type is not in acceptable format.</response>
@@ -95,6 +96,7 @@ public class UsersController : ControllerBase
     /// <response code="500">Something threw exception on server.</response>
     [AllowAnonymous]
     [HttpPost("Register")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]

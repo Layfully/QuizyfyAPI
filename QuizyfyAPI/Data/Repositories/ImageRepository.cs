@@ -16,7 +16,7 @@ public class ImageRepository : Repository, IImageRepository
         return query.ToArrayAsync();
     }
 
-    public Task<Image> GetImage(int imageId)
+    public Task<Image?> GetImage(int imageId)
     {
         _logger.LogInformation($"Getting one image");
 
@@ -27,7 +27,7 @@ public class ImageRepository : Repository, IImageRepository
         return query.FirstOrDefaultAsync();
     }
 
-    public Task<Image> GetImageByUrl(string url)
+    public Task<Image?> GetImageByUrl(string url)
     {
         _logger.LogInformation($"Getting one image");
 

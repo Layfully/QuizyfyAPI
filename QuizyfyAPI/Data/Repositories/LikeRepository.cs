@@ -7,7 +7,7 @@ public class LikeRepository : Repository, ILikeRepository
     {
     }
 
-    public Task<Like> GetLike(int quizId, int userId)
+    public Task<Like?> GetLike(int quizId, int userId)
     {
         _logger.LogInformation($"Getting one like for a Quiz");
 

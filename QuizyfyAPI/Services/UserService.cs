@@ -29,11 +29,11 @@ public class UserService : IUserService
         _refreshTokenRepository = refreshTokenRepository;
         _userRepository = userRepository;
         _jwtOptions = jwtOptions.Value;
-        _tokenValidationParameters = tokenValidationParameters.Clone();
         _pwnedPasswordsClient = pwnedPasswordsClient;
         _mapper = mapper;
         _mailService = mailService;
 
+        _tokenValidationParameters = tokenValidationParameters.Clone();
         _tokenValidationParameters.ValidateLifetime = false;
     }
 
@@ -207,6 +207,11 @@ public class UserService : IUserService
 
         var user = await _userRepository.GetUserById(Int32.Parse(validatedToken.Claims.Single(x => x.Type == ClaimTypes.Name).Value));
 
+        if (user == null)
+        {
+            return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token does not belong to any user" } };
+        }
+
         user = await RequestToken(user);
 
         return new ObjectResult<UserResponse>
@@ -338,7 +343,7 @@ public class UserService : IUserService
         return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
     }
 
-    private ClaimsPrincipal GetPrincipalFromToken(string token)
+    private ClaimsPrincipal? GetPrincipalFromToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
 
