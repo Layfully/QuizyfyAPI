@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
+#nullable disable
+
 namespace QuizyfyAPI.Migrations
 {
     public partial class addrecoverytokentouserstable : Migration

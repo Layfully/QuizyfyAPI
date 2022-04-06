@@ -1,6 +1,7 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
 
 namespace QuizyfyAPI.Migrations
 {
@@ -78,13 +79,6 @@ namespace QuizyfyAPI.Migrations
                     table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
-            migrationBuilder.UpdateData(
-                table: "Quizzes",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "DateAdded",
-                value: new DateTime(2019, 6, 24, 18, 47, 16, 786, DateTimeKind.Local).AddTicks(1519));
-
             migrationBuilder.AddForeignKey(
                 name: "FK_Choices_Questions_QuestionId",
                 table: "Choices",
@@ -156,13 +150,6 @@ namespace QuizyfyAPI.Migrations
                 name: "PK_Choice",
                 table: "Choice",
                 column: "Id");
-
-            migrationBuilder.UpdateData(
-                table: "Quizzes",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "DateAdded",
-                value: new DateTime(2019, 6, 23, 22, 9, 5, 101, DateTimeKind.Local).AddTicks(9527));
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Choice_Question_QuestionId",

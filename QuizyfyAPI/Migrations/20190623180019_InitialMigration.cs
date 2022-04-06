@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
+#nullable disable
+
 namespace QuizyfyAPI.Migrations
 {
     public partial class InitialMigration : Migration
@@ -19,11 +21,6 @@ namespace QuizyfyAPI.Migrations
                 {
                     table.PrimaryKey("PK_Quizzes", x => x.Id);
                 });
-
-            migrationBuilder.InsertData(
-                table: "Quizzes",
-                columns: new[] { "Id", "Name" },
-                values: new object[] { 1, "Quizzserser" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
