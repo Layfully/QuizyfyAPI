@@ -9,9 +9,11 @@ public class QuestionUpdateRequest
     /// <summary>
     /// Question text.
     /// </summary>
-    [Required]
     [MaxLength(70)]
-    public string Text { get; set; }
+    public string? Text { get; set; }
 
-    public int ImageId { get; set; }
+    /// <summary>
+    /// Id of an image which gives additional information about the question.
+    /// </summary>
+    public int? ImageId { get; set; }
 }

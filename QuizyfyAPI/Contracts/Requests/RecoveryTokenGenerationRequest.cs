@@ -6,7 +6,9 @@ namespace QuizyfyAPI.Contracts.Requests;
 /// </summary>
 public class RecoveryTokenGenerationRequest
 {
+    /// <summary>
+    /// An email adress to which generated recovery token will be sent.
+    /// </summary>
     [EmailAddress]
-    [Required]
-    public string Email { get; set; }
+    public string Email { get; set; } = null!;
 }

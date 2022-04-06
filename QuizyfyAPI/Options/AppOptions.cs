@@ -1,7 +1,13 @@
-﻿namespace QuizyfyAPI.Options;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace QuizyfyAPI.Options;
 public class AppOptions
 {
-    public bool ReturnHttpNotAcceptable { get; set; }
-    public string ConnectionString { get; set; }
-    public string ServerPath { get; set; }
+    public bool ReturnHttpNotAcceptable { get; set; } = true;
+
+    [Required]
+    public string ConnectionString { get; set; } = null!;
+
+    [Required]
+    public string ServerPath { get; set; } = null!;
 }

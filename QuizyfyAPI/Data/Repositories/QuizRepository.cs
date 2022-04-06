@@ -24,7 +24,7 @@ public class QuizRepository : Repository, IQuizRepository
         return new PagedList<Quiz>(query, pagingParams.PageNumber, pagingParams.PageSize);
     }
 
-    public Task<Quiz> GetQuiz(int id, bool includeQuestions = false)
+    public Task<Quiz?> GetQuiz(int id, bool includeQuestions = false)
     {
         _logger.LogInformation($"Getting one quiz");
 

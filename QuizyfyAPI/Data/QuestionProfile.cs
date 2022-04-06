@@ -8,7 +8,7 @@ public class QuestionProfile : Profile
     public QuestionProfile()
     {
         CreateMap<Question, QuestionResponse>()
-            .ForMember(question => question.ImageUrl, opt => opt.MapFrom(src => src.Image.ImageUrl));
+            .ForMember(question => question.ImageUrl, opt => opt.MapFrom(src => src.Image != null ? src.Image.ImageUrl : null));
 
         CreateMap<Question, QuestionCreateRequest>()
             .ReverseMap()

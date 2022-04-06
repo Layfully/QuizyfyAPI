@@ -11,15 +11,15 @@ public class QuizUpdateRequest
     /// Quiz name.
     /// </summary>
     [MaxLength(70)]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Quiz description.
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Quiz image url which we get when we upload image.
     /// </summary>
-    public int ImageId { get; set; }
+    public int? ImageId { get; set; }
 }

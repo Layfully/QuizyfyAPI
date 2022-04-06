@@ -1,4 +1,6 @@
-﻿namespace QuizyfyAPI.Contracts.Requests;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace QuizyfyAPI.Contracts.Requests;
 /// <summary>
 /// A user with username, password, role and full name. Used for creating user.
 /// </summary>
@@ -7,30 +9,31 @@ public class UserUpdateRequest
     /// <summary>
     /// First name of the user owner.
     /// </summary>
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     /// <summary>
     /// Last name of the user owner.
     /// </summary>
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
 
     /// <summary>
     /// User name.
     /// </summary>
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
     /// <summary>
     /// User password.
     /// </summary>
-    public string Password { get; set; }
+    public string? Password { get; set; }
 
     /// <summary>
     /// User role. (Can be either admin or user)
     /// </summary>
-    public string Role { get; set; }
+    public string? Role { get; set; }
 
     /// <summary>
     /// User email. (Must be unique)
     /// </summary>
-    public string Email { get; set; }
+    [EmailAddress]
+    public string? Email { get; set; }
 }
