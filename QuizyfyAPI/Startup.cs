@@ -113,6 +113,7 @@ public class Startup
 
         app.UseSwaggerUI(setupAction =>
         {
+            setupAction.DocumentTitle = SwaggerOptions.HtmlTitle;
             setupAction.SwaggerEndpoint(SwaggerOptions.JsonEndpoint, SwaggerOptions.Title);
             setupAction.RoutePrefix = SwaggerOptions.RoutePrefix ?? string.Empty;
         });

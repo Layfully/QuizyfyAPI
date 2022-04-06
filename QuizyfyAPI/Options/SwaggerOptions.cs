@@ -5,6 +5,7 @@ public class SwaggerOptions
 {
     [Required]
     public string DocumentName { get; set; } = null!;
+    public string? HtmlTitle { get; set; }
     public int APIVersionMajor { get; set; } = 1;
     public int APIVersionMinor { get; set; } = 0;
     public string APIVersion => $"{APIVersionMajor}.{APIVersionMinor}";
