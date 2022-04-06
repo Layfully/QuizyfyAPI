@@ -92,7 +92,7 @@ public class ImagesController : ControllerBase
     /// <summary>
     /// Create image with provided info.
     /// </summary>
-    /// <param name="file">This is representation of file you want to upload</param>
+    /// <param name="image">This is representation of file you want to upload</param>
     /// <returns>>An ActionResult of ImageModel</returns>
     /// <remarks>
     /// Sample request (this request returns **created image**)  
