@@ -1,6 +1,7 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
 
 namespace QuizyfyAPI.Migrations
 {
@@ -40,37 +41,6 @@ namespace QuizyfyAPI.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.InsertData(
-                table: "Choice",
-                columns: new[] { "Id", "IsRight", "QuestionId", "Text" },
-                values: new object[,]
-                {
-                    { 1, false, 1, "Entity Framework From Scratch" },
-                    { 2, true, 1, "Writing Sample Data Made Easy" },
-                    { 3, false, 2, "Writing Sample Data Made Easy" },
-                    { 4, true, 2, "ANSWER" }
-                });
-
-            migrationBuilder.UpdateData(
-                table: "Question",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "QuizId",
-                value: 1);
-
-            migrationBuilder.UpdateData(
-                table: "Question",
-                keyColumn: "Id",
-                keyValue: 2,
-                column: "QuizId",
-                value: 1);
-
-            migrationBuilder.UpdateData(
-                table: "Quizzes",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "DateAdded",
-                value: new DateTime(2019, 6, 23, 22, 9, 5, 101, DateTimeKind.Local).AddTicks(9527));
 
             migrationBuilder.CreateIndex(
                 name: "IX_Choice_QuestionId",
@@ -100,27 +70,6 @@ namespace QuizyfyAPI.Migrations
                 table: "Question",
                 nullable: true,
                 oldClrType: typeof(int));
-
-            migrationBuilder.UpdateData(
-                table: "Question",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "QuizId",
-                value: null);
-
-            migrationBuilder.UpdateData(
-                table: "Question",
-                keyColumn: "Id",
-                keyValue: 2,
-                column: "QuizId",
-                value: null);
-
-            migrationBuilder.UpdateData(
-                table: "Quizzes",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "DateAdded",
-                value: new DateTime(2019, 6, 23, 21, 27, 14, 764, DateTimeKind.Local).AddTicks(4164));
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Question_Quizzes_QuizId",

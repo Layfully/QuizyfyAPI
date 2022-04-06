@@ -1,6 +1,7 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
 
 namespace QuizyfyAPI.Migrations
 {
@@ -28,23 +29,6 @@ namespace QuizyfyAPI.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.InsertData(
-                table: "Question",
-                columns: new[] { "Id", "QuizId", "Text" },
-                values: new object[] { 1, null, "Entity Framework From Scratch" });
-
-            migrationBuilder.InsertData(
-                table: "Question",
-                columns: new[] { "Id", "QuizId", "Text" },
-                values: new object[] { 2, null, "Writing Sample Data Made Easy" });
-
-            migrationBuilder.UpdateData(
-                table: "Quizzes",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "DateAdded",
-                value: new DateTime(2019, 6, 23, 21, 27, 14, 764, DateTimeKind.Local).AddTicks(4164));
-
             migrationBuilder.CreateIndex(
                 name: "IX_Question_QuizId",
                 table: "Question",
@@ -55,13 +39,6 @@ namespace QuizyfyAPI.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Question");
-
-            migrationBuilder.UpdateData(
-                table: "Quizzes",
-                keyColumn: "Id",
-                keyValue: 1,
-                column: "DateAdded",
-                value: new DateTime(2019, 6, 23, 21, 7, 30, 475, DateTimeKind.Local).AddTicks(2168));
         }
     }
 }
