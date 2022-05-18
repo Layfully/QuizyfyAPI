@@ -9,7 +9,6 @@ public class SendGridService : ISendGridService
 {
     private readonly ISendGridClient _sendGridClient;
     private readonly SendGridOptions _sendGridOptions;
-
     public SendGridService(ISendGridClient sendGridClient, IOptions<SendGridOptions> sendGridOptions)
     {
         _sendGridClient = sendGridClient;
@@ -34,6 +33,17 @@ public class SendGridService : ISendGridService
         var subject = _sendGridOptions.PasswordResetInfo.Subject;
         var plainContent = _sendGridOptions.PasswordResetInfo.PlainContent;
         var htmlContent = $"<a href='http://localhost:8080/resetPassword/{user.Id}/{user.RecoveryToken}'>Zresetuj hasło.</a>";
+        var email = MailHelper.CreateSingleEmail(from, to, subject, plainContent, htmlContent);
+        return _sendGridClient.SendEmailAsync(email);
+    }
+
+    public Task <Response> SendChangeEmailTo(User user, string newEmail)
+    {
+        var from = new EmailAddress(_sendGridOptions.HostEmail);
+        var to = new EmailAddress(newEmail);
+        var subject = _sendGridOptions.EmailChangeInfo.Subject;
+        var plainContent = _sendGridOptions.EmailChangeInfo.PlainContent;
+        var htmlContent = $"<a href='http://localhost:8080/changeEmail?id={user.Id}&emailChangeToken={user.EmailChangeToken}&email={newEmail}'>Zmień adres e-mail.</a>";
         var email = MailHelper.CreateSingleEmail(from, to, subject, plainContent, htmlContent);
         return _sendGridClient.SendEmailAsync(email);
     }

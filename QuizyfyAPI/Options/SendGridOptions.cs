@@ -9,6 +9,8 @@ public class SendGridOptions
     public MailInfo RegistrationInfo { get; set; } = null!;
     [Required]
     public MailInfo PasswordResetInfo { get; set; } = null!;
+    [Required]
+    public MailInfo EmailChangeInfo { get; set; } = null!;
 }
 
 public class MailInfo

@@ -154,11 +154,18 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<UserResponse>> Put(int id, UserUpdateRequest request)
+    public async Task<ActionResult<UserResponse>> Put(int id, UserUpdateRequest request, [FromHeader(Name = "X-Authorization")] string authorization)
     {
         if (!User.IsInRole(Role.Admin) && User.Claims.Single(x => x.Type == "Id").Value != id.ToString())
         {
             return Forbid("Only admin can change other users data.");
+        }
+
+        (string username, string password) = ExtensionMethods.GetUsernameAndPasswordFromAuthorizeHeader(authorization);
+
+        if (!await _userService.Authenticate(username, password))
+        {
+            return Unauthorized("Wrong credentials");
         }
 
         var updateResponse = await _userService.Update(id, request);
@@ -202,6 +209,19 @@ public class UsersController : ControllerBase
         return recoveryResponse.Object;
     }
 
+    [HttpPatch("ChangeEmail/{id}")]
+    public async Task<ActionResult<UserResponse>> ChangeEmail(int id, ChangeEmailRequest request)
+    {
+        var changeResponse = await _userService.ChangeEmail(id, request.Token, request.NewEmail);
+
+        if (!changeResponse.Success)
+        {
+            return BadRequest(changeResponse.Errors);
+        }
+
+        return changeResponse.Object;
+    }
+
     [HttpPatch("RecoveryTokenGeneration")]
     [AllowAnonymous]
     public async Task<ActionResult<UserResponse>> RecoveryTokenGeneration(RecoveryTokenGenerationRequest request)
@@ -214,6 +234,31 @@ public class UsersController : ControllerBase
         }
 
         return recoveryGenerateResponse.Object;
+    }
+
+    [HttpPatch("EmailChangeTokenGeneration/{id}")]
+    public async Task<ActionResult<UserResponse>> EmailChangeTokenGeneration(int id, [FromBody]EmailChangeTokenGenerationRequest request, [FromHeader(Name = "X-Authorization")] string authorization)
+    {
+        if (!User.IsInRole(Role.Admin) && id.ToString() != User.Claims.Single(x => x.Type == "Id").Value)
+        {
+            return Forbid("Only admin can change other users.");
+        }
+
+        (string username, string password) = ExtensionMethods.GetUsernameAndPasswordFromAuthorizeHeader(authorization);
+
+        if (!await _userService.Authenticate(username, password))
+        {
+            return Unauthorized("Wrong credentials");
+        }
+
+        var emailChangeGenerateResponse = await _userService.GenerateEmailChangeToken(id, request);
+
+        if (!emailChangeGenerateResponse.Success)
+        {
+            return BadRequest(emailChangeGenerateResponse.Errors);
+        }
+
+        return emailChangeGenerateResponse.Object;
     }
 
     /// <summary>
@@ -242,11 +287,18 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, [FromHeader(Name = "X-Authorization")] string authorization)
     {
         if (!User.IsInRole(Role.Admin) && id.ToString() != User.Claims.Single(x => x.Type == "Id").Value)
         {
             return Forbid("Only admin can delete other users.");
+        }
+
+        (string username, string password) = ExtensionMethods.GetUsernameAndPasswordFromAuthorizeHeader(authorization);
+
+        if (!await _userService.Authenticate(username, password))
+        {
+            return Unauthorized("Wrong credentials");
         }
 
         var deleteResponse = await _userService.Delete(id);
@@ -259,6 +311,7 @@ public class UsersController : ControllerBase
             }
             return BadRequest(deleteResponse.Errors);
         }
+
         return Ok();
     }
 

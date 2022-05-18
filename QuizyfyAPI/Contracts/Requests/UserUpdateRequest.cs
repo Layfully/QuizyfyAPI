@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using QuizyfyAPI.Data;
+using System.ComponentModel.DataAnnotations;
 
 namespace QuizyfyAPI.Contracts.Requests;
 /// <summary>
@@ -20,6 +21,16 @@ public class UserUpdateRequest
     /// User name.
     /// </summary>
     public string? Username { get; set; }
+
+    /// <summary>
+    /// Description of a user.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Avatar image of a user.
+    /// </summary>
+    public Image? Image { get; set; }
 
     /// <summary>
     /// User password.

@@ -79,7 +79,7 @@ public class UserService : IUserService
 
         _userRepository.Add(user);
 
-        if(!await _userRepository.SaveChangesAsync())
+        if (!await _userRepository.SaveChangesAsync())
         {
             return new BasicResult { Errors = new[] { "User registration failed." } };
         }
@@ -90,7 +90,7 @@ public class UserService : IUserService
         {
             _userRepository.Delete(user);
             await _userRepository.SaveChangesAsync();
-            return new BasicResult { Errors = new[] { "Sending registration email failed." + await sendConfirmationResponse.Body.ReadAsStringAsync() + " ----- Headers ------ " + sendConfirmationResponse.Headers.ToString()} };
+            return new BasicResult { Errors = new[] { "Sending registration email failed." + await sendConfirmationResponse.Body.ReadAsStringAsync() + " ----- Headers ------ " + sendConfirmationResponse.Headers.ToString() } };
         }
 
         return new BasicResult { Success = true };
@@ -125,7 +125,7 @@ public class UserService : IUserService
             user.PasswordSalt = passwordSalt;
         }
 
-        _mapper.Map(request, user);
+        user = _mapper.Map(request, user);
 
         if (await _userRepository.SaveChangesAsync())
         {
@@ -314,6 +314,46 @@ public class UserService : IUserService
         return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
     }
 
+    public async Task<ObjectResult<UserResponse>> ChangeEmail(int userId, string token, string newEmail)
+    {
+        var user = await _userRepository.GetUserByEmail(newEmail);
+
+        if (user != null)
+        {
+            return new ObjectResult<UserResponse> { Errors = new[] { "User with this email already exists!" } };
+        }
+
+        user = await _userRepository.GetUserById(userId);
+
+        if (user == null)
+        {
+            return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
+        }
+
+        if (user.EmailChangeToken != token)
+        {
+            return new ObjectResult<UserResponse> { Errors = new[] { "Change email token is invalid!" } };
+        }
+
+        _userRepository.Update(user);
+
+        user.Email = newEmail;
+        user.EmailChangeToken = null;
+
+        if (await _userRepository.SaveChangesAsync())
+        {
+            return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
+        }
+
+        return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
+    }
+
+    public async Task<bool> Authenticate(string username, string password)
+    {
+        var user = await _userRepository.Authenticate(username, password.Normalize(NormalizationForm.FormKC));
+        return user != null;
+    }
+
     public async Task<ObjectResult<UserResponse>> GenerateRecoveryToken(RecoveryTokenGenerationRequest request)
     {
 
@@ -332,7 +372,42 @@ public class UserService : IUserService
 
         if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted)
         {
-            user.RecoveryToken = null;
+            return new ObjectResult<UserResponse> { Errors = new[] { $"Failed to deliver the message with recovery link to: {request.Email}" } };
+        }
+
+        if (await _userRepository.SaveChangesAsync())
+        {
+            return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
+        }
+
+        return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
+    }
+
+    public async Task<ObjectResult<UserResponse>> GenerateEmailChangeToken(int userId, EmailChangeTokenGenerationRequest request)
+    {
+        var user = await _userRepository.GetUserByEmail(request.NewEmail);
+
+        if (user != null)
+        {
+            return new ObjectResult<UserResponse> { Errors = new[] { "User with this email already exists!" } };
+        }
+
+        user = await _userRepository.GetUserById(userId);
+
+        if (user == null)
+        {
+            return new ObjectResult<UserResponse> { Success = false, Errors = new[] { "User with this id does not exists" } };
+        }
+
+        _userRepository.Update(user);
+
+        user.EmailChangeToken = Guid.NewGuid().ToString();
+
+        var sendConfirmationResponse = await _mailService.SendChangeEmailTo(user, request.NewEmail);
+
+        if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted)
+        {
+            return new ObjectResult<UserResponse> { Errors = new[] { $"Failed to deliver the message with recovery link to: {request.NewEmail}" } };
         }
 
         if (await _userRepository.SaveChangesAsync())
@@ -348,7 +423,7 @@ public class UserService : IUserService
         var tokenHandler = new JwtSecurityTokenHandler();
 
         try
-        {       
+        {
             var principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out var validatedToken);
             if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
             {
