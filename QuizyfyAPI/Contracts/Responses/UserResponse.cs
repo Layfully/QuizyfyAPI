@@ -7,6 +7,7 @@ namespace QuizyfyAPI.Contracts.Responses;
 /// </summary>
 public class UserResponse
 {
+    public int Id { get; set; }
     /// <summary>
     /// First name of the user owner.
     /// </summary>
@@ -16,6 +17,11 @@ public class UserResponse
     /// Last name of the user owner.
     /// </summary>
     public string LastName { get; set; }
+
+    /// <summary>
+    /// Description of a user.
+    /// </summary>
+    public string Description { get; set; }
 
     /// <summary>
     /// User name.

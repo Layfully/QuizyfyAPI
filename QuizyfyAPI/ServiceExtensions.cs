@@ -43,7 +43,7 @@ public static class ServiceExtensions
             ValidateAudience = jwtOptions.ValidateAudience,
             ValidateLifetime = jwtOptions.ValidateLifetime,
             RequireExpirationTime = jwtOptions.RequireExpirationTime,
-            ClockSkew = TimeSpan.Zero,
+            ClockSkew = TokenValidationParameters.DefaultClockSkew
         };
 
         services.AddSingleton(tokenValidationParameters);
@@ -61,7 +61,7 @@ public static class ServiceExtensions
                 OnTokenValidated = async (context) =>
                 {
                     var userService = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();                    
-                    var userId = context.Principal?.Identity?.Name?.ParseToNullableInt();
+                    var userId = context.Principal?.Claims.FirstOrDefault(claim => claim.Type == "Id")?.Value.ParseToNullableInt();
 
                     if (await userService.GetUserById(userId) == null)
                     {

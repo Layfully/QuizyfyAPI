@@ -6,4 +6,5 @@ public interface ISendGridService
 {
     Task<Response> SendConfirmationEmailTo(User user);
     Task<Response> SendPasswordResetEmailTo(User user);
+    Task<Response> SendChangeEmailTo(User user, string newEmail);
 }

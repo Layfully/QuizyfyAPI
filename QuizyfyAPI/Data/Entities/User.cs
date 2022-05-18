@@ -1,8 +1,10 @@
-﻿namespace QuizyfyAPI.Data;
+﻿using QuizyfyAPI.Data.Entities.Interfaces;
+
+namespace QuizyfyAPI.Data;
 /// <summary>
 /// A User model, which is a representation of row from Users table.
 /// </summary>
-public class User
+public class User : ICreatedDate
 {
     /// <summary>
     /// Id of a user.
@@ -20,6 +22,14 @@ public class User
     /// Made up username.
     /// </summary>
     public string Username { get; set; } = null!;
+    /// <summary>
+    /// Avatar image of a user.
+    /// </summary>
+    public Image? Avatar { get; set; }
+    /// <summary>
+    /// Description of a user.
+    /// </summary>
+    public string? Description { get; set; }
     /// <summary>
     /// Password in a hashed form.
     /// </summary>
@@ -56,4 +66,12 @@ public class User
     /// Token used for password recovery.
     /// </summary>
     public string? RecoveryToken { get; set; }
+    /// <summary>
+    /// Token used to change email.
+    /// </summary>
+    public string? EmailChangeToken { get; set; }
+    /// <summary>
+    /// Date which represents when user was created.
+    /// </summary>
+    public DateTime CreatedDate { get; set; }
 }
