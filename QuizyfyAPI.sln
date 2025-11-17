@@ -1,11 +1,11 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuizyfyAPI", "QuizyfyAPI\QuizyfyAPI.csproj", "{3490FA6F-8118-4A5F-924F-4DC95740399E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuizyfyAPI-Tests", "QuizyfyAPI-Tests\QuizyfyAPI-Tests.csproj", "{0D305260-531D-4259-BC1F-C474DF6A0DB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuizyfyAPI-Tests", "QuizyfyAPI-Tests\QuizyfyAPI-Tests.csproj", "{0D305260-531D-4259-BC1F-C474DF6A0DB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
