@@ -963,5 +963,10 @@
             <response code="422">Request data couldn't be processed.</response>
             <response code="500">Something threw exception on server.</response>
         </member>
+        <member name="T:Program">
+            <summary>
+            Auto-generated public partial Program class for top-level statement apps.
+            </summary>
+        </member>
     </members>
 </doc>
