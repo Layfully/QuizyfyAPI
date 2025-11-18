@@ -16,11 +16,11 @@ var builder = WebApplication.CreateBuilder(args);
 // --- CONFIGURATION & SERVICES ---
 
 // Load Configuration Options explicitly needed for logic during startup
-var swaggerOptions = builder.Configuration.GetSection(nameof(SwaggerOptions)).Get<SwaggerOptions>();
-var appOptions = builder.Configuration.GetSection(nameof(AppOptions)).Get<AppOptions>();
-var jwtOptions = builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>();
-var sendGridOptions = builder.Configuration.GetSection(nameof(SendGridClientOptions)).Get<SendGridClientOptions>();
-var rateLimitOptions = builder.Configuration.GetSection(nameof(RateLimitOptions)).Get<RateLimitOptions>();
+SwaggerOptions swaggerOptions = builder.Configuration.GetSection(nameof(SwaggerOptions)).Get<SwaggerOptions>() ?? new() { Title = "Quizyfy API" };
+AppOptions appOptions = builder.Configuration.GetSection(nameof(AppOptions)).Get<AppOptions>() ?? new() { ConnectionString = string.Empty, ServerPath = string.Empty};
+JwtOptions jwtOptions = builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>() ?? new JwtOptions { Secret = string.Empty };
+SendGridClientOptions sendGridOptions = builder.Configuration.GetSection(nameof(SendGridClientOptions)).Get<SendGridClientOptions>() ?? new();
+RateLimitOptions rateLimitOptions = builder.Configuration.GetSection(nameof(RateLimitOptions)).Get<RateLimitOptions>() ?? new();
 
 // Register Options (IOptions pattern)
 builder.Services.Configure<SendGridOptions>(builder.Configuration.GetSection(nameof(SendGridOptions)));
