@@ -59,9 +59,13 @@ builder.Services.ConfigureSwagger(swaggerOptions);
 // Scrutor (Still excellent in .NET 10)
 builder.Services.Scan(scan => scan
     .FromAssemblyOf<Program>()
-    .AddClasses(classes => classes.AssignableToAny(typeof(IService), typeof(IRepository)))
+    .AddClasses(classes => classes
+            .AssignableToAny(typeof(IService), typeof(IRepository))
+            .Where(c => !c.IsAbstract)
+        , publicOnly: false)
     .AsMatchingInterface()
     .WithScopedLifetime());
+
 
 // MVC Legacy Helpers (IUrlHelper)
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();

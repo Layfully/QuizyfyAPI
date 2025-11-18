@@ -18,7 +18,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.0-rc.1.25458.5" />
     <PackageVersion Include="PwnedPasswords.Client" Version="1.2.0" />
     <PackageVersion Include="reCAPTCHA.AspNetCore" Version="3.0.10" />
-    <PackageVersion Include="Scrutor" Version="4.1.0" />
+    <PackageVersion Include="Scrutor" Version="6.1.0" />
     <PackageVersion Include="SecurityCodeScan.VS2019" Version="5.6.2" />
     <PackageVersion Include="Sendgrid" Version="9.27.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.3.0" />
