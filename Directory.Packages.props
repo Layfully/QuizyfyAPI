@@ -5,7 +5,6 @@
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AspNetCoreRateLimit" Version="4.0.2" />
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />

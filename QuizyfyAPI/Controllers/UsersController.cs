@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using QuizyfyAPI.Contracts.Requests;
 using QuizyfyAPI.Contracts.Responses;
 using QuizyfyAPI.Data;
@@ -53,6 +54,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [EnableRateLimiting("StrictAuth")]
     public async Task<ActionResult<UserResponse>> Login(UserLoginRequest request)
     {
         var recaptcha = await _recaptchaService.Validate(request.RecaptchaToken);
@@ -100,6 +102,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [EnableRateLimiting("StrictAuth")]
     public async Task<ActionResult<UserResponse>> Register(UserRegisterRequest request)
     {
         var recaptcha = await _recaptchaService.Validate(request.RecaptchaToken);

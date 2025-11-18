@@ -1,14 +1,14 @@
 ﻿namespace QuizyfyAPI.Options;
-public class SendGridOptions
+public record SendGridOptions
 {
-    public string HostEmail { get; set; }
-    public MailInfo RegistrationInfo { get; set; }
-    public MailInfo PasswordResetInfo { get; set; }
+    public required string HostEmail { get; init; }
+    public required MailInfo RegistrationInfo { get; init; }
+    public required MailInfo PasswordResetInfo { get; init; }
 }
 
-public class MailInfo
+public record MailInfo
 {
-    public string Subject { get; set; }
-    public string PlainContent { get; set; }
-    public string HtmlContent { get; set; }
+    public required string Subject { get; init; }
+    public required string PlainContent { get; init; }
+    public required string HtmlContent { get; init; }
 }
