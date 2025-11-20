@@ -1,28 +1,13 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+﻿using System.Text.Json;
 
 namespace QuizyfyAPI.Contracts.Responses.Pagination;
-public class PagingHeader
+
+public record PagingHeader(int TotalItems, int PageNumber, int PageSize, int TotalPages)
 {
-    public PagingHeader(
-       int totalItems, int pageNumber, int pageSize, int totalPages)
+    private static readonly JsonSerializerOptions _jsonOptions = new()
     {
-        TotalItems = totalItems;
-        PageNumber = pageNumber;
-        PageSize = pageSize;
-        TotalPages = totalPages;
-    }
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
-    public int TotalItems { get; }
-    public int PageNumber { get; }
-    public int PageSize { get; }
-    public int TotalPages { get; }
-
-    public string ToJson() => JsonConvert.SerializeObject(this,
-                                new JsonSerializerSettings
-                                {
-                                    ContractResolver = new
-       CamelCasePropertyNamesContractResolver()
-                                });
-
+    public string ToJson() => JsonSerializer.Serialize(this, _jsonOptions);
 }

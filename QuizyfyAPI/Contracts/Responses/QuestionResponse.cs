@@ -4,22 +4,23 @@ namespace QuizyfyAPI.Contracts.Responses;
 /// <summary>
 /// A question with text(actual question) and collection of choices. Used for displaying questions.
 /// </summary>
-public class QuestionResponse
+public record QuestionResponse
 {
     /// <summary>
     /// Question text.
     /// </summary>
     [Required]
     [MaxLength(70)]
-    public string Text { get; set; }
+    public required string Text { get; init; }
 
     /// <summary>
     /// Url to optional image for question.
     /// </summary>
-    public string ImageUrl { get; set; }
+    public string? ImageUrl { get; init; }
 
     /// <summary>
     /// Possible question answers.
     /// </summary>
-    public ICollection<ChoiceResponse> Choices { get; set; }
+    [Required]
+    public required ICollection<ChoiceResponse> Choices { get; init; }
 }

@@ -1,31 +1,42 @@
-﻿namespace QuizyfyAPI.Contracts.Responses.Pagination;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace QuizyfyAPI.Contracts.Responses.Pagination;
+
 public class PagedList<T>
 {
-    public PagedList(IQueryable<T> source, int pageNumber, int pageSize)
-    {
-        TotalItems = source.Count();
-        PageNumber = pageNumber;
-        PageSize = pageSize;
-        List = source.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
-    }
-
+    public List<T> List { get; }
     public int TotalItems { get; }
     public int PageNumber { get; }
     public int PageSize { get; }
-    public List<T> List { get; }
-    public int TotalPages =>
-          (int)Math.Ceiling(this.TotalItems / (double)this.PageSize);
-    public bool HasPreviousPage => this.PageNumber > 1;
-    public bool HasNextPage => this.PageNumber < this.TotalPages;
-    public int NextPageNumber =>
-           this.HasNextPage ? this.PageNumber + 1 : this.TotalPages;
-    public int PreviousPageNumber =>
-           this.HasPreviousPage ? this.PageNumber - 1 : 1;
+    public int TotalPages { get; }
+    public bool HasPreviousPage => PageNumber > 1;
+    public bool HasNextPage => PageNumber < TotalPages;
+    public int NextPageNumber => HasNextPage ? PageNumber + 1 : TotalPages;
+    public int PreviousPageNumber => HasPreviousPage ? PageNumber - 1 : 1;
+
+    private PagedList(List<T> items, int count, int pageNumber, int pageSize)
+    {
+        TotalItems = count;
+        PageSize = pageSize;
+        PageNumber = pageNumber;
+        TotalPages = (int)Math.Ceiling(count / (double)pageSize);
+        List = items;
+    }
+
+    public static async Task<PagedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize)
+    {
+        var count = await source.CountAsync();
+
+        var items = await source
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedList<T>(items, count, pageNumber, pageSize);
+    }
 
     public PagingHeader GetHeader()
     {
-        return new PagingHeader(
-             this.TotalItems, this.PageNumber,
-             this.PageSize, this.TotalPages);
+        return new PagingHeader(TotalItems, PageNumber, PageSize, TotalPages);
     }
 }

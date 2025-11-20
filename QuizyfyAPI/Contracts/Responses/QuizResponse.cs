@@ -2,39 +2,40 @@
 
 namespace QuizyfyAPI.Contracts.Responses;
 /// <summary>
-/// A quiz with name , date of addition and questions properties. Used for displaying quizzes.
+/// A quiz with name, date of addition and questions properties. Used for displaying quizzes.
 /// </summary>
-public class QuizResponse
+public record QuizResponse
 {
     /// <summary>
     /// Quiz id.
     /// </summary>
     [Required]
-    public int Id { get; set; }
+    public required int Id { get; init; }
 
     /// <summary>
     /// Quiz name.
     /// </summary>
     [Required]
     [MaxLength(70)]
-    public string Name { get; set; }
+    public required string Name { get; init; }
 
     /// <summary>
     /// Quiz description.
     /// </summary>
     [Required]
-    public string Description { get; set; }
+    public required string Description { get; init; }
 
-    public string ImageUrl { get; set; }
+    public string? ImageUrl { get; init; }
 
     /// <summary>
     /// Date of addition to database.
     /// </summary>
     [Required]
-    public string DateAdded { get; set; }
+    public required string DateAdded { get; init; }
 
     /// <summary>
     /// Collection of questions which belongs to quiz.
     /// </summary>
-    public ICollection<QuestionResponse> Questions { get; set; }
+    [Required]
+    public required ICollection<QuestionResponse> Questions { get; init; }
 }

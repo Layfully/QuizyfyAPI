@@ -1,7 +1,15 @@
-﻿namespace QuizyfyAPI.Contracts.Responses.Pagination;
-public class QuizListResponse
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace QuizyfyAPI.Contracts.Responses.Pagination;
+
+public record QuizListResponse
 {
-    public PagingHeader Paging { get; set; }
-    public List<LinkInfo> Links { get; set; }
-    public List<QuizResponse> Items { get; set; }
+    [Required]
+    public required PagingHeader Paging { get; init; }
+
+    [Required]
+    public required List<LinkInfo> Links { get; init; }
+
+    [Required]
+    public required List<QuizResponse> Items { get; init; }
 }

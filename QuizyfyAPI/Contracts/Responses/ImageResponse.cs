@@ -1,16 +1,20 @@
-﻿namespace QuizyfyAPI.Contracts.Responses;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace QuizyfyAPI.Contracts.Responses;
 /// <summary>
 /// Image with id from database and url to access it.
 /// </summary>
-public class ImageResponse
+public record ImageResponse
 {
     /// <summary>
     /// Image id.
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; init; }
 
     /// <summary>
     /// URL to image resource on server.
     /// </summary>
-    public string ImageUrl { get; set; }
+    [Required]
+    public required string ImageUrl { get; init; }
 }
