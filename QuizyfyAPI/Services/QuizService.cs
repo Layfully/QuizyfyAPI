@@ -8,156 +8,159 @@ using QuizyfyAPI.Data;
 using QuizyfyAPI.Domain;
 
 namespace QuizyfyAPI.Services;
+
 public class QuizService : IQuizService
 {
     private readonly IQuizRepository _quizRepository;
     private readonly IImageRepository _imageRepository;
     private readonly IMemoryCache _cache;
     private readonly IMapper _mapper;
-    private readonly IQuestionService _questionService;
 
-    public QuizService(IQuizRepository quizRepository, IImageRepository imageRepository, IMemoryCache cache, IMapper mapper, IQuestionService questionService)
+    public QuizService(IQuizRepository quizRepository, IImageRepository imageRepository, IMemoryCache cache,
+        IMapper mapper)
     {
         _quizRepository = quizRepository;
         _imageRepository = imageRepository;
         _cache = cache;
         _mapper = mapper;
-        _questionService = questionService;
     }
 
     public async Task<ObjectResult<QuizResponse>> Get(int id, bool includeQuestions)
     {
-        if (!_cache.TryGetValue("Quizzes", out Quiz quiz))
+        string cacheKey = $"Quiz_{id}";
+
+        if (!_cache.TryGetValue(cacheKey, out Quiz? quiz))
         {
             quiz = await _quizRepository.GetQuiz(id, includeQuestions);
-            _cache.Set($"Quiz {id}", quiz);
+
+            if (quiz is not null)
+            {
+                _cache.Set(cacheKey, quiz, TimeSpan.FromMinutes(5));
+            }
         }
 
-        if (quiz == null)
+        if (quiz is null)
         {
-            return new ObjectResult<QuizResponse> { Errors = new[] { "Couldn't find this quiz" } };
+            return new ObjectResult<QuizResponse> { Errors = ["Couldn't find this quiz"] };
         }
-        return new ObjectResult<QuizResponse> { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
+
+        return new ObjectResult<QuizResponse>
+            { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
     }
 
     public async Task<ObjectResult<QuizResponse>> Create(QuizCreateRequest request)
     {
-        var quiz = _mapper.Map<Quiz>(request);
+        Quiz? quiz = _mapper.Map<Quiz>(request);
 
-        if (quiz != null)
+        quiz.DateAdded = DateTime.UtcNow;
+
+        if (!string.IsNullOrEmpty(request.ImageUrl))
         {
-            quiz.DateAdded = DateTime.Now;
-            _quizRepository.Add(quiz);
+            quiz.Image = await _imageRepository.GetImageByUrl(request.ImageUrl);
         }
 
-        quiz.Image = await _imageRepository.GetImageByUrl(request.ImageUrl);
+        _quizRepository.Add(quiz);
 
         if (await _quizRepository.SaveChangesAsync())
         {
-            _cache.Set($"Quiz {quiz.Id}", quiz);
-            _cache.Remove($"Quizzes");
+            _cache.Set($"Quiz_{quiz.Id}", quiz, TimeSpan.FromMinutes(5));
+            // _cache.Remove("All_Quizzes"); TODO: Remove all quizzes cache if implemented
 
-            return new ObjectResult<QuizResponse> { Object = _mapper.Map<QuizResponse>(quiz), Found = true, Success = true };
+            return new ObjectResult<QuizResponse>
+                { Object = _mapper.Map<QuizResponse>(quiz), Found = true, Success = true };
         }
-        return new ObjectResult<QuizResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+
+        return new ObjectResult<QuizResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
     }
 
     public async Task<ObjectResult<QuizResponse>> Update(int quizId, QuizUpdateRequest request)
     {
-        var quiz = await _quizRepository.GetQuiz(quizId);
+        Quiz? quiz = await _quizRepository.GetQuiz(quizId);
 
-        if (quiz == null)
+        if (quiz is null)
         {
-            return new ObjectResult<QuizResponse> { Errors = new[] { "Couldn't find quiz this quiz" } };
+            return new ObjectResult<QuizResponse> { Errors = ["Couldn't find quiz this quiz"] };
         }
+
+        _mapper.Map(request, quiz);
 
         _quizRepository.Update(quiz);
 
-        quiz = _mapper.Map<Quiz>(request);
-
         if (await _quizRepository.SaveChangesAsync())
         {
-            _cache.Set($"Quiz {quizId}", quiz);
-            _cache.Remove($"Quizzes");
-            return new ObjectResult<QuizResponse> { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
+            _cache.Set($"Quiz_{quizId}", quiz, TimeSpan.FromMinutes(5));
+            //TODO: _cache.Remove($"Quizzes");
+            return new ObjectResult<QuizResponse>
+                { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
         }
-        return new ObjectResult<QuizResponse> { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+
+        return new ObjectResult<QuizResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
     }
 
     public async Task<DetailedResult> Delete(int quizId)
     {
-        var quiz = await _quizRepository.GetQuiz(quizId);
+        Quiz? quiz = await _quizRepository.GetQuiz(quizId);
 
-        if (quiz == null)
+        if (quiz is null)
         {
-            return new DetailedResult { Errors = new[] { "Couldn't find this quiz" } };
+            return new DetailedResult { Errors = ["Couldn't find this quiz"] };
         }
 
         _quizRepository.Delete(quiz);
 
         if (await _quizRepository.SaveChangesAsync())
         {
-            _cache.Remove($"Quiz {quizId}");
+            _cache.Remove($"Quiz_{quizId}");
             return new DetailedResult { Success = true, Found = true };
         }
 
-        return new DetailedResult { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+        return new DetailedResult { Found = true, Errors = ["Action didn't affect any rows"] };
     }
 
-    public Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext)
+    public async Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpResponse response,
+        HttpContext httpContext)
     {
-        return Task.Run(() =>
+        var pagedList = await _quizRepository.GetQuizzes(pagingParams);
+
+        if (pagedList.List.Count == 0)
         {
-            PagedList<Quiz> obj = _quizRepository.GetQuizzes(pagingParams);
+            return new ObjectResult<QuizListResponse> { Errors = ["No quizzes found"] };
+        }
 
-            if (obj.List.Count == 0)
-            {
-                return new ObjectResult<QuizListResponse> { Errors = new[] { "Couldn't find this quiz" } };
-            }
+        QuizListResponse output = new()
+        {
+            Paging = pagedList.GetHeader(),
+            Links = GetLinks(pagedList, httpContext),
+            Items = _mapper.Map<List<QuizResponse>>(pagedList.List)
+        };
 
-            var output = new QuizListResponse
-            {
-                Paging = obj.GetHeader(),
-                Links = GetLinks(obj, httpContext),
-                Items = _mapper.Map<List<QuizResponse>>(obj.List)
-            };
-
-            return new ObjectResult<QuizListResponse> { Success = true, Found = true, Object = output };
-        });
+        return new ObjectResult<QuizListResponse> { Success = true, Found = true, Object = output };
     }
 
-    private List<LinkInfo> GetLinks(PagedList<Quiz> list, HttpContext HttpContext)
+    private List<LinkInfo> GetLinks(PagedList<Quiz> list, HttpContext httpContext)
     {
-        var links = new List<LinkInfo>();
+        List<LinkInfo> links = [];
 
         if (list.HasPreviousPage)
         {
-            links.Add(CreateLink(HttpContext, list.PreviousPageNumber,
-                       list.PageSize, "previousPage", "GET"));
+            links.Add(CreateLink(httpContext, list.PreviousPageNumber, list.PageSize, "previousPage", "GET"));
         }
 
-        links.Add(CreateLink(HttpContext, list.PageNumber,
-                       list.PageSize, "self", "GET"));
+        links.Add(CreateLink(httpContext, list.PageNumber, list.PageSize, "self", "GET"));
 
         if (list.HasNextPage)
         {
-            links.Add(CreateLink(HttpContext, list.NextPageNumber,
-                       list.PageSize, "nextPage", "GET"));
+            links.Add(CreateLink(httpContext, list.NextPageNumber, list.PageSize, "nextPage", "GET"));
         }
 
         return links;
     }
 
-    private LinkInfo CreateLink(
-                                HttpContext HttpContext,
-                                int pageNumber,
-                                int pageSize,
-                                string rel,
-                                string method)
+    private LinkInfo CreateLink(HttpContext httpContext, int pageNumber, int pageSize, string rel, string method)
     {
         return new LinkInfo
         {
-            Href = HttpContext.Request.Path + $"?PageNumber={pageNumber}&PageSize={pageSize}",
+            Href = $"{httpContext.Request.Path}?PageNumber={pageNumber}&PageSize={pageSize}",
             Rel = rel,
             Method = method
         };

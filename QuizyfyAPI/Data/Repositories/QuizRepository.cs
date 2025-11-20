@@ -8,36 +8,38 @@ public class QuizRepository : Repository, IQuizRepository
     {
     }
 
-    public PagedList<Quiz> GetQuizzes(PagingParams pagingParams, bool includeQuestions = false)
+    // Changed return type to Task<PagedList> and marked async
+    public async Task<PagedList<Quiz>> GetQuizzes(PagingParams pagingParams, bool includeQuestions = false)
     {
-        _logger.LogInformation($"Getting all quizzes");
+        _logger.LogInformation("Getting all quizzes");
 
-        IQueryable<Quiz> query = _context.Quizzes;
+        IQueryable<Quiz> query = _context.Quizzes.AsNoTracking();
 
         if (includeQuestions)
         {
-            _logger.LogInformation($"With questions");
-            query = query.Include(quiz => quiz.Questions).ThenInclude(question => question.Choices);
+            _logger.LogInformation("Including questions in query");
+            query = query.Include(quiz => quiz.Questions)
+                .ThenInclude(question => question.Choices);
         }
 
         query = query.Include(quiz => quiz.Image);
-        return new PagedList<Quiz>(query, pagingParams.PageNumber, pagingParams.PageSize);
+
+        return await PagedList<Quiz>.CreateAsync(query, pagingParams.PageNumber, pagingParams.PageSize);
     }
 
-    public Task<Quiz> GetQuiz(int id, bool includeQuestions = false)
+    public Task<Quiz?> GetQuiz(int id, bool includeQuestions = false)
     {
-        _logger.LogInformation($"Getting one quiz");
+        _logger.LogInformation("Getting quiz with id {Id}", id);
 
         IQueryable<Quiz> query = _context.Quizzes;
 
         if (includeQuestions)
         {
-            _logger.LogInformation($"With questions");
-            query = query.Include(quiz => quiz.Questions).ThenInclude(question => question.Choices);
+            _logger.LogInformation("Including questions in query");
+            query = query.Include(quiz => quiz.Questions)
+                .ThenInclude(question => question.Choices);
         }
 
-        query = query.Where(quiz => quiz.Id == id);
-
-        return query.FirstOrDefaultAsync();
+        return query.FirstOrDefaultAsync(quiz => quiz.Id == id);
     }
 }
