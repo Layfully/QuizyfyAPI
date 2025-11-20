@@ -22,7 +22,11 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         string message = _hostEnvironment.IsDevelopment() ? $"Internal Server Error: {exception.Message} \n {exception.StackTrace}" : "An internal error occurred. Please try again later.";
 
-        ErrorResponse response = new(httpContext.Response.StatusCode, message);
+        ErrorResponse response = new()
+        {
+            StatusCode = httpContext.Response.StatusCode,
+            Message = message
+        };
         
         await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
         
