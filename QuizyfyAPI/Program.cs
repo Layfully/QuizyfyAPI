@@ -5,13 +5,16 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.RateLimiting;
 using QuizyfyAPI;
 using QuizyfyAPI.Data;
-using QuizyfyAPI.Middleware;
+using QuizyfyAPI.Handlers;
 using QuizyfyAPI.Options;
 using QuizyfyAPI.Services;
 using reCAPTCHA.AspNetCore;
 using SendGrid;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // --- CONFIGURATION & SERVICES ---
 
@@ -102,7 +105,7 @@ app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(
 
 app.UseRateLimiter();
 
-app.UseMiddleware<ExceptionMiddleware>();
+app.UseExceptionHandler(); 
 
 app.UseAuthentication();
 app.UseAuthorization();
