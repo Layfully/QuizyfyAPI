@@ -6,7 +6,7 @@ using QuizyfyAPI.Domain;
 namespace QuizyfyAPI.Services;
 public interface IQuizService : IService
 {
-    Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpResponse response, HttpContext httpContext);
+    Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpContext httpContext);
     Task<ObjectResult<QuizResponse>> Get(int id, bool includeQuestions);
     Task<ObjectResult<QuizResponse>> Create(QuizCreateRequest request);
     Task<ObjectResult<QuizResponse>> Update(int quizId, QuizUpdateRequest request);

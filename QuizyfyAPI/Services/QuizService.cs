@@ -15,37 +15,39 @@ public class QuizService : IQuizService
     private readonly IImageRepository _imageRepository;
     private readonly IMemoryCache _cache;
     private readonly IMapper _mapper;
-
-    public QuizService(IQuizRepository quizRepository, IImageRepository imageRepository, IMemoryCache cache,
-        IMapper mapper)
+    private readonly ILogger<QuizService> _logger;
+    
+    public QuizService(
+        IQuizRepository quizRepository, 
+        IImageRepository imageRepository, 
+        IMemoryCache cache,
+        IMapper mapper,
+        ILogger<QuizService> logger)
     {
         _quizRepository = quizRepository;
         _imageRepository = imageRepository;
         _cache = cache;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<ObjectResult<QuizResponse>> Get(int id, bool includeQuestions)
     {
-        string cacheKey = $"Quiz_{id}";
+        string cacheKey = $"Quiz_{id}_{includeQuestions}";
 
-        if (!_cache.TryGetValue(cacheKey, out Quiz? quiz))
+        Quiz? quiz = await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            quiz = await _quizRepository.GetQuiz(id, includeQuestions);
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+            return await _quizRepository.GetQuiz(id, includeQuestions);
+        });
 
-            if (quiz is not null)
-            {
-                _cache.Set(cacheKey, quiz, TimeSpan.FromMinutes(5));
-            }
-        }
 
         if (quiz is null)
         {
             return new ObjectResult<QuizResponse> { Errors = ["Couldn't find this quiz"] };
         }
 
-        return new ObjectResult<QuizResponse>
-            { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
+        return new ObjectResult<QuizResponse> { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
     }
 
     public async Task<ObjectResult<QuizResponse>> Create(QuizCreateRequest request)
@@ -56,18 +58,25 @@ public class QuizService : IQuizService
 
         if (!string.IsNullOrEmpty(request.ImageUrl))
         {
-            quiz.Image = await _imageRepository.GetImageByUrl(request.ImageUrl);
+            Image? image = await _imageRepository.GetImageByUrl(request.ImageUrl);
+            
+            if (image is not null)
+            {
+                quiz.Image = image;
+            }
+            else
+            {
+                _logger.LogWarning("Quiz created with ImageUrl '{Url}' but image not found in DB.", request.ImageUrl);
+            }
         }
 
         _quizRepository.Add(quiz);
 
         if (await _quizRepository.SaveChangesAsync())
         {
-            _cache.Set($"Quiz_{quiz.Id}", quiz, TimeSpan.FromMinutes(5));
-            // _cache.Remove("All_Quizzes"); TODO: Remove all quizzes cache if implemented
+            _cache.Set($"Quiz_{quiz.Id}_False", quiz, TimeSpan.FromMinutes(5));
 
-            return new ObjectResult<QuizResponse>
-                { Object = _mapper.Map<QuizResponse>(quiz), Found = true, Success = true };
+            return new ObjectResult<QuizResponse> { Object = _mapper.Map<QuizResponse>(quiz), Found = true, Success = true };
         }
 
         return new ObjectResult<QuizResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
@@ -83,15 +92,30 @@ public class QuizService : IQuizService
         }
 
         _mapper.Map(request, quiz);
+        
+        if (request.ImageId.HasValue && request.ImageId != 0)
+        {
+            Image? newImage = await _imageRepository.GetImage(request.ImageId.Value);
+            
+            if (newImage is null)
+            {
+                return new ObjectResult<QuizResponse> { Errors = ["Invalid ImageId provided"] };
+            }
+            
+            quiz.Image = newImage;
+        }
 
+        
         _quizRepository.Update(quiz);
 
         if (await _quizRepository.SaveChangesAsync())
         {
-            _cache.Set($"Quiz_{quizId}", quiz, TimeSpan.FromMinutes(5));
-            //TODO: _cache.Remove($"Quizzes");
-            return new ObjectResult<QuizResponse>
-                { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
+            _cache.Remove($"Quiz_{quizId}_True");
+            _cache.Remove($"Quiz_{quizId}_False");
+            
+            _cache.Set($"Quiz_{quizId}_False", quiz, TimeSpan.FromMinutes(5));
+            
+            return new ObjectResult<QuizResponse> { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
         }
 
         return new ObjectResult<QuizResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
@@ -110,15 +134,15 @@ public class QuizService : IQuizService
 
         if (await _quizRepository.SaveChangesAsync())
         {
-            _cache.Remove($"Quiz_{quizId}");
+            _cache.Remove($"Quiz_{quizId}_True");
+            _cache.Remove($"Quiz_{quizId}_False");
             return new DetailedResult { Success = true, Found = true };
         }
 
         return new DetailedResult { Found = true, Errors = ["Action didn't affect any rows"] };
     }
 
-    public async Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpResponse response,
-        HttpContext httpContext)
+    public async Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpContext httpContext)
     {
         var pagedList = await _quizRepository.GetQuizzes(pagingParams);
 
@@ -137,7 +161,7 @@ public class QuizService : IQuizService
         return new ObjectResult<QuizListResponse> { Success = true, Found = true, Object = output };
     }
 
-    private List<LinkInfo> GetLinks(PagedList<Quiz> list, HttpContext httpContext)
+    private static List<LinkInfo> GetLinks(PagedList<Quiz> list, HttpContext httpContext)
     {
         List<LinkInfo> links = [];
 
@@ -156,7 +180,7 @@ public class QuizService : IQuizService
         return links;
     }
 
-    private LinkInfo CreateLink(HttpContext httpContext, int pageNumber, int pageSize, string rel, string method)
+    private static LinkInfo CreateLink(HttpContext httpContext, int pageNumber, int pageSize, string rel, string method)
     {
         return new LinkInfo
         {
