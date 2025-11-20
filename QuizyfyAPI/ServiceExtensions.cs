@@ -7,6 +7,8 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Reflection;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using QuizyfyAPI.Options;
 
@@ -158,6 +160,56 @@ public static class ServiceExtensions
 
                 return new BadRequestObjectResult(actionContext.ModelState);
             };
+        });
+    }
+    
+    public static IServiceCollection AddCustomRateLimiting(this IServiceCollection services, RateLimitOptions rateLimitOptions)
+    {
+        return services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
+                CreateStrictPartition(rateLimitOptions, 2, TimeSpan.FromSeconds(1)),
+                CreateStrictPartition(rateLimitOptions, 10, TimeSpan.FromSeconds(30)),
+                CreateStrictPartition(rateLimitOptions, 20, TimeSpan.FromMinutes(2)),
+                CreateStrictPartition(rateLimitOptions, 100, TimeSpan.FromMinutes(15)),
+                CreateStrictPartition(rateLimitOptions, 1000, TimeSpan.FromHours(12)),
+                CreateStrictPartition(rateLimitOptions, 10000, TimeSpan.FromDays(7))
+            );
+        });
+    }
+
+    private static PartitionedRateLimiter<HttpContext> CreateStrictPartition(RateLimitOptions settings, int limit, TimeSpan window)
+    {
+        return PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        {
+            var rateLimitMeta = context.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>();
+            if (rateLimitMeta?.PolicyName != "StrictAuth")
+            {
+                return RateLimitPartition.GetNoLimiter("NoLimit");
+            }
+
+            string remoteIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            if (!string.IsNullOrEmpty(settings.RealIpHeader) && 
+                context.Request.Headers.TryGetValue(settings.RealIpHeader, out var headerIp))
+            {
+                remoteIp = headerIp.ToString();
+            }
+
+            if (settings.IpWhitelist.Contains(remoteIp))
+            {
+                return RateLimitPartition.GetNoLimiter("Whitelisted");
+            }
+
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: remoteIp,
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    AutoReplenishment = true,
+                    PermitLimit = limit,
+                    Window = window,
+                    QueueLimit = 0
+                });
         });
     }
 }
