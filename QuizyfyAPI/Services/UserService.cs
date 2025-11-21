@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
+using SendGrid;
 
 namespace QuizyfyAPI.Services;
 public class UserService : IUserService
@@ -23,8 +24,17 @@ public class UserService : IUserService
     private readonly IPwnedPasswordsClient _pwnedPasswordsClient;
     private readonly IMapper _mapper;
     private readonly ISendGridService _mailService;
+    private readonly ILogger<UserService> _logger;
 
-    public UserService(IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, TokenValidationParameters tokenValidationParameters, IPwnedPasswordsClient pwnedPasswordsClient, IMapper mapper, ISendGridService mailService)
+    public UserService(
+        IRefreshTokenRepository refreshTokenRepository, 
+        IUserRepository userRepository, 
+        IOptions<JwtOptions> jwtOptions, 
+        TokenValidationParameters tokenValidationParameters, 
+        IPwnedPasswordsClient pwnedPasswordsClient, 
+        IMapper mapper, 
+        ISendGridService mailService,
+        ILogger<UserService> logger)
     {
         _refreshTokenRepository = refreshTokenRepository;
         _userRepository = userRepository;
@@ -33,44 +43,54 @@ public class UserService : IUserService
         _pwnedPasswordsClient = pwnedPasswordsClient;
         _mapper = mapper;
         _mailService = mailService;
+        _logger = logger;
 
         _tokenValidationParameters.ValidateLifetime = false;
     }
 
     public async Task<ObjectResult<UserResponse>> Login(UserLoginRequest request)
     {
-        var user = await _userRepository.Authenticate(request.Username, request.Password.Normalize(NormalizationForm.FormKC));
+        User? user = await _userRepository.Authenticate(request.Username, request.Password.Normalize(NormalizationForm.FormKC));
 
         if (user == null)
         {
-            return new ObjectResult<UserResponse> { Success = false, Errors = new[] { "Wrong user credentials" } };
+            return new ObjectResult<UserResponse> { Success = false, Errors = ["Wrong user credentials"] };
+            
         }
-        else if (!user.EmailConfirmed)
+        
+        if (!user.EmailConfirmed)
         {
-            return new ObjectResult<UserResponse> { Success = false, Errors = new[] { "Email is not verified" } };
+            return new ObjectResult<UserResponse> { Success = false, Errors = ["Email is not verified"] };
         }
-        return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(await RequestToken(user)) };
+        
+        User userWithToken = await RequestToken(user);
+        
+        return new ObjectResult<UserResponse> 
+        { 
+            Success = true, 
+            Object = _mapper.Map<UserResponse>(userWithToken) 
+        };
     }
 
     public async Task<BasicResult> Register(UserRegisterRequest request)
     {
-        var user = _mapper.Map<User>(request);
-
-        if (await _userRepository.GetUserByUsername(request.Username) != null)
+        if (await _userRepository.GetUserByUsername(request.Username) is not null)
         {
-            return new BasicResult { Errors = new[] { "Username: " + user.Username + " is already taken" } };
+            return new BasicResult { Errors = [$"Username: {request.Username} is already taken"] };
         }
 
-        if (await _userRepository.GetUserByEmail(request.Email) != null)
+        if (await _userRepository.GetUserByEmail(request.Email) is not null)
         {
-            return new BasicResult { Errors = new[] { "Email: " + user.Email + " is already taken" } };
+            return new BasicResult { Errors = [$"Email: {request.Email} is already taken"] };
         }
 
         if (await _pwnedPasswordsClient.HasPasswordBeenPwned(request.Password))
         {
-            return new BasicResult { Errors = new[] { "This password has been leaked in data leak. Please use different password." } };
+            return new BasicResult { Errors = ["This password has been leaked in a data breach. Please use a different password."] };
         }
 
+        User? user = _mapper.Map<User>(request);
+        
         Hash.Create(request.Password.Normalize(NormalizationForm.FormKC), out byte[] passwordHash, out byte[] passwordSalt);
 
         user.PasswordHash = passwordHash;
@@ -84,13 +104,14 @@ public class UserService : IUserService
             return new BasicResult { Errors = new[] { "User registration failed." } };
         }
 
-        var sendConfirmationResponse = await _mailService.SendConfirmationEmailTo(user);
+        Response sendConfirmationResponse = await _mailService.SendConfirmationEmailTo(user);
 
-        if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted)
+        if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted && sendConfirmationResponse.StatusCode != HttpStatusCode.OK)
         {
             _userRepository.Delete(user);
             await _userRepository.SaveChangesAsync();
-            return new BasicResult { Errors = new[] { "Sending registration email failed." + await sendConfirmationResponse.Body.ReadAsStringAsync() + " ----- Headers ------ " + sendConfirmationResponse.Headers.ToString()} };
+            string body = await sendConfirmationResponse.Body.ReadAsStringAsync();
+            return new BasicResult { Errors = [$"Sending registration email failed. {body}"] };
         }
 
         return new BasicResult { Success = true };
@@ -98,50 +119,49 @@ public class UserService : IUserService
 
     public async Task<ObjectResult<UserResponse>> Update(int userId, UserUpdateRequest request)
     {
-        var user = await _userRepository.GetUserById(userId);
+        User? user = await _userRepository.GetUserById(userId);
 
-        if (user == null)
+        if (user is null)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
+            return new ObjectResult<UserResponse> { Errors = [$"Couldn't find user with id of {userId}"] };
         }
 
-        if (user.Username != request.Username && await _userRepository.GetUserByUsername(request.Username) != null)
+        if (user.Username != request.Username && await _userRepository.GetUserByUsername(request.Username!) is not null)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "User with this username already exists!" } };
+            return new ObjectResult<UserResponse> { Errors = ["User with this username already exists!"] };
         }
 
-        if (user.Email != request.Email && await _userRepository.GetUserByEmail(request.Email) != null)
+        if (user.Email != request.Email && await _userRepository.GetUserByEmail(request.Email!) is not null)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "User with this email already exists!" } };
-        }
-
-        _userRepository.Update(user);
-
-        if (!string.IsNullOrEmpty(request.Password))
-        {
-            Hash.Create(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
+            return new ObjectResult<UserResponse> { Errors = ["User with this email already exists!"] };
         }
 
         _mapper.Map(request, user);
+        
+        if (!string.IsNullOrEmpty(request.Password))
+        {
+            Hash.Create(request.Password.Normalize(NormalizationForm.FormKC), out byte[] passwordHash, out byte[] passwordSalt);
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+        }
+        
+        _userRepository.Update(user);
 
         if (await _userRepository.SaveChangesAsync())
         {
             return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
         }
 
-        return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
+        return new ObjectResult<UserResponse> { Errors = ["No rows were affected"] };
     }
 
     public async Task<DetailedResult> Delete(int userId)
     {
-        var user = await _userRepository.GetUserById(userId);
+        User? user = await _userRepository.GetUserById(userId);
 
         if (user == null)
         {
-            return new DetailedResult { Errors = new[] { "User with given id was not found" } };
+            return new DetailedResult { Errors = ["User with given id was not found"] };
         }
 
         _userRepository.Delete(user);
@@ -151,53 +171,53 @@ public class UserService : IUserService
             return new DetailedResult { Success = true, Found = true };
         }
 
-        return new DetailedResult { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+        return new DetailedResult { Found = true, Errors = ["Action didn't affect any rows"] };
     }
 
     public async Task<ObjectResult<UserResponse>> RefreshTokenAsync(UserRefreshRequest request)
     {
-        var validatedToken = GetPrincipalFromToken(request.JwtToken);
+        ClaimsPrincipal? validatedToken = GetPrincipalFromToken(request.JwtToken);
 
-        if (validatedToken == null)
+        if (validatedToken is null)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "Invalid token" } };
+            return new ObjectResult<UserResponse> { Errors = ["Invalid token"] };
         }
 
-        var expiryDateUnix = long.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
-        var expiryDateUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(expiryDateUnix);
-
+        long expiryDateUnix = long.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+        DateTime expiryDateUtc = DateTime.UnixEpoch.AddSeconds(expiryDateUnix);
+        
         if (expiryDateUtc > DateTime.UtcNow)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "This token hasn't expired yet" } };
+            return new ObjectResult<UserResponse> { Errors = ["This token hasn't expired yet"] };
         }
 
-        var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
+        string jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
 
-        var storedRefreshToken = await _refreshTokenRepository.GetRefreshToken(request.RefreshToken);
+        RefreshToken? storedRefreshToken = await _refreshTokenRepository.GetRefreshToken(request.RefreshToken);
 
-        if (storedRefreshToken == null)
+        if (storedRefreshToken is null)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token doesn't exist" } };
+            return new ObjectResult<UserResponse> { Errors = ["This refresh token doesn't exist"] };
         }
 
         if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "Token Expired" } };
+            return new ObjectResult<UserResponse> { Errors = ["Token Expired"] };
         }
 
         if (storedRefreshToken.Invalidated)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token has been invalidated" } };
+            return new ObjectResult<UserResponse> { Errors = ["This refresh token has been invalidated"] };
         }
 
         if (storedRefreshToken.Used)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token has been used" } };
+            return new ObjectResult<UserResponse> { Errors = ["This refresh token has been used"] };
         }
 
         if (storedRefreshToken.JwtId != jti)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "This refresh token does not match this JWT" } };
+            return new ObjectResult<UserResponse> { Errors = ["This refresh token does not match this JWT"] };
         }
 
         storedRefreshToken.Used = true;
@@ -205,8 +225,14 @@ public class UserService : IUserService
 
         await _userRepository.SaveChangesAsync();
 
-        var user = await _userRepository.GetUserById(Int32.Parse(validatedToken.Claims.Single(x => x.Type == ClaimTypes.Name).Value));
+        string userIdClaim = validatedToken.Claims.Single(x => x.Type == "id").Value;
+        User user = await _userRepository.GetUserById(int.Parse(userIdClaim));
 
+        if (user is null)
+        {
+            return new ObjectResult<UserResponse> { Errors = ["User not found"] };
+        }
+        
         user = await RequestToken(user);
 
         return new ObjectResult<UserResponse>
@@ -218,22 +244,23 @@ public class UserService : IUserService
 
     public async Task<User> RequestToken(User user)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
-        var tokenDescriptor = new SecurityTokenDescriptor
+        JwtSecurityTokenHandler tokenHandler = new();
+        byte[] key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
+        
+        SecurityTokenDescriptor tokenDescriptor = new()
         {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
+            Subject = new ClaimsIdentity([
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("Id", user.Id.ToString())
-            }),
+                new Claim("id", user.Id.ToString())
+            ]),
 
             Expires = DateTime.UtcNow.AddMinutes(15),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+        
+        SecurityToken? token = tokenHandler.CreateToken(tokenDescriptor);
 
         user.RefreshToken = new RefreshToken()
         {
@@ -245,89 +272,90 @@ public class UserService : IUserService
         user.JwtToken = tokenHandler.WriteToken(token);
 
         _refreshTokenRepository.Add(user.RefreshToken);
+        
         await _userRepository.SaveChangesAsync();
         await _refreshTokenRepository.SaveChangesAsync();
+        
         return user;
     }
 
     public async Task<ObjectResult<UserResponse>> VerifyEmail(int userId, string token)
     {
-        var user = await _userRepository.GetUserById(userId);
+        User? user = await _userRepository.GetUserById(userId);
 
-        if (user == null)
+        if (user is null)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
+            return new ObjectResult<UserResponse> { Errors = [$"Couldn't find user with id of {userId}"] };
         }
 
         if (user.VerificationToken != token)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "Email verification token is invalid!" } };
+            return new ObjectResult<UserResponse> { Errors = ["Email verification token is invalid!"] };
         }
+        
+        user.EmailConfirmed = true;
+        user.VerificationToken = null;
 
         _userRepository.Update(user);
-
-        user.EmailConfirmed = true;
 
         if (await _userRepository.SaveChangesAsync())
         {
             return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
         }
 
-        return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
+        return new ObjectResult<UserResponse> { Errors = ["No rows were affected"] };
     }
 
     public async Task<ObjectResult<UserResponse>> RecoverPassword(int userId, string token, string password)
     {
-        var user = await _userRepository.GetUserById(userId);
+        User? user = await _userRepository.GetUserById(userId);
 
-        if (user == null)
+        if (user is null)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with id of {userId}" } };
+            return new ObjectResult<UserResponse> { Errors = [$"Couldn't find user with id of {userId}"] };
         }
 
         if (user.RecoveryToken != token)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { "Password recovery token is invalid!" } };
+            return new ObjectResult<UserResponse> { Errors = ["Password recovery token is invalid!"] };
         }
-
-        _userRepository.Update(user);
 
         if (!string.IsNullOrEmpty(password))
         {
-            Hash.Create(password, out byte[] passwordHash, out byte[] passwordSalt);
+            Hash.Create(password.Normalize(NormalizationForm.FormKC), out byte[] passwordHash, out byte[] passwordSalt);
 
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
             user.RecoveryToken = null;
         }
-
+        
+        _userRepository.Update(user);
+        
         if (await _userRepository.SaveChangesAsync())
         {
             return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
         }
 
-        return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
+        return new ObjectResult<UserResponse> { Errors = ["No rows were affected"] };
     }
 
     public async Task<ObjectResult<UserResponse>> GenerateRecoveryToken(RecoveryTokenGenerationRequest request)
     {
+        User? user = await _userRepository.GetUserByEmail(request.Email);
 
-        var user = await _userRepository.GetUserByEmail(request.Email);
-
-        if (user == null)
+        if (user is null)
         {
-            return new ObjectResult<UserResponse> { Errors = new[] { $"Couldn't find user with email: {request.Email}" } };
+            return new ObjectResult<UserResponse> { Errors = [$"Couldn't find user with email: {request.Email}"] };
         }
 
-        _userRepository.Update(user);
-
         user.RecoveryToken = Guid.NewGuid().ToString();
-
-        var sendConfirmationResponse = await _mailService.SendPasswordResetEmailTo(user);
-
-        if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted)
+        _userRepository.Update(user);
+        
+        Response sendConfirmationResponse = await _mailService.SendPasswordResetEmailTo(user);
+        
+        if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted && sendConfirmationResponse.StatusCode != HttpStatusCode.OK)
         {
-            user.RecoveryToken = null;
+            return new ObjectResult<UserResponse> { Errors = ["Failed to send recovery email"] };
         }
 
         if (await _userRepository.SaveChangesAsync())
@@ -335,16 +363,16 @@ public class UserService : IUserService
             return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
         }
 
-        return new ObjectResult<UserResponse> { Errors = new[] { "No rows were affected" } };
+        return new ObjectResult<UserResponse> { Errors = ["No rows were affected"] };
     }
 
-    private ClaimsPrincipal GetPrincipalFromToken(string token)
+    private ClaimsPrincipal? GetPrincipalFromToken(string token)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
+        JwtSecurityTokenHandler tokenHandler = new();
 
         try
         {       
-            var principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out var validatedToken);
+            ClaimsPrincipal? principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out SecurityToken? validatedToken);
             if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
             {
                 return null;
@@ -354,7 +382,7 @@ public class UserService : IUserService
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            _logger.LogWarning(ex, "Token validation failed");
             return null;
         }
     }
