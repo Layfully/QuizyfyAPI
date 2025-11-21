@@ -10,7 +10,10 @@ public class LikeService : ILikeService
     private readonly ILikeRepository _likeRepository;
     private readonly IMapper _mapper;
 
-    public LikeService(IQuizRepository quizRepository, ILikeRepository likeRepository, IMapper mapper)
+    public LikeService(
+        IQuizRepository quizRepository, 
+        ILikeRepository likeRepository, 
+        IMapper mapper)
     {
         _quizRepository = quizRepository;
         _likeRepository = likeRepository;
@@ -19,52 +22,60 @@ public class LikeService : ILikeService
 
     public async Task<ObjectResult<LikeResponse>> Like(int quizId, int userId)
     {
-        var quiz = await _quizRepository.GetQuiz(quizId);
+        Quiz? quiz = await _quizRepository.GetQuiz(quizId);
 
-        if (quiz == null)
+        if (quiz is null)
         {
-            return new ObjectResult<LikeResponse> { Errors = new[] { "Quiz with given id was not found" } };
+            return new ObjectResult<LikeResponse> { Errors = ["Quiz with given id was not found"] };
         }
 
-        Like like;
+        Like? existingLike = await _likeRepository.GetLike(quizId, userId);
 
-        if ((like = await _likeRepository.GetLike(quizId, userId)) != null)
+        if (existingLike is not null)
         {
-            return new ObjectResult<LikeResponse> { Found = true, Success = true, Object = _mapper.Map<LikeResponse>(like) };
+            return new ObjectResult<LikeResponse> 
+            { 
+                Found = true, 
+                Success = true, 
+                Object = _mapper.Map<LikeResponse>(existingLike) 
+            };
         }
-
-        var likeModel = new LikeResponse
+        
+        Like like = new()
         {
             QuizId = quizId,
             UserId = userId
         };
 
-        like = _mapper.Map<Like>(likeModel);
-
         _likeRepository.Add(like);
 
         if (await _likeRepository.SaveChangesAsync())
         {
-            return new ObjectResult<LikeResponse> { Found = true, Success = true, Object = likeModel };
+            return new ObjectResult<LikeResponse> 
+            { 
+                Found = true, 
+                Success = true, 
+                Object = _mapper.Map<LikeResponse>(like) 
+            };
         }
 
-        return new ObjectResult<LikeResponse> { Found = true, Errors = new[] { "No rows were affected" } };
+        return new ObjectResult<LikeResponse> { Found = true, Errors = ["No rows were affected"] };
     }
 
     public async Task<DetailedResult> Delete(int quizId, int userId)
     {
-        var quiz = await _quizRepository.GetQuiz(quizId);
+        Quiz? quiz = await _quizRepository.GetQuiz(quizId);
 
-        if (quiz == null)
+        if (quiz is null)
         {
-            return new DetailedResult { Errors = new[] { "Quiz with given id was not found!" } };
+            return new DetailedResult { Errors = ["Quiz with given id was not found!"] };
         }
 
-        var like = await _likeRepository.GetLike(quizId, userId);
+        Like? like = await _likeRepository.GetLike(quizId, userId);
 
-        if (like == null)
+        if (like is null)
         {
-            return new DetailedResult { Errors = new[] { "Like for this quiz was not found!" } };
+            return new DetailedResult { Errors = ["Like for this quiz was not found!"] };
         }
 
         _likeRepository.Delete(like);
@@ -74,6 +85,6 @@ public class LikeService : ILikeService
             return new DetailedResult { Success = true, Found = true };
         }
 
-        return new DetailedResult { Found = true, Errors = new[] { "Action didn't affect any rows" } };
+        return new DetailedResult { Found = true, Errors = ["Action didn't affect any rows"] };
     }
 }
