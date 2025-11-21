@@ -1,30 +1,54 @@
-﻿namespace QuizyfyAPI.Helpers;
+﻿using System.Security.Cryptography;
+using System.Text;
+
+namespace QuizyfyAPI.Helpers;
 public static class Hash
 {
+    private const int Iterations = 350000; 
+    private const int HashSize = 64;
+    private const int SaltSize = 64;
+    
+    private static readonly HashAlgorithmName _algorithm = HashAlgorithmName.SHA512;
+    
     public static void Create(string stringToHash, out byte[] generatedHash, out byte[] generatedSalt)
     {
-        if (string.IsNullOrEmpty(stringToHash)) throw new ArgumentException("Value cannot be null, empty or whitespace only string.", nameof(stringToHash));
+        if (string.IsNullOrWhiteSpace(stringToHash))
+        {
+            throw new ArgumentException("Value cannot be empty.", nameof(stringToHash));
+        }
+        
+        generatedSalt = RandomNumberGenerator.GetBytes(SaltSize);
 
-        using var hmac = new System.Security.Cryptography.HMACSHA512();
-        generatedSalt = hmac.Key;
-        generatedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(stringToHash));
+        generatedHash = Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(stringToHash),
+            generatedSalt,
+            Iterations,
+            _algorithm,
+            HashSize
+        );
     }
 
     public static bool Verify(string stringToVerify, byte[] storedHash, byte[] storedSalt)
     {
-        if (string.IsNullOrWhiteSpace(stringToVerify)) throw new ArgumentException("Value cannot be empty or whitespace only string.", nameof(stringToVerify));
-        if (storedHash.Length != 64) throw new ArgumentException("Invalid length of password hash (64 bytes expected).", nameof(storedHash));
-        if (storedSalt.Length != 128) throw new ArgumentException("Invalid length of password salt (128 bytes expected).", nameof(storedSalt));
-
-        using (var hmac = new System.Security.Cryptography.HMACSHA512(storedSalt))
+        if (string.IsNullOrWhiteSpace(stringToVerify))
         {
-            var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(stringToVerify));
-            for (int i = 0; i < computedHash.Length; i++)
-            {
-                if (computedHash[i] != storedHash[i]) return false;
-            }
+            throw new ArgumentException("Value cannot be empty.", nameof(stringToVerify));
+
         }
 
-        return true;
+        if (storedHash.Length != HashSize || storedSalt.Length != SaltSize)
+        {
+            return false;
+        }
+
+        byte[] computedHash = Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(stringToVerify),
+            storedSalt,
+            Iterations,
+            _algorithm,
+            HashSize
+        );
+        
+        return CryptographicOperations.FixedTimeEquals(computedHash, storedHash);
     }
 }
