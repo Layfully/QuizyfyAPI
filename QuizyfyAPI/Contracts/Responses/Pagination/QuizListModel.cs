@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace QuizyfyAPI.Contracts.Responses.Pagination;
 
-namespace QuizyfyAPI.Contracts.Responses.Pagination;
-
-public record QuizListResponse
+internal sealed record QuizListResponse
 {
     [Required]
     public required PagingHeader Paging { get; init; }

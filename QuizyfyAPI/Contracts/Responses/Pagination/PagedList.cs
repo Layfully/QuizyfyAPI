@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿namespace QuizyfyAPI.Contracts.Responses.Pagination;
 
-namespace QuizyfyAPI.Contracts.Responses.Pagination;
-
-public class PagedList<T>
+internal sealed class PagedList<T>
 {
     public List<T> List { get; }
     public int TotalItems { get; }
@@ -35,8 +33,5 @@ public class PagedList<T>
         return new PagedList<T>(items, count, pageNumber, pageSize);
     }
 
-    public PagingHeader GetHeader()
-    {
-        return new PagingHeader(TotalItems, PageNumber, PageSize, TotalPages);
-    }
+    public PagingHeader GetHeader() => new(TotalItems, PageNumber, PageSize, TotalPages);
 }

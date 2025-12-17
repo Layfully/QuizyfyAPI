@@ -1,11 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Requests;
+﻿namespace QuizyfyAPI.Contracts.Requests;
 
 /// <summary>
 /// Request used to provide data for recovery password token generation.
 /// </summary>
-public record RecoveryTokenGenerationRequest
+internal sealed record RecoveryTokenGenerationRequest
 {
     [EmailAddress]
     [Required]

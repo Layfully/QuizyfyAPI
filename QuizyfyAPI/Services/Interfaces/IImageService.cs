@@ -1,8 +1,6 @@
-﻿using QuizyfyAPI.Contracts.Responses;
-using QuizyfyAPI.Domain;
+﻿namespace QuizyfyAPI.Services.Interfaces;
 
-namespace QuizyfyAPI.Services;
-public interface IImageService : IService
+internal interface IImageService : IService
 {
     Task<ObjectResult<ImageResponse[]>> GetAll();
     Task<ObjectResult<ImageResponse>> Get(int id);

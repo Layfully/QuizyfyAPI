@@ -1,11 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#pragma warning disable CA1852
+namespace QuizyfyAPI.Data.Entities;
 
-namespace QuizyfyAPI.Data;
-public class Choice
+internal class Choice
 {
     [Key]
     public int Id { get; set; }
     public int QuestionId { get; set; }
-    public string Text { get; set; }
+    [Required]
+    [MaxLength(500)]
+    public required string Text { get; set; }
     public bool IsRight { get; set; }
 }

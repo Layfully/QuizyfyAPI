@@ -1,7 +1,8 @@
 ﻿namespace QuizyfyAPI.Options;
-public class JwtOptions
+
+internal sealed class JwtOptions
 {
-    public required string Secret { get; init; }
+    public string Secret { get; init; } = string.Empty;
     public bool ValidateIssuerSigningKey { get; init; } = true;
     public bool ValidateIssuer { get; init; } = true;
     public bool ValidateAudience { get; init; } = true;

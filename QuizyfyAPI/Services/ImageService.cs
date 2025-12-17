@@ -1,57 +1,79 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore;
-using Microsoft.Extensions.Caching.Memory;
+﻿using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
-using QuizyfyAPI.Contracts.Responses;
-using QuizyfyAPI.Data;
-using QuizyfyAPI.Domain;
+using QuizyfyAPI.Data.Entities;
+using QuizyfyAPI.Data.Repositories.Interfaces;
+using QuizyfyAPI.Mappers;
 using QuizyfyAPI.Options;
+using QuizyfyAPI.Services.Interfaces;
 
 namespace QuizyfyAPI.Services;
-public class ImageService : IImageService
+
+internal sealed partial class ImageService : IImageService
 {
     private readonly IImageRepository _imageRepository;
-    private readonly IMemoryCache _cache;
-    private readonly IMapper _mapper;
+    private readonly HybridCache _hybridCache;
     private readonly AppOptions _appOptions;
     private readonly IWebHostEnvironment _webHostEnvironment;
+    private readonly IOutputCacheStore _outputCache;
     private readonly ILogger<ImageService> _logger;
     
     private const string AllImagesCacheKey = "Images";
-    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+    private static readonly SearchValues<string> _allowedExtensions = 
+        SearchValues.Create([".jpg", ".jpeg", ".png", ".gif", ".webp"], StringComparison.OrdinalIgnoreCase);
     
     public ImageService(
         IImageRepository imageRepository, 
-        IMemoryCache cache, 
-        IMapper mapper, 
+        HybridCache hybridCache, 
         IOptions<AppOptions> appOptions, 
         IWebHostEnvironment webHostEnvironment,
+        IOutputCacheStore outputCache,
         ILogger<ImageService> logger)
     {
         _imageRepository = imageRepository;
-        _cache = cache;
-        _mapper = mapper;
+        _hybridCache = hybridCache;
         _appOptions = appOptions.Value;
         _webHostEnvironment = webHostEnvironment;
+        _outputCache = outputCache;
         _logger = logger;
     }
+    
+    [LoggerMessage(Level = LogLevel.Error, Message = "Database error during image {Operation}. Cleaning up file.")]
+    private static partial void LogDatabaseError(ILogger logger, Exception ex, string operation);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Deleted physical file: {FilePath}")]
+    private static partial void LogDeletedFile(ILogger logger, string filePath);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Failed to delete physical file for URL: {ImageUrl}")]
+    private static partial void LogDeleteFileError(ILogger logger, Exception ex, string imageUrl);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Invalid file extension uploaded: {Extension}")]
+    private static partial void LogInvalidExtension(ILogger logger, string extension);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Uploaded file: {FilePath}")]
+    private static partial void LogUploadedFile(ILogger logger, string filePath);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Error uploading file: {FileName}")]
+    private static partial void LogUploadError(ILogger logger, Exception ex, string fileName);
+    
     public async Task<ObjectResult<ImageResponse[]>> GetAll()
     {
-        ICollection<Image>? images = await _cache.GetOrCreateAsync(AllImagesCacheKey, async entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
-            return await _imageRepository.GetImages();
-        });
-
-        if (images is null || images.Count == 0)
+        Image[] images = await _hybridCache.GetOrCreateAsync(
+            AllImagesCacheKey, 
+            async _ => await _imageRepository.GetImages(),
+            options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(10) }
+        );
+        
+        if (images.Length == 0)
         {
             return new ObjectResult<ImageResponse[]> { Errors = ["There are no images"] };
         }
         
         return new ObjectResult<ImageResponse[]> 
         { 
-            Object = _mapper.Map<ImageResponse[]>(images), 
+            Object = images.Select(i => i.ToResponse()).ToArray(), 
             Found = true, 
             Success = true 
         };    
@@ -59,52 +81,71 @@ public class ImageService : IImageService
 
     public async Task<ObjectResult<ImageResponse>> Get(int id)
     {
-        Image? image = await _cache.GetOrCreateAsync($"Image_{id}", async entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-            return await _imageRepository.GetImage(id);
-        });
+        Image? image = await _hybridCache.GetOrCreateAsync(
+            $"Image_{id}", 
+            async _ => await _imageRepository.GetImage(id),
+            options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(5) }
+        );
 
         if (image is null)
         {
             return new ObjectResult<ImageResponse> { Errors = ["Couldn't find this image"] };
         }
 
-        return new ObjectResult<ImageResponse> { Object = _mapper.Map<ImageResponse>(image), Found = true, Success = true };
+        return new ObjectResult<ImageResponse> 
+        { 
+            Object = image.ToResponse(), 
+            Found = true, 
+            Success = true 
+        };
     }
 
     public async Task<ObjectResult<ImageResponse>> Create(IFormFile file)
     {
-        if (file?.Length > 0)
+        if (file.Length == 0)
         {
-            string? imageUrl = await UploadFile(file);
+            return new ObjectResult<ImageResponse> { Errors = ["File is empty"] };
+        }
+        
+        string? imageUrl = await UploadFile(file);
 
-            if (string.IsNullOrEmpty(imageUrl))
+        if (string.IsNullOrEmpty(imageUrl))
+        {
+            return new ObjectResult<ImageResponse> { Errors = ["Server failed to save the file"] };
+        }
+
+        Image image = new()
+        {
+            ImageUrl = imageUrl
+        };
+
+        _imageRepository.Add(image);
+
+        try 
+        {
+            if (await _imageRepository.SaveChangesAsync())
             {
-                return new ObjectResult<ImageResponse> { Errors = ["Server failed to save the file"] };
+                await _hybridCache.RemoveAsync(AllImagesCacheKey);
+                await _outputCache.EvictByTagAsync("images", CancellationToken.None); 
+                    
+                await _hybridCache.SetAsync(
+                    $"Image_{image.Id}", 
+                    image,
+                    options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(5) }
+                );                    
+                    
+                return new ObjectResult<ImageResponse> 
+                { 
+                    Success = true, 
+                    Object = image.ToResponse() 
+                };
             }
-
-            Image image = new()
-            {
-                ImageUrl = imageUrl
-            };
-
-            _imageRepository.Add(image);
-
-            try 
-            {
-                if (await _imageRepository.SaveChangesAsync())
-                {
-                    _cache.Remove(AllImagesCacheKey);
-                    return new ObjectResult<ImageResponse> { Success = true, Object = _mapper.Map<ImageResponse>(image) };
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Database error during image creation. Cleaning up file.");
-                TryDeletePhysicalFile(imageUrl);
-                throw;
-            }
+        }
+        catch (Exception ex)
+        {
+            LogDatabaseError(_logger, ex, "creation");
+            TryDeletePhysicalFile(imageUrl);
+            throw;
         }
 
         return new ObjectResult<ImageResponse> { Errors = ["File couldn't be uploaded"] };
@@ -112,7 +153,7 @@ public class ImageService : IImageService
 
     public async Task<ObjectResult<ImageResponse>> Update(int id, IFormFile file)
     {
-        if (file is null || file.Length == 0)
+        if (file.Length == 0)
         {
             return new ObjectResult<ImageResponse> { Errors = ["New file is empty"] };
         }
@@ -143,12 +184,19 @@ public class ImageService : IImageService
             {
                 TryDeletePhysicalFile(oldImageUrl);
                 
-                _cache.Set($"Image_{image.Id}", image, TimeSpan.FromMinutes(5));
-                _cache.Remove(AllImagesCacheKey);
+                await _hybridCache.SetAsync(
+                    $"Image_{image.Id}", 
+                    image, 
+                    options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(5) }
+                );
+                
+                await _hybridCache.RemoveAsync(AllImagesCacheKey);
+                await _outputCache.EvictByTagAsync("images", CancellationToken.None);
+                await _outputCache.EvictByTagAsync("quizzes", CancellationToken.None);
                 
                 return new ObjectResult<ImageResponse> 
                 { 
-                    Object = _mapper.Map<ImageResponse>(image), 
+                    Object = image.ToResponse(), 
                     Found = true, 
                     Success = true 
                 };
@@ -156,7 +204,7 @@ public class ImageService : IImageService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Database error during image update. Cleaning up new file.");
+            LogDatabaseError(_logger, ex, "update");
             TryDeletePhysicalFile(newUrl);
             throw; 
         }
@@ -179,8 +227,11 @@ public class ImageService : IImageService
         if (await _imageRepository.SaveChangesAsync())
         {
             TryDeletePhysicalFile(image.ImageUrl);
-            _cache.Remove($"Image_{id}");
-            _cache.Remove(AllImagesCacheKey);
+            await _hybridCache.RemoveAsync($"Image_{id}");
+            await _hybridCache.RemoveAsync(AllImagesCacheKey);
+            
+            await _outputCache.EvictByTagAsync("images", CancellationToken.None);
+            await _outputCache.EvictByTagAsync("quizzes", CancellationToken.None);
             return new DetailedResult { Found = true, Success = true };
         }
 
@@ -190,6 +241,7 @@ public class ImageService : IImageService
     /// <summary>
     /// Safely attempts to delete a file from the web root. Logs on failure.
     /// </summary>
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     private void TryDeletePhysicalFile(string imageUrl)
     {
         if (string.IsNullOrWhiteSpace(imageUrl))
@@ -202,19 +254,22 @@ public class ImageService : IImageService
             string fileName = Path.GetFileName(imageUrl);
             string filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "quizzes", fileName);
 
-            if (File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
-                File.Delete(filePath);
-                _logger.LogInformation("Deleted physical file: {FilePath}", filePath);
+                return;
             }
+            
+            File.Delete(filePath);
+            LogDeletedFile(_logger, filePath);
         }
         catch (Exception ex)
         {
             // Log but don't throw, as the DB operation was already successful
-            _logger.LogWarning(ex, "Failed to delete physical file for URL: {ImageUrl}", imageUrl);
+            LogDeleteFileError(_logger, ex, imageUrl);
         }
     }
     
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     private async Task<string?> UploadFile(IFormFile file)
     {
         try
@@ -224,17 +279,17 @@ public class ImageService : IImageService
                 return null;
             }
 
-            string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            string extension = Path.GetExtension(file.FileName);
             
-            if (!AllowedExtensions.Contains(extension))
+            if (!_allowedExtensions.Contains(extension))
             {
-                _logger.LogWarning("Invalid file extension uploaded: {Extension}", extension);
+                LogInvalidExtension(_logger, extension);
                 return null;
             }
             
             string fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
             
-            // Truncate original name if too long to avoid filesystem errors
+            // Truncate the original name if too long to avoid filesystem errors
             if (fileNameWithoutExt.Length > 50) 
             {
                 fileNameWithoutExt = fileNameWithoutExt.Substring(0, 50);
@@ -249,14 +304,14 @@ public class ImageService : IImageService
             await using FileStream fileStream = File.Create(filePath);
             await file.CopyToAsync(fileStream);
             
-            _logger.LogInformation("Uploaded file: {FilePath}", filePath);
+            LogUploadedFile(_logger, filePath);
 
             string dbUrl = $"{_appOptions.ServerPath.TrimEnd('/')}/images/quizzes/{uniqueFileName}";
             return dbUrl;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading file: {FileName}", file.FileName);
+            LogUploadError(_logger, ex, file.FileName);
             return null;
         }
     }

@@ -1,6 +1,6 @@
 The MIT License
 
-Copyright (c) 2010-2019 Layfully
+Copyright (c) 2010-2025 Layfully
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

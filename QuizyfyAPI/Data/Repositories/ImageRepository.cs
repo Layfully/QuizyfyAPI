@@ -1,40 +1,34 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using QuizyfyAPI.Data.Entities;
+using QuizyfyAPI.Data.Repositories.Interfaces;
 
-namespace QuizyfyAPI.Data;
-public class ImageRepository : Repository, IImageRepository
+namespace QuizyfyAPI.Data.Repositories;
+
+internal sealed partial class ImageRepository(QuizDbContext context, ILogger<ImageRepository> logger) : Repository(context, logger), IImageRepository
 {
-    public ImageRepository(QuizDbContext context, ILogger<ImageRepository> logger) : base(context, logger)
+    [LoggerMessage(Level = LogLevel.Information, Message = "Getting all images")]
+    private static partial void LogGettingAllImages(ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Getting Image {ImageId}")]
+    private static partial void LogGettingImage(ILogger logger, int imageId);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Getting Image by URL {Url}")]
+    private static partial void LogGettingImageByUrl(ILogger logger, string url);
+    
+    public async Task<Image[]> GetImages()
     {
+        LogGettingAllImages(logger);
+        return await _context.Images.ToArrayAsync();
     }
 
-    public Task<Image[]> GetImages()
+    public async Task<Image?> GetImage(int imageId)
     {
-        _logger.LogInformation($"Getting all images");
-
-        IQueryable<Image> query = _context.Images;
-
-        return query.ToArrayAsync();
+        LogGettingImage(logger, imageId);
+        return await _context.Images.FirstOrDefaultAsync(image => image.Id == imageId);
     }
 
-    public Task<Image> GetImage(int imageId)
+    public async Task<Image?> GetImageByUrl(string url)
     {
-        _logger.LogInformation($"Getting one image");
-
-        IQueryable<Image> query = _context.Images;
-
-        query = query.Where(image => image.Id == imageId);
-
-        return query.FirstOrDefaultAsync();
-    }
-
-    public Task<Image> GetImageByUrl(string url)
-    {
-        _logger.LogInformation($"Getting one image");
-
-        IQueryable<Image> query = _context.Images;
-
-        query = query.Where(image => image.ImageUrl == url);
-
-        return query.FirstOrDefaultAsync();
+        LogGettingImageByUrl(logger, url);
+        return await _context.Images.FirstOrDefaultAsync(image => image.ImageUrl == url);
     }
 }

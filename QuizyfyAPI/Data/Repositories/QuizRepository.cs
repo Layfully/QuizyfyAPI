@@ -1,45 +1,52 @@
-﻿using Microsoft.EntityFrameworkCore;
-using QuizyfyAPI.Contracts.Responses.Pagination;
+﻿using QuizyfyAPI.Contracts.Responses.Pagination;
+using QuizyfyAPI.Data.Entities;
+using QuizyfyAPI.Data.Repositories.Interfaces;
 
-namespace QuizyfyAPI.Data;
-public class QuizRepository : Repository, IQuizRepository
+namespace QuizyfyAPI.Data.Repositories;
+
+internal sealed partial class QuizRepository(QuizDbContext context, ILogger<QuizRepository> logger) : Repository(context, logger), IQuizRepository
 {
-    public QuizRepository(QuizDbContext context, ILogger<QuizRepository> logger) : base(context, logger)
-    {
-    }
+    [LoggerMessage(
+        Level = LogLevel.Information, 
+        Message = "Getting quizzes. Page: {PageNumber}, Size: {PageSize}, IncludeQuestions: {IncludeQuestions}")]
+    private static partial void LogGettingQuizzes(ILogger logger, int pageNumber, int pageSize, bool includeQuestions);
 
-    // Changed return type to Task<PagedList> and marked async
+    [LoggerMessage(
+        Level = LogLevel.Information, 
+        Message = "Getting quiz {Id}. IncludeQuestions: {IncludeQuestions}")]
+    private static partial void LogGettingQuiz(ILogger logger, int id, bool includeQuestions);
+    
     public async Task<PagedList<Quiz>> GetQuizzes(PagingParams pagingParams, bool includeQuestions = false)
     {
-        _logger.LogInformation("Getting all quizzes");
+        LogGettingQuizzes(logger, pagingParams.PageNumber, pagingParams.PageSize, includeQuestions);
 
         IQueryable<Quiz> query = _context.Quizzes.AsNoTracking();
 
+        query = query.Include(quiz => quiz.Image);
+
         if (includeQuestions)
         {
-            _logger.LogInformation("Including questions in query");
             query = query.Include(quiz => quiz.Questions)
                 .ThenInclude(question => question.Choices);
         }
-
-        query = query.Include(quiz => quiz.Image);
 
         return await PagedList<Quiz>.CreateAsync(query, pagingParams.PageNumber, pagingParams.PageSize);
     }
 
-    public Task<Quiz?> GetQuiz(int id, bool includeQuestions = false)
+    public async Task<Quiz?> GetQuiz(int id, bool includeQuestions = false)
     {
-        _logger.LogInformation("Getting quiz with id {Id}", id);
+        LogGettingQuiz(logger, id, includeQuestions);
 
         IQueryable<Quiz> query = _context.Quizzes;
 
+        query = query.Include(quiz => quiz.Image);
+
         if (includeQuestions)
         {
-            _logger.LogInformation("Including questions in query");
             query = query.Include(quiz => quiz.Questions)
                 .ThenInclude(question => question.Choices);
         }
 
-        return query.FirstOrDefaultAsync(quiz => quiz.Id == id);
+        return await query.FirstOrDefaultAsync(quiz => quiz.Id == id);
     }
 }

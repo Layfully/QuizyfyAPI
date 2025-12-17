@@ -1,15 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using QuizyfyAPI.Data.Entities;
+using QuizyfyAPI.Data.Repositories.Interfaces;
 
-namespace QuizyfyAPI.Data;
-public class RefreshTokenRepository : Repository, IRefreshTokenRepository
+namespace QuizyfyAPI.Data.Repositories;
+
+internal sealed class RefreshTokenRepository(QuizDbContext context, ILogger<RefreshTokenRepository> logger) : Repository(context, logger), IRefreshTokenRepository
 {
-    public RefreshTokenRepository(QuizDbContext context, ILogger<RefreshTokenRepository> logger) : base(context, logger)
+    public async Task<RefreshToken?> GetRefreshToken(string refreshToken)
     {
-    }
-
-    public Task<RefreshToken> GetRefreshToken(string refreshToken)
-    {
-        return _context.RefreshTokens.SingleOrDefaultAsync(storedRefreshToken => storedRefreshToken.Token == refreshToken);
+        return await _context.RefreshTokens
+            .SingleOrDefaultAsync(storedRefreshToken => storedRefreshToken.Token == refreshToken);
     }
 
     public void UpdateRefreshToken(RefreshToken refreshToken)

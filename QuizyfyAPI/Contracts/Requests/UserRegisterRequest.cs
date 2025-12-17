@@ -1,11 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Requests;
+﻿namespace QuizyfyAPI.Contracts.Requests;
 
 /// <summary>
-/// A user with username, password, role and full name. Used for creating user.
+/// A user with a username, password, role, and full name. Used for creating user.
 /// </summary>
-public record UserRegisterRequest
+internal sealed record UserRegisterRequest : IRecaptchaRequest
 {
     /// <summary>
     /// First name of the user owner.
@@ -36,13 +34,13 @@ public record UserRegisterRequest
     public required string Role { get; init; }
 
     /// <summary>
-    /// Token used for checking if request was made by bot or real person.
+    /// Token used for checking if a request was made by a bot or real person.
     /// </summary>
     [Required]
     public required string RecaptchaToken { get; init; }
 
     /// <summary>
-    /// Email address on which we will send confirmation message.
+    /// Email address on which we will send a confirmation message.
     /// </summary>
     [EmailAddress]
     [Required]

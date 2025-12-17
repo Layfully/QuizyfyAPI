@@ -1,9 +1,9 @@
 ﻿namespace QuizyfyAPI.Options;
 
-public record AppOptions
+internal sealed record AppOptions
 {
-    public required string ConnectionString { get; init; }
-    public required string ServerPath { get; init; }
+    public string ConnectionString { get; init; } = string.Empty;
+    public string ServerPath { get; init; } = string.Empty;
     public bool ReturnHttpNotAcceptable { get; init; }
     
     public override string ToString()

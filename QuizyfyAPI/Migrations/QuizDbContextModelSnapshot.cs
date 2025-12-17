@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuizyfyAPI.Data;
 
+#nullable disable
+
 namespace QuizyfyAPI.Migrations
 {
     [DbContext(typeof(QuizDbContext))]
@@ -15,16 +17,18 @@ namespace QuizyfyAPI.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Choice", b =>
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Choice", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("IsRight")
                         .HasColumnType("bit");
@@ -33,7 +37,9 @@ namespace QuizyfyAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -42,28 +48,31 @@ namespace QuizyfyAPI.Migrations
                     b.ToTable("Choices");
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Image", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Image", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ImageUrl")
-
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Images");
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Like", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Like", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("QuizId")
                         .HasColumnType("int");
@@ -78,12 +87,13 @@ namespace QuizyfyAPI.Migrations
                     b.ToTable("Likes");
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Question", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Question", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("ImageId")
                         .HasColumnType("int");
@@ -92,7 +102,9 @@ namespace QuizyfyAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -103,24 +115,29 @@ namespace QuizyfyAPI.Migrations
                     b.ToTable("Questions");
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Quiz", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Quiz", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int?>("ImageId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -129,9 +146,10 @@ namespace QuizyfyAPI.Migrations
                     b.ToTable("Quizzes");
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.RefreshToken", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.RefreshToken", b =>
                 {
                     b.Property<string>("Token")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreationDate")
@@ -144,7 +162,9 @@ namespace QuizyfyAPI.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("JwtId")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -160,96 +180,133 @@ namespace QuizyfyAPI.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.User", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
                     b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("JwtToken")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("LastName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("RecoveryToken")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Role")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Username")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("VerificationToken")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Choice", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Choice", b =>
                 {
-                    b.HasOne("QuizyfyAPI.Data.Question", null)
+                    b.HasOne("QuizyfyAPI.Data.Entities.Question", null)
                         .WithMany("Choices")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Like", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Like", b =>
                 {
-                    b.HasOne("QuizyfyAPI.Data.Quiz", null)
+                    b.HasOne("QuizyfyAPI.Data.Entities.Quiz", null)
                         .WithMany("Likes")
                         .HasForeignKey("QuizId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Question", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Question", b =>
                 {
-                    b.HasOne("QuizyfyAPI.Data.Image", "Image")
+                    b.HasOne("QuizyfyAPI.Data.Entities.Image", "Image")
                         .WithMany()
                         .HasForeignKey("ImageId");
 
-                    b.HasOne("QuizyfyAPI.Data.Quiz", null)
+                    b.HasOne("QuizyfyAPI.Data.Entities.Quiz", null)
                         .WithMany("Questions")
                         .HasForeignKey("QuizId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Image");
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.Quiz", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Quiz", b =>
                 {
-                    b.HasOne("QuizyfyAPI.Data.Image", "Image")
+                    b.HasOne("QuizyfyAPI.Data.Entities.Image", "Image")
                         .WithMany()
                         .HasForeignKey("ImageId");
+
+                    b.Navigation("Image");
                 });
 
-            modelBuilder.Entity("QuizyfyAPI.Data.RefreshToken", b =>
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.RefreshToken", b =>
                 {
-                    b.HasOne("QuizyfyAPI.Data.User", "User")
+                    b.HasOne("QuizyfyAPI.Data.Entities.User", "User")
                         .WithOne("RefreshToken")
-                        .HasForeignKey("QuizyfyAPI.Data.RefreshToken", "UserId")
+                        .HasForeignKey("QuizyfyAPI.Data.Entities.RefreshToken", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Question", b =>
+                {
+                    b.Navigation("Choices");
+                });
+
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.Quiz", b =>
+                {
+                    b.Navigation("Likes");
+
+                    b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("QuizyfyAPI.Data.Entities.User", b =>
+                {
+                    b.Navigation("RefreshToken");
                 });
 #pragma warning restore 612, 618
         }

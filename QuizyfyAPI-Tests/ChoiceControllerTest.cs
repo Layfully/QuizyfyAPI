@@ -9,6 +9,7 @@ using QuizyfyAPI.Data;
 using QuizyfyAPI_Tests.Fakes;
 using System;
 using System.Threading.Tasks;
+using QuizyfyAPI.Data.Entities;
 using Xunit;
 
 namespace QuizyfyAPI_Tests

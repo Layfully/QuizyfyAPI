@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Options;
-using QuizyfyAPI.Data;
+using QuizyfyAPI.Data.Entities;
 using QuizyfyAPI.Options;
+using QuizyfyAPI.Services.Interfaces;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
 namespace QuizyfyAPI.Services;
 
-public class SendGridService : ISendGridService
+internal sealed partial class SendGridService : ISendGridService
 {
     private readonly ISendGridClient _sendGridClient;
     private readonly SendGridOptions _sendGridOptions;
@@ -24,6 +25,21 @@ public class SendGridService : ISendGridService
         _appOptions = appOptions.Value;
         _logger = logger;
     }
+    
+    [LoggerMessage(
+        Level = LogLevel.Error, 
+        Message = "Failed to send email to {Email}. Status: {Status}. Body: {Body}")]
+    private static partial void LogEmailFailed(ILogger logger, string email, System.Net.HttpStatusCode status, string body);
+
+    [LoggerMessage(
+        Level = LogLevel.Information, 
+        Message = "Email sent to {Email}")]
+    private static partial void LogEmailSent(ILogger logger, string email);
+
+    [LoggerMessage(
+        Level = LogLevel.Error, 
+        Message = "Exception occurred while sending email to {Email}")]
+    private static partial void LogEmailException(ILogger logger, Exception ex, string email);
 
     public async Task<Response> SendConfirmationEmailTo(User user)
     {
@@ -69,18 +85,18 @@ public class SendGridService : ISendGridService
             if (!response.IsSuccessStatusCode)
             {
                 string body = await response.Body.ReadAsStringAsync();
-                _logger.LogError("Failed to send email to {Email}. Status: {Status}. Body: {Body}", toEmail, response.StatusCode, body);
+                LogEmailFailed(_logger, toEmail, response.StatusCode, body);
             }
             else
             {
-                _logger.LogInformation("Email sent to {Email}", toEmail);
+                LogEmailSent(_logger, toEmail);
             }
 
             return response;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Exception occurred while sending email to {Email}", toEmail);
+            LogEmailException(_logger, ex, toEmail);
             throw;
         }
     }

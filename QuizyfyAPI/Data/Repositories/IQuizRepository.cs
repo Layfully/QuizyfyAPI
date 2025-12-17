@@ -1,9 +1,0 @@
-﻿using QuizyfyAPI.Contracts.Responses.Pagination;
-
-namespace QuizyfyAPI.Data;
-public interface IQuizRepository : IRepository
-{
-    Task<PagedList<Quiz>> GetQuizzes(PagingParams pagingParams, bool includeQuestions = false);
-    Task<Quiz?> GetQuiz(int id, bool includeQuestions = false);
-}
-

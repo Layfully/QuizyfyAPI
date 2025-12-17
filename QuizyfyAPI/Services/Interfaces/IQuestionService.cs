@@ -1,9 +1,6 @@
-﻿using QuizyfyAPI.Contracts.Requests;
-using QuizyfyAPI.Contracts.Responses;
-using QuizyfyAPI.Domain;
+﻿namespace QuizyfyAPI.Services.Interfaces;
 
-namespace QuizyfyAPI.Services;
-public interface IQuestionService : IService
+internal interface IQuestionService : IService
 {
     Task<ObjectResult<QuestionResponse[]>> GetAll(int quizId, bool includeChoices);
     Task<ObjectResult<QuestionResponse>> Get(int quizId, int questionId, bool includeChoices = false);

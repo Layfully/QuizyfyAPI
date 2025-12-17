@@ -1,83 +1,106 @@
-﻿using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.RateLimiting;
+﻿using Microsoft.AspNetCore.Http.Timeouts;
 using QuizyfyAPI;
-using QuizyfyAPI.Data;
+using QuizyfyAPI.Data.Repositories;
+using QuizyfyAPI.Data.Repositories.Interfaces;
+using QuizyfyAPI.Extensions;
 using QuizyfyAPI.Handlers;
 using QuizyfyAPI.Options;
-using QuizyfyAPI.Services;
+using QuizyfyAPI.ServiceDefaults;
+using QuizyfyAPI.Services.Interfaces;
 using reCAPTCHA.AspNetCore;
+using Scalar.AspNetCore;
 using SendGrid;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(); 
 
 // --- CONFIGURATION & SERVICES ---
 
 // Load Configuration Options explicitly needed for logic during startup
-SwaggerOptions swaggerOptions = builder.Configuration.GetSection(nameof(SwaggerOptions)).Get<SwaggerOptions>() ?? new() { Title = "Quizyfy API" };
+OpenApiOptions openApiOptions = builder.Configuration.GetSection(nameof(OpenApiOptions)).Get<OpenApiOptions>() ?? new() { Title = "Quizyfy API" };
 AppOptions appOptions = builder.Configuration.GetSection(nameof(AppOptions)).Get<AppOptions>() ?? new() { ConnectionString = string.Empty, ServerPath = string.Empty};
 JwtOptions jwtOptions = builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>() ?? new JwtOptions { Secret = string.Empty };
-SendGridClientOptions sendGridOptions = builder.Configuration.GetSection(nameof(SendGridClientOptions)).Get<SendGridClientOptions>() ?? new();
 RateLimitOptions rateLimitOptions = builder.Configuration.GetSection(nameof(RateLimitOptions)).Get<RateLimitOptions>() ?? new();
+
+string sendGridApiKey = builder.Configuration["SendGridClientOptions:ApiKey"] ?? string.Empty;
 
 // Register Options (IOptions pattern)
 builder.Services.Configure<SendGridOptions>(builder.Configuration.GetSection(nameof(SendGridOptions)));
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection(nameof(AppOptions)));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(nameof(JwtOptions)));
-builder.Services.Configure<SwaggerOptions>(builder.Configuration.GetSection(nameof(SwaggerOptions)));
+builder.Services.Configure<OpenApiOptions>(builder.Configuration.GetSection(nameof(OpenApiOptions)));
 builder.Services.Configure<RecaptchaSettings>(builder.Configuration.GetSection("RecaptchaSettings"));
 
 // Standard Services
+builder.AddServiceDefaults();
 builder.Services.AddCors();
-builder.Services.AddMemoryCache();
+builder.Services.AddHybridCacheWithOptionalRedis(builder.Configuration);
+builder.AddSmartOutputCache();
+builder.Services.AddValidation();
+builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
 builder.Services.AddCustomRateLimiting(rateLimitOptions);
+builder.Services.AddRequestTimeouts(requestTimeoutOptions => { requestTimeoutOptions.DefaultPolicy = new RequestTimeoutPolicy { Timeout = TimeSpan.FromSeconds(60) }; });
 
 // Database & Custom Extensions
 builder.Services.ConfigureDbContext(appOptions);
-builder.Services.ConfigureApiVersioning(swaggerOptions);
-builder.Services.ConfigureControllersForApi(appOptions);
-builder.Services.ConfigureValidationErrorResponse();
+builder.Services.ConfigureApiVersioning(openApiOptions);
 builder.Services.ConfigureJWTAuth(jwtOptions);
-builder.Services.ConfigureSwagger(swaggerOptions);
+builder.Services.ConfigureOpenApi(openApiOptions);
 
-// Scrutor (Still excellent in .NET 10)
-builder.Services.Scan(scan => scan
-    .FromAssemblyOf<Program>()
-    .AddClasses(classes => classes
-            .AssignableToAny(typeof(IService), typeof(IRepository))
-            .Where(c => !c.IsAbstract)
-        , publicOnly: false)
-    .AsMatchingInterface()
-    .WithScopedLifetime());
+builder.Services.AddScoped<IChoiceRepository, ChoiceRepository>();
+builder.Services.AddScoped<IImageRepository, ImageRepository>();
+builder.Services.AddScoped<ILikeRepository, LikeRepository>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-
-// MVC Legacy Helpers (IUrlHelper)
-builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-builder.Services.AddScoped<IUrlHelper>(x => {
-    var actionContext = x.GetRequiredService<IActionContextAccessor>().ActionContext;
-    var factory = x.GetRequiredService<IUrlHelperFactory>();
-    return factory.GetUrlHelper(actionContext);
-});
+// Services
+builder.Services.AddScoped<IChoiceService, ChoiceService>();
+builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ILikeService, LikeService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Third Party Services
 builder.Services.AddTransient<IRecaptchaService, RecaptchaService>();
 builder.Services.AddPwnedPasswordHttpClient();
-builder.Services.AddSingleton<ISendGridClient>(_ => new SendGridClient(sendGridOptions));
+builder.Services.AddHttpClient("SendGridRetryClient");
+
+builder.Services.AddSingleton<ISendGridClient>(sp =>
+{
+    IHttpClientFactory httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    HttpClient resilientClient = httpClientFactory.CreateClient("SendGridRetryClient");
+
+    return new SendGridClient(resilientClient, sendGridApiKey);
+});
+
 builder.Services.AddSingleton<ISendGridService, SendGridService>();
 
-// --- PIPELINE (BUILD APP) ---
-   
-var app = builder.Build();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
 
-app.UseExceptionHandler(); 
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
+
+builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.AddResponseCompression(options => { options.EnableForHttps = true; });
+
+
+// --- PIPELINE (BUILD APP) ---
+WebApplication app = builder.Build();
+app.MapDefaultEndpoints(); 
 
 if (app.Environment.IsDevelopment())
 {
@@ -88,28 +111,32 @@ else
    app.UseHsts();
 }
 
+app.UseExceptionHandler(); 
 app.UseHttpsRedirection();
+app.UseResponseCompression(); 
 app.UseStaticFiles();
-
-// No explicit UseRouting() needed in .NET 6+ usually, it's automatic
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-
+app.UseOutputCache();
+app.UseRequestTimeouts();
 app.UseRateLimiter();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseSwagger();
-app.UseSwaggerUI(setupAction =>
+app.MapOpenApi();
+
+if (app.Environment.IsDevelopment() || openApiOptions.EnableUiInProduction)
 {
-   setupAction.SwaggerEndpoint(swaggerOptions.UIEndpoint, swaggerOptions.Title);
-   setupAction.RoutePrefix = swaggerOptions.RoutePrefix;
-});
+    app.MapScalarApiReference(openApiOptions.UiEndpoint, options =>
+    {
+        options.WithTitle(openApiOptions.Title);
+        options.WithOpenApiRoutePattern(openApiOptions.JsonRoute);
+        options.WithTheme(ScalarTheme.Kepler);
+        options.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+    });
+}
 
-// Map Controllers (Legacy)
-app.MapControllers();
 
-// Map Minimal APIs (Future)
-// app.MapGet("/api/example", () => Results.Ok("Hello World"));
+app.MapApiEndpoints(openApiOptions);
 
-app.Run();
+await app.EnsureDatabaseSetup();
+await app.RunAsync();

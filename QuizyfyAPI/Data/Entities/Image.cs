@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#pragma warning disable CA1852
+namespace QuizyfyAPI.Data.Entities;
 
-namespace QuizyfyAPI.Data;
-public class Image
+internal class Image
 {
     [Key]
     public int Id { get; set; }
 
-    public string ImageUrl { get; set; }
+    [Required]
+    [MaxLength(500)]
+    public required string ImageUrl { get; set; }
 }

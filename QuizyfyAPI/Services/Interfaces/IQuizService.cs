@@ -1,10 +1,8 @@
-﻿using QuizyfyAPI.Contracts.Requests;
-using QuizyfyAPI.Contracts.Responses;
-using QuizyfyAPI.Contracts.Responses.Pagination;
-using QuizyfyAPI.Domain;
+﻿using QuizyfyAPI.Contracts.Responses.Pagination;
 
-namespace QuizyfyAPI.Services;
-public interface IQuizService : IService
+namespace QuizyfyAPI.Services.Interfaces;
+
+internal interface IQuizService : IService
 {
     Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpContext httpContext);
     Task<ObjectResult<QuizResponse>> Get(int id, bool includeQuestions);

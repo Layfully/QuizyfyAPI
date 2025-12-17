@@ -1,5 +1,6 @@
 ﻿namespace QuizyfyAPI.Domain;
-public class DetailedResult : BasicResult
+
+internal record DetailedResult : BasicResult
 {
-    public bool Found { get; set; }
+    public bool Found { get; init; }
 }

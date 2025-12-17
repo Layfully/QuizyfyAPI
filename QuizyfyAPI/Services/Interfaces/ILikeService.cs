@@ -1,8 +1,6 @@
-﻿using QuizyfyAPI.Contracts.Responses;
-using QuizyfyAPI.Domain;
+﻿namespace QuizyfyAPI.Services.Interfaces;
 
-namespace QuizyfyAPI.Services;
-public interface ILikeService
+internal interface ILikeService
 {
     Task<ObjectResult<LikeResponse>> Like(int quizId, int userId);
 

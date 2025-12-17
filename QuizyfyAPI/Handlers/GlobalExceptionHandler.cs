@@ -1,34 +1,38 @@
 using Microsoft.AspNetCore.Diagnostics;
-using QuizyfyAPI.Contracts.Responses;
 
 namespace QuizyfyAPI.Handlers;
 
-public class GlobalExceptionHandler : IExceptionHandler
+internal sealed partial class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> _logger;
-    private readonly IHostEnvironment _hostEnvironment;
 
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment hostEnvironment)
+    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
     {
         _logger = logger;
-        _hostEnvironment = hostEnvironment;
     }
+    
+    [LoggerMessage(
+        Level = LogLevel.Error, 
+        Message = "Unhandled exception occurred: {Message}")]
+    private static partial void LogUnhandledException(ILogger logger, Exception ex, string message);
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        _logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
+        LogUnhandledException(_logger, exception, exception.Message);
         
-        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-        string message = _hostEnvironment.IsDevelopment() ? $"Internal Server Error: {exception.Message} \n {exception.StackTrace}" : "An internal error occurred. Please try again later.";
-
-        ErrorResponse response = new()
+        ProblemDetails problemDetails = new()
         {
-            StatusCode = httpContext.Response.StatusCode,
-            Message = message
+            Status = StatusCodes.Status500InternalServerError,
+            Title = "Server Error",
+            Detail = "An unexpected error occurred. Please try again later."
         };
-        
-        await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+
+        httpContext.Response.StatusCode = problemDetails.Status.Value;
+        await httpContext.Response.WriteAsJsonAsync(
+            problemDetails, 
+            AppJsonSerializerContext.Default.ProblemDetails,
+            "application/problem+json",
+            cancellationToken);
         
         return true; 
     }

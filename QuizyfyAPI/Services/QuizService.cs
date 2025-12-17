@@ -1,60 +1,74 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Caching.Memory;
-using QuizyfyAPI.Contracts.Requests;
-using QuizyfyAPI.Contracts.Responses;
+﻿using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Caching.Hybrid;
 using QuizyfyAPI.Contracts.Responses.Pagination;
-using QuizyfyAPI.Controllers;
-using QuizyfyAPI.Data;
-using QuizyfyAPI.Domain;
+using QuizyfyAPI.Data.Entities;
+using QuizyfyAPI.Data.Repositories.Interfaces;
+using QuizyfyAPI.Mappers;
+using QuizyfyAPI.Services.Interfaces;
 
 namespace QuizyfyAPI.Services;
 
-public class QuizService : IQuizService
+internal sealed partial class QuizService : IQuizService
 {
     private readonly IQuizRepository _quizRepository;
     private readonly IImageRepository _imageRepository;
-    private readonly IMemoryCache _cache;
-    private readonly IMapper _mapper;
+    private readonly HybridCache _hybridCache;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<QuizService> _logger;
+    private readonly IOutputCacheStore _outputCache;
     
     public QuizService(
         IQuizRepository quizRepository, 
         IImageRepository imageRepository, 
-        IMemoryCache cache,
-        IMapper mapper,
+        HybridCache hybridCache,
+        TimeProvider timeProvider,
+        IOutputCacheStore outputCache,
         ILogger<QuizService> logger)
     {
         _quizRepository = quizRepository;
         _imageRepository = imageRepository;
-        _cache = cache;
-        _mapper = mapper;
+        _hybridCache = hybridCache;
+        _timeProvider = timeProvider;
+        _outputCache = outputCache;
         _logger = logger;
     }
 
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Quiz created with ImageUrl '{Url}' but image not found in DB.")]
+    private static partial void LogImageNotFound(ILogger logger, string url);
+    
     public async Task<ObjectResult<QuizResponse>> Get(int id, bool includeQuestions)
     {
         string cacheKey = $"Quiz_{id}_{includeQuestions}";
 
-        Quiz? quiz = await _cache.GetOrCreateAsync(cacheKey, async entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-            return await _quizRepository.GetQuiz(id, includeQuestions);
-        });
-
+        Quiz? quiz = await _hybridCache.GetOrCreateAsync(
+            cacheKey,
+            async _ => await _quizRepository.GetQuiz(id, includeQuestions),
+            options: new HybridCacheEntryOptions
+            {
+                LocalCacheExpiration = TimeSpan.FromMinutes(5),
+                Flags = HybridCacheEntryFlags.None,
+            },
+            tags: [$"Quiz:{id}"] 
+        );
 
         if (quiz is null)
         {
             return new ObjectResult<QuizResponse> { Errors = ["Couldn't find this quiz"] };
         }
 
-        return new ObjectResult<QuizResponse> { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
+        return new ObjectResult<QuizResponse> 
+        { 
+            Success = true, 
+            Found = true, 
+            Object = quiz.ToResponse() 
+        };    
     }
 
     public async Task<ObjectResult<QuizResponse>> Create(QuizCreateRequest request)
     {
-        Quiz? quiz = _mapper.Map<Quiz>(request);
+        Quiz quiz = request.ToEntity();
 
-        quiz.DateAdded = DateTime.UtcNow;
+        quiz.DateAdded = _timeProvider.GetUtcNow().DateTime; 
 
         if (!string.IsNullOrEmpty(request.ImageUrl))
         {
@@ -66,20 +80,32 @@ public class QuizService : IQuizService
             }
             else
             {
-                _logger.LogWarning("Quiz created with ImageUrl '{Url}' but image not found in DB.", request.ImageUrl);
+                LogImageNotFound(_logger, request.ImageUrl);
             }
         }
 
         _quizRepository.Add(quiz);
 
-        if (await _quizRepository.SaveChangesAsync())
+        if (!await _quizRepository.SaveChangesAsync())
         {
-            _cache.Set($"Quiz_{quiz.Id}_False", quiz, TimeSpan.FromMinutes(5));
-
-            return new ObjectResult<QuizResponse> { Object = _mapper.Map<QuizResponse>(quiz), Found = true, Success = true };
+            return new ObjectResult<QuizResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
         }
 
-        return new ObjectResult<QuizResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
+        await _hybridCache.SetAsync(
+            $"Quiz_{quiz.Id}_False", 
+            quiz, 
+            options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(5) },
+            tags: [$"Quiz:{quiz.Id}"]
+        );
+
+        await _outputCache.EvictByTagAsync("quizzes", CancellationToken.None);
+        
+        return new ObjectResult<QuizResponse> 
+        { 
+            Object = quiz.ToResponse(), 
+            Found = true, 
+            Success = true 
+        };
     }
 
     public async Task<ObjectResult<QuizResponse>> Update(int quizId, QuizUpdateRequest request)
@@ -91,7 +117,7 @@ public class QuizService : IQuizService
             return new ObjectResult<QuizResponse> { Errors = ["Couldn't find quiz this quiz"] };
         }
 
-        _mapper.Map(request, quiz);
+        quiz.UpdateFrom(request);
         
         if (request.ImageId.HasValue && request.ImageId != 0)
         {
@@ -104,21 +130,30 @@ public class QuizService : IQuizService
             
             quiz.Image = newImage;
         }
-
         
         _quizRepository.Update(quiz);
 
-        if (await _quizRepository.SaveChangesAsync())
+        if (!await _quizRepository.SaveChangesAsync())
         {
-            _cache.Remove($"Quiz_{quizId}_True");
-            _cache.Remove($"Quiz_{quizId}_False");
-            
-            _cache.Set($"Quiz_{quizId}_False", quiz, TimeSpan.FromMinutes(5));
-            
-            return new ObjectResult<QuizResponse> { Success = true, Found = true, Object = _mapper.Map<QuizResponse>(quiz) };
+            return new ObjectResult<QuizResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
         }
 
-        return new ObjectResult<QuizResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
+        await _hybridCache.RemoveByTagAsync($"Quiz:{quizId}");
+        await _outputCache.EvictByTagAsync("quizzes", CancellationToken.None);
+
+        await _hybridCache.SetAsync(
+            $"Quiz_{quizId}_False", 
+            quiz,
+            options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(5) },
+            tags: [$"Quiz:{quizId}"]
+        );            
+            
+        return new ObjectResult<QuizResponse> 
+        { 
+            Success = true, 
+            Found = true, 
+            Object = quiz.ToResponse() 
+        };
     }
 
     public async Task<DetailedResult> Delete(int quizId)
@@ -132,14 +167,15 @@ public class QuizService : IQuizService
 
         _quizRepository.Delete(quiz);
 
-        if (await _quizRepository.SaveChangesAsync())
+        if (!await _quizRepository.SaveChangesAsync())
         {
-            _cache.Remove($"Quiz_{quizId}_True");
-            _cache.Remove($"Quiz_{quizId}_False");
-            return new DetailedResult { Success = true, Found = true };
+            return new DetailedResult { Found = true, Errors = ["Action didn't affect any rows"] };
         }
 
-        return new DetailedResult { Found = true, Errors = ["Action didn't affect any rows"] };
+        await _hybridCache.RemoveByTagAsync($"Quiz:{quizId}");
+        await _outputCache.EvictByTagAsync("quizzes", CancellationToken.None);
+            
+        return new DetailedResult { Success = true, Found = true };
     }
 
     public async Task<ObjectResult<QuizListResponse>> GetAll(PagingParams pagingParams, HttpContext httpContext)
@@ -155,7 +191,7 @@ public class QuizService : IQuizService
         {
             Paging = pagedList.GetHeader(),
             Links = GetLinks(pagedList, httpContext),
-            Items = _mapper.Map<List<QuizResponse>>(pagedList.List)
+            Items = pagedList.List.Select(q => q.ToResponse()).ToList()
         };
 
         return new ObjectResult<QuizListResponse> { Success = true, Found = true, Object = output };

@@ -1,10 +1,8 @@
-﻿using QuizyfyAPI.Contracts.Requests;
-using QuizyfyAPI.Contracts.Responses;
-using QuizyfyAPI.Data;
-using QuizyfyAPI.Domain;
+﻿using QuizyfyAPI.Data.Entities;
 
-namespace QuizyfyAPI.Services;
-public interface IUserService : IService
+namespace QuizyfyAPI.Services.Interfaces;
+
+internal interface IUserService : IService
 {
     Task<ObjectResult<UserResponse>> Login(UserLoginRequest request);
     Task<BasicResult> Register(UserRegisterRequest request);

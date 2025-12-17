@@ -1,6 +1,7 @@
 ﻿namespace QuizyfyAPI.Domain;
-public class BasicResult
+
+internal record BasicResult
 {
-    public bool Success { get; set; }
-    public IEnumerable<string> Errors { get; set; }
+    public bool Success { get; init; }
+    public IEnumerable<string> Errors { get; init; } = [];
 }

@@ -1,10 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Responses;
+﻿namespace QuizyfyAPI.Contracts.Responses;
 /// <summary>
 /// Image with id from database and url to access it.
 /// </summary>
-public record ImageResponse
+internal sealed record ImageResponse
 {
     /// <summary>
     /// Image id.

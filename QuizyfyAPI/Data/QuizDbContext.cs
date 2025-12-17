@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using QuizyfyAPI.Data.Entities;
 
 namespace QuizyfyAPI.Data;
-public class QuizDbContext : DbContext
+
+internal sealed class QuizDbContext : DbContext
 {
     public QuizDbContext(DbContextOptions<QuizDbContext> options) : base(options)
     {
@@ -14,4 +15,4 @@ public class QuizDbContext : DbContext
     public DbSet<Like> Likes { get; set; }
     public DbSet<Image> Images { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-}
+} 

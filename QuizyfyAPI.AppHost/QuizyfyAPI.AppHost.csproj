@@ -1,0 +1,16 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.0.2">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <UserSecretsId>68568f27-f56c-41a0-a6e6-db277911549f</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\QuizyfyAPI\QuizyfyAPI.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Aspire.Hosting.AppHost" />
+      <PackageReference Include="Aspire.Hosting.Redis" />
+      <PackageReference Include="Aspire.Hosting.SqlServer" />
+    </ItemGroup>
+</Project>

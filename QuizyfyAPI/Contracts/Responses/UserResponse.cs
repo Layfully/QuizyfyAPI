@@ -1,36 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
-using QuizyfyAPI.Data;
+﻿namespace QuizyfyAPI.Contracts.Responses;
 
-namespace QuizyfyAPI.Contracts.Responses;
-
-/// <summary>
-/// A user with username, password, role, token and full name.
-/// </summary>
-public record UserResponse
+internal sealed record UserResponse
 {
-    /// <summary>
-    /// First name of the user owner.
-    /// </summary>
+    public int Id { get; init; }
+    
     public string? FirstName { get; init; }
-
-    /// <summary>
-    /// Last name of the user owner.
-    /// </summary>
+    
     public string? LastName { get; init; }
 
-    /// <summary>
-    /// User name.
-    /// </summary>
     [Required]
     public required string Username { get; init; }
-
-    /// <summary>
-    /// User password.
-    /// </summary>
-    /// TODO: Remove it as its not secure to send password over network
+    
     [Required]
-    public required string Password { get; init; }
-
+    public required string Email { get; init; }
+    
     /// <summary>
     /// User role. (Can be either admin or user)
     /// </summary>
@@ -45,5 +28,5 @@ public record UserResponse
     /// <summary>
     /// Token used for refreshing JWT token.
     /// </summary>
-    public RefreshToken? RefreshToken { get; init; }
+    public string? RefreshToken { get; init; }
 }

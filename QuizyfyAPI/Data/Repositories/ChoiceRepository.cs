@@ -1,31 +1,33 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using QuizyfyAPI.Data.Entities;
+using QuizyfyAPI.Data.Repositories.Interfaces;
 
-namespace QuizyfyAPI.Data;
-public class ChoiceRepository : Repository, IChoiceRepository
+namespace QuizyfyAPI.Data.Repositories;
+
+internal sealed partial class ChoiceRepository(QuizDbContext context, ILogger<ChoiceRepository> logger) : Repository(context, logger), IChoiceRepository
 {
-    public ChoiceRepository(QuizDbContext context, ILogger<ChoiceRepository> logger) : base(context, logger)
+    [LoggerMessage(
+        Level = LogLevel.Information, 
+        Message = "Getting all choices for Question {QuestionId}")]
+    private static partial void LogGettingChoices(ILogger logger, int questionId);
+
+    [LoggerMessage(
+        Level = LogLevel.Information, 
+        Message = "Getting Choice {ChoiceId} for Question {QuestionId}")]
+    private static partial void LogGettingChoice(ILogger logger, int choiceId, int questionId);
+    
+    public async Task<Choice[]> GetChoices(int questionId)
     {
+        LogGettingChoices(logger, questionId);
+        
+        return await _context.Choices
+            .Where(choice => choice.QuestionId == questionId)
+            .ToArrayAsync();
     }
 
-    public Task<Choice[]> GetChoices(int questionId)
+    public async Task<Choice?> GetChoice(int questionId, int choiceId)
     {
-        _logger.LogInformation($"Getting all choices for a Question for a Quiz");
-
-        IQueryable<Choice> query = _context.Choices;
-
-        query = query.Where(choice => choice.QuestionId == questionId);
-
-        return query.ToArrayAsync();
-    }
-
-    public Task<Choice> GetChoice(int questionId, int choiceId)
-    {
-        _logger.LogInformation($"Getting one choice");
-
-        IQueryable<Choice> query = _context.Choices;
-
-        query = query.Where(choice => choice.QuestionId == questionId && choice.Id == choiceId);
-
-        return query.FirstOrDefaultAsync();
+        LogGettingChoice(logger, choiceId, questionId);
+        return await _context.Choices
+            .FirstOrDefaultAsync(choice => choice.QuestionId == questionId && choice.Id == choiceId);
     }
 }

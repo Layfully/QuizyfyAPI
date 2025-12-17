@@ -1,11 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Requests;
+﻿namespace QuizyfyAPI.Contracts.Requests;
 
 /// <summary>
 /// Question with text(actual question) only. Used for DTO.
 /// </summary>
-public record QuestionCreateRequest
+internal sealed record QuestionCreateRequest
 {
     /// <summary>
     /// Question text.

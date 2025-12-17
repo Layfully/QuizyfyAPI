@@ -1,11 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Requests;
+﻿namespace QuizyfyAPI.Contracts.Requests;
 
 /// <summary>
 /// A quiz with name and questions properties. Used for DTO.
 /// </summary>
-public record QuizCreateRequest
+internal sealed record QuizCreateRequest
 {
     /// <summary>
     /// Quiz name.
@@ -21,7 +19,7 @@ public record QuizCreateRequest
     public required string Description { get; init; }
 
     /// <summary>
-    /// Quiz image url which we get when we upload image.
+    /// Quiz image url which we get when we upload an image.
     /// </summary>
     [Required]
     public required string ImageUrl { get; init; }

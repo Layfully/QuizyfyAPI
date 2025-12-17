@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using QuizyfyAPI.Data.Repositories;
 
 
 namespace QuizyfyAPI_Tests.Fakes

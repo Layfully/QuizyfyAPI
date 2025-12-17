@@ -1,4 +1,3 @@
-﻿namespace QuizyfyAPI.Services;
-public interface IService
-{
-}
+﻿namespace QuizyfyAPI.Services.Interfaces;
+
+internal interface IService;

@@ -1,37 +1,46 @@
-﻿namespace QuizyfyAPI.Data;
-public abstract class Repository : IRepository
+﻿using QuizyfyAPI.Data.Repositories.Interfaces;
+
+namespace QuizyfyAPI.Data.Repositories;
+
+internal abstract partial class Repository(QuizDbContext context, ILogger<Repository> logger) : IRepository
 {
-    protected readonly QuizDbContext _context;
-    protected readonly ILogger<Repository> _logger;
+    [LoggerMessage(Level = LogLevel.Information, Message = "Adding an object of type {Type} to the context.")]
+    private static partial void LogAddingEntity(ILogger logger, string type);
 
-    protected Repository(QuizDbContext context, ILogger<Repository> logger)
+    [LoggerMessage(Level = LogLevel.Information, Message = "Removing an object of type {Type} from the context.")]
+    private static partial void LogRemovingEntity(ILogger logger, string type);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Attempting to save the changes in the context")]
+    private static partial void LogSavingChanges(ILogger logger);
+    
+    protected readonly QuizDbContext _context = context;
+    // ReSharper disable once MemberCanBePrivate.Global
+    protected readonly ILogger<Repository> _logger = logger;
+
+    public void Add<T>(T entity) where T : class
     {
-        _context = context;
-        _logger = logger;
+        LogAddingEntity(_logger, entity.GetType().Name);
+        _context.Add(entity);
     }
-
+    
     public void Delete<T>(T entity) where T : class
     {
-        _logger.LogInformation($"Removing an object of type {entity.GetType()} to the context.");
+        LogRemovingEntity(_logger, entity.GetType().Name);
         _context.Remove(entity);
     }
 
     public void Update<T>(T entity) where T : class
     {
+        // EF Core tracks changes automatically if the entity was loaded from DB, 
+        // but this forces the state to Modify.
         _context.Update(entity);
     }
 
     public async Task<bool> SaveChangesAsync()
     {
-        _logger.LogInformation($"Attempitng to save the changes in the context");
-
+        LogSavingChanges(_logger);
+        
         // Only return success if at least one row was changed
-        return (await _context.SaveChangesAsync()) > 0;
-    }
-
-    public void Add<T>(T entity) where T : class
-    {
-        _logger.LogInformation($"Adding an object of type {entity.GetType()} to the context.");
-        _context.Add(entity);
+        return await _context.SaveChangesAsync() > 0;
     }
 }

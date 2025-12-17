@@ -2,7 +2,8 @@
 using System.Text;
 
 namespace QuizyfyAPI.Helpers;
-public static class Hash
+
+internal static class Hash
 {
     private const int Iterations = 350000; 
     private const int HashSize = 64;

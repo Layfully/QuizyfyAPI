@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="QuizyfyAPI-Tests/QuizyfyAPI-Tests.csproj" />
+  <Project Path="QuizyfyAPI.AppHost/QuizyfyAPI.AppHost.csproj" />
+  <Project Path="QuizyfyAPI.ServiceDefaults/QuizyfyAPI.ServiceDefaults.csproj" />
+  <Project Path="QuizyfyAPI/QuizyfyAPI.csproj" />
+</Solution>

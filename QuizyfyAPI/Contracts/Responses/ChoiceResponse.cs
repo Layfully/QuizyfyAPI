@@ -1,12 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Responses;
+﻿namespace QuizyfyAPI.Contracts.Responses;
 
 /// <summary>
 /// A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
 /// </summary>
-public record ChoiceResponse
+internal sealed record ChoiceResponse
 {
+    /// <summary>
+    /// Choice Id.
+    /// </summary>
+    [Required]
+    public int Id { get; init; }
+
     /// <summary>
     /// Choice text (answer).
     /// </summary>

@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
+﻿namespace QuizyfyAPI.Contracts.Responses;
 /// <summary>
 /// A like of quiz which belongs to some user.
 /// </summary>
-public record LikeResponse
+internal sealed record LikeResponse
 {
     /// <summary>
     /// This id specifies to which quiz like belongs to.
@@ -12,7 +11,7 @@ public record LikeResponse
     public required int QuizId { get; init; }
 
     /// <summary>
-    /// This id specifies to which user liked quiz.
+    /// This id specifies to which user liked the quiz.
     /// </summary>
     [Required]
     public required int UserId { get; init; }

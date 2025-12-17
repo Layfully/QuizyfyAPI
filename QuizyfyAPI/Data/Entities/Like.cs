@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#pragma warning disable CA1852
+namespace QuizyfyAPI.Data.Entities;
 
-namespace QuizyfyAPI.Data;
-public class Like
+internal class Like
 {
     [Key]
     public int Id { get; set; }

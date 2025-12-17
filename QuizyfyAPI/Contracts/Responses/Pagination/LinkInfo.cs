@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace QuizyfyAPI.Contracts.Responses.Pagination;
 
-namespace QuizyfyAPI.Contracts.Responses.Pagination;
-
-public record LinkInfo
+internal sealed record LinkInfo
 {
     [Required]
     public required string Href { get; init; }

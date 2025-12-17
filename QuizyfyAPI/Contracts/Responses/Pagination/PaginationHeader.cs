@@ -2,12 +2,10 @@
 
 namespace QuizyfyAPI.Contracts.Responses.Pagination;
 
-public record PagingHeader(int TotalItems, int PageNumber, int PageSize, int TotalPages)
+internal sealed record PagingHeader(int TotalItems, int PageNumber, int PageSize, int TotalPages)
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new()
+    public string ToJson()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
-
-    public string ToJson() => JsonSerializer.Serialize(this, _jsonOptions);
+        return JsonSerializer.Serialize(this, AppJsonSerializerContext.Default.PagingHeader);
+    }
 }

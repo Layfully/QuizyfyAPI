@@ -1,10 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Responses;
+﻿namespace QuizyfyAPI.Contracts.Responses;
 /// <summary>
 /// A quiz with name, date of addition and questions properties. Used for displaying quizzes.
 /// </summary>
-public record QuizResponse
+internal sealed record QuizResponse
 {
     /// <summary>
     /// Quiz id.
@@ -28,10 +26,10 @@ public record QuizResponse
     public string? ImageUrl { get; init; }
 
     /// <summary>
-    /// Date of addition to database.
+    /// Date of addition to a database.
     /// </summary>
     [Required]
-    public required string DateAdded { get; init; }
+    public required DateTime DateAdded { get; init; }
 
     /// <summary>
     /// Collection of questions which belongs to quiz.

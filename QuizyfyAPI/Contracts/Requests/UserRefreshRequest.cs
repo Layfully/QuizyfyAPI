@@ -1,14 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Requests;
+﻿namespace QuizyfyAPI.Contracts.Requests;
 
 /// <summary>
 /// Request used for refreshing user JWT token.
 /// </summary>
-public record UserRefreshRequest
+internal sealed record UserRefreshRequest
 {
     /// <summary>
-    /// Refresh token which lasts for long time.
+    /// Refresh token which lasts for a long time.
     /// </summary>
     [Required]
     public required string RefreshToken { get; init; }

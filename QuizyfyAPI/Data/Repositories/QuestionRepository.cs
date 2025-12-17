@@ -1,43 +1,52 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using QuizyfyAPI.Data.Entities;
+using QuizyfyAPI.Data.Repositories.Interfaces;
 
-namespace QuizyfyAPI.Data;
-public class QuestionRepository : Repository, IQuestionRepository
+namespace QuizyfyAPI.Data.Repositories;
+
+internal sealed partial class QuestionRepository(QuizDbContext context, ILogger<QuestionRepository> logger) : Repository(context, logger), IQuestionRepository
 {
-    public QuestionRepository(QuizDbContext context, ILogger<QuestionRepository> logger) : base(context, logger)
+    [LoggerMessage(
+        Level = LogLevel.Information, 
+        Message = "Getting all Questions for Quiz {QuizId}. IncludeChoices: {IncludeChoices}")]
+    private static partial void LogGettingQuestions(ILogger logger, int quizId, bool includeChoices);
+
+    [LoggerMessage(
+        Level = LogLevel.Information, 
+        Message = "Getting Question {QuestionId} for Quiz {QuizId}. IncludeChoices: {IncludeChoices}")]
+    private static partial void LogGettingQuestion(ILogger logger, int questionId, int quizId, bool includeChoices);
+    
+    public async Task<Question[]> GetQuestions(int quizId, bool includeChoices = false)
     {
+        LogGettingQuestions(logger, quizId, includeChoices);
+        
+        IQueryable<Question> query = _context.Questions;
+
+        query = query.Include(question => question.Image);
+
+        if (includeChoices)
+        {
+            query = query.Include(question => question.Choices);
+        }
+        
+        return await query
+            .Where(question => question.QuizId == quizId)
+            .ToArrayAsync();
     }
 
-    public Task<Question[]> GetQuestions(int quizId, bool includeChoices = false)
+    public async Task<Question?> GetQuestion(int quizId, int questionId, bool includeChoices = false)
     {
-        _logger.LogInformation($"Getting all Questions for a Quiz");
-
+        LogGettingQuestion(logger, questionId, quizId, includeChoices);
+        
         IQueryable<Question> query = _context.Questions;
+
+        query = query.Include(question => question.Image);
 
         if (includeChoices)
         {
             query = query.Include(question => question.Choices);
         }
 
-        query = query
-          .Where(question => question.QuizId == quizId);
-
-        return query.ToArrayAsync();
-    }
-
-    public Task<Question> GetQuestion(int quizId, int questionId, bool includeChoices = false)
-    {
-        _logger.LogInformation($"Getting one Question for a Quiz");
-
-        IQueryable<Question> query = _context.Questions;
-
-        if (includeChoices)
-        {
-            query = query.Include(question => question.Choices);
-        }
-
-        query = query
-          .Where(question => question.Id == questionId && question.QuizId == quizId);
-
-        return query.FirstOrDefaultAsync();
+        return await query
+            .FirstOrDefaultAsync(question => question.Id == questionId && question.QuizId == quizId);
     }
 }

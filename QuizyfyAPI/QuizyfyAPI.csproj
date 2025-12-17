@@ -1,56 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>QuizyfyAPI.xml</DocumentationFile>
-    <NoWarn>1701;1702;1591;RCS1090;</NoWarn>
-    <PlatformTarget>x64</PlatformTarget>
+    <NoWarn>$(NoWarn);IL2026;IL3050;CA2007;CA1303;CA1812</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Migrations\20190624164525_Add Users Table.cs" />
-    <Compile Remove="Migrations\20190624164525_Add Users Table.Designer.cs" />
-    <Compile Remove="Migrations\20190727180636_Add Likes Table.cs" />
-    <Compile Remove="Migrations\20190727180636_Add Likes Table.Designer.cs" />
-    <Compile Remove="Migrations\20190728081857_Add Refresh Tokens Table.cs" />
-    <Compile Remove="Migrations\20190728081857_Add Refresh Tokens Table.Designer.cs" />
-    <Compile Remove="Migrations\20190728082512_Add Refresh Tokens Table.cs" />
-    <Compile Remove="Migrations\20190728082512_Add Refresh Tokens Table.Designer.cs" />
-    <Compile Remove="Migrations\20190728122118_Add Refresh Tokens Table.cs" />
-    <Compile Remove="Migrations\20190728122118_Add Refresh Tokens Table.Designer.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+    <PackageReference Include="Asp.Versioning.Http" />
+    <PackageReference Include="Asp.Versioning.Http.Client" />
+    <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+
+    <PackageReference Include="Microsoft.OpenApi" />
+
+    <PackageReference Include="Polly" />
     <PackageReference Include="PwnedPasswords.Client" />
     <PackageReference Include="reCAPTCHA.AspNetCore" />
-    <PackageReference Include="Scrutor" />
-    <PackageReference Include="SecurityCodeScan.VS2019">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="Scalar.AspNetCore" />
+    <PackageReference Include="Scalar.AspNetCore.Microsoft" />
     <PackageReference Include="Sendgrid" />
-    <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Migrations\" />
     <Folder Include="wwwroot\images\quizzes\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\QuizyfyAPI.ServiceDefaults\QuizyfyAPI.ServiceDefaults.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

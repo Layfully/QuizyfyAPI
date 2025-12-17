@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using QuizyfyAPI.Contracts.Responses.Pagination;
+using QuizyfyAPI.Data.Repositories;
 
 namespace QuizyfyAPI_Tests.Fakes
 {

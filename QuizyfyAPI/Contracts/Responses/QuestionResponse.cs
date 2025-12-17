@@ -1,11 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace QuizyfyAPI.Contracts.Responses;
 
-namespace QuizyfyAPI.Contracts.Responses;
 /// <summary>
 /// A question with text(actual question) and collection of choices. Used for displaying questions.
 /// </summary>
-public record QuestionResponse
+internal sealed record QuestionResponse
 {
+    /// <summary>
+    /// Question Id.
+    /// </summary>
+    [Required]
+    public int Id { get; init; }
+
     /// <summary>
     /// Question text.
     /// </summary>

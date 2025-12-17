@@ -1,11 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Requests;
+﻿namespace QuizyfyAPI.Contracts.Requests;
 
 /// <summary>
 /// A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
 /// </summary>
-public record ChoiceUpdateRequest
+internal sealed record ChoiceUpdateRequest
 {
     /// <summary>
     /// Choice text (answer).
@@ -13,7 +11,7 @@ public record ChoiceUpdateRequest
     public string? Text { get; init; }
 
     /// <summary>
-    /// Bool which defines whether this answer is right or not.
+    /// Bool, which defines whether this answer is right or not.
     /// </summary>
     public bool? IsRight { get; init; }
 }

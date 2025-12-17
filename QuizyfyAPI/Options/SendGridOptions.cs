@@ -1,14 +1,15 @@
 ﻿namespace QuizyfyAPI.Options;
-public record SendGridOptions
+
+internal sealed record SendGridOptions
 {
-    public required string HostEmail { get; init; }
-    public required MailInfo RegistrationInfo { get; init; }
-    public required MailInfo PasswordResetInfo { get; init; }
+    public string HostEmail { get; init; } = string.Empty;
+    public MailInfo RegistrationInfo { get; init; } = new();
+    public MailInfo PasswordResetInfo { get; init; } = new();
 }
 
-public record MailInfo
+internal sealed record MailInfo
 {
-    public required string Subject { get; init; }
-    public required string PlainContent { get; init; }
-    public required string HtmlContent { get; init; }
+    public string Subject { get; init; } = string.Empty;
+    public string PlainContent { get; init; } = string.Empty;
+    public string HtmlContent { get; init; } = string.Empty;
 }

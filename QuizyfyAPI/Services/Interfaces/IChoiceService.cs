@@ -1,9 +1,6 @@
-﻿using QuizyfyAPI.Contracts.Requests;
-using QuizyfyAPI.Contracts.Responses;
-using QuizyfyAPI.Domain;
+﻿namespace QuizyfyAPI.Services.Interfaces;
 
-namespace QuizyfyAPI.Services;
-public interface IChoiceService : IService
+internal interface IChoiceService : IService
 {
     Task<ObjectResult<ChoiceResponse[]>> GetAll(int quizId, int questionId);
     Task<ObjectResult<ChoiceResponse>> Get(int quizId, int questionId, int choiceId);

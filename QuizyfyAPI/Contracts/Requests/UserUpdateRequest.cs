@@ -1,14 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QuizyfyAPI.Contracts.Requests;
-/// <summary>
-/// A user with username, password, role and full name. Used for creating user.
-/// </summary>
+﻿namespace QuizyfyAPI.Contracts.Requests;
 
 /// <summary>
-/// A user with username, password, role and full name. Used for creating user.
+/// A user with a username, password, role, and full name. Used for creating user.
 /// </summary>
-public record UserUpdateRequest
+internal sealed record UserUpdateRequest
 {
     /// <summary>
     /// First name of the user owner.

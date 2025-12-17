@@ -1,29 +1,30 @@
-﻿using AutoMapper;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PwnedPasswords.Client;
-using QuizyfyAPI.Contracts.Requests;
-using QuizyfyAPI.Contracts.Responses;
-using QuizyfyAPI.Data;
-using QuizyfyAPI.Domain;
 using QuizyfyAPI.Helpers;
 using QuizyfyAPI.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Security.Claims;
 using System.Text;
+using QuizyfyAPI.Data.Entities;
+using QuizyfyAPI.Data.Repositories.Interfaces;
+using QuizyfyAPI.Mappers;
+using QuizyfyAPI.Services.Interfaces;
 using SendGrid;
 
 namespace QuizyfyAPI.Services;
-public class UserService : IUserService
+
+internal sealed partial class UserService : IUserService
 {
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUserRepository _userRepository;
     private readonly JwtOptions _jwtOptions;
     private readonly TokenValidationParameters _tokenValidationParameters;
     private readonly IPwnedPasswordsClient _pwnedPasswordsClient;
-    private readonly IMapper _mapper;
     private readonly ISendGridService _mailService;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<UserService> _logger;
 
     public UserService(
@@ -32,8 +33,8 @@ public class UserService : IUserService
         IOptions<JwtOptions> jwtOptions, 
         TokenValidationParameters tokenValidationParameters, 
         IPwnedPasswordsClient pwnedPasswordsClient, 
-        IMapper mapper, 
         ISendGridService mailService,
+        TimeProvider timeProvider,
         ILogger<UserService> logger)
     {
         _refreshTokenRepository = refreshTokenRepository;
@@ -41,21 +42,21 @@ public class UserService : IUserService
         _jwtOptions = jwtOptions.Value;
         _tokenValidationParameters = tokenValidationParameters.Clone();
         _pwnedPasswordsClient = pwnedPasswordsClient;
-        _mapper = mapper;
         _mailService = mailService;
+        _timeProvider = timeProvider;
         _logger = logger;
-
-        _tokenValidationParameters.ValidateLifetime = false;
     }
+    
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Token validation failed")]
+    private static partial void LogTokenValidationFailed(ILogger logger, Exception ex);
 
     public async Task<ObjectResult<UserResponse>> Login(UserLoginRequest request)
     {
         User? user = await _userRepository.Authenticate(request.Username, request.Password.Normalize(NormalizationForm.FormKC));
 
-        if (user == null)
+        if (user is null)
         {
             return new ObjectResult<UserResponse> { Success = false, Errors = ["Wrong user credentials"] };
-            
         }
         
         if (!user.EmailConfirmed)
@@ -68,7 +69,7 @@ public class UserService : IUserService
         return new ObjectResult<UserResponse> 
         { 
             Success = true, 
-            Object = _mapper.Map<UserResponse>(userWithToken) 
+            Object = userWithToken.ToResponse()
         };
     }
 
@@ -89,7 +90,7 @@ public class UserService : IUserService
             return new BasicResult { Errors = ["This password has been leaked in a data breach. Please use a different password."] };
         }
 
-        User? user = _mapper.Map<User>(request);
+        User user = request.ToEntity();
         
         Hash.Create(request.Password.Normalize(NormalizationForm.FormKC), out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -101,20 +102,20 @@ public class UserService : IUserService
 
         if(!await _userRepository.SaveChangesAsync())
         {
-            return new BasicResult { Errors = new[] { "User registration failed." } };
+            return new BasicResult { Errors = ["User registration failed."] };
         }
 
         Response sendConfirmationResponse = await _mailService.SendConfirmationEmailTo(user);
 
-        if (sendConfirmationResponse.StatusCode != HttpStatusCode.Accepted && sendConfirmationResponse.StatusCode != HttpStatusCode.OK)
+        if (sendConfirmationResponse.StatusCode is HttpStatusCode.Accepted or HttpStatusCode.OK)
         {
-            _userRepository.Delete(user);
-            await _userRepository.SaveChangesAsync();
-            string body = await sendConfirmationResponse.Body.ReadAsStringAsync();
-            return new BasicResult { Errors = [$"Sending registration email failed. {body}"] };
+            return new BasicResult { Success = true };
         }
-
-        return new BasicResult { Success = true };
+        
+        _userRepository.Delete(user);
+        await _userRepository.SaveChangesAsync();
+        string body = await sendConfirmationResponse.Body.ReadAsStringAsync();
+        return new BasicResult { Errors = [$"Sending registration email failed. {body}"] };
     }
 
     public async Task<ObjectResult<UserResponse>> Update(int userId, UserUpdateRequest request)
@@ -136,7 +137,7 @@ public class UserService : IUserService
             return new ObjectResult<UserResponse> { Errors = ["User with this email already exists!"] };
         }
 
-        _mapper.Map(request, user);
+        user.UpdateFrom(request);
         
         if (!string.IsNullOrEmpty(request.Password))
         {
@@ -149,7 +150,7 @@ public class UserService : IUserService
 
         if (await _userRepository.SaveChangesAsync())
         {
-            return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
+            return new ObjectResult<UserResponse> { Success = true, Object = user.ToResponse() };
         }
 
         return new ObjectResult<UserResponse> { Errors = ["No rows were affected"] };
@@ -159,7 +160,7 @@ public class UserService : IUserService
     {
         User? user = await _userRepository.GetUserById(userId);
 
-        if (user == null)
+        if (user is null)
         {
             return new DetailedResult { Errors = ["User with given id was not found"] };
         }
@@ -174,19 +175,23 @@ public class UserService : IUserService
         return new DetailedResult { Found = true, Errors = ["Action didn't affect any rows"] };
     }
 
+    [SuppressMessage("Security", "CA5404:Do not disable token validation checks")]
     public async Task<ObjectResult<UserResponse>> RefreshTokenAsync(UserRefreshRequest request)
     {
-        ClaimsPrincipal? validatedToken = GetPrincipalFromToken(request.JwtToken);
+        TokenValidationParameters? tokenParams = _tokenValidationParameters.Clone();
+        tokenParams.ValidateLifetime = false; 
+        
+        ClaimsPrincipal? validatedToken = GetPrincipalFromToken(request.JwtToken, tokenParams);
 
         if (validatedToken is null)
         {
             return new ObjectResult<UserResponse> { Errors = ["Invalid token"] };
         }
 
-        long expiryDateUnix = long.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+        long expiryDateUnix = long.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value, CultureInfo.InvariantCulture);
         DateTime expiryDateUtc = DateTime.UnixEpoch.AddSeconds(expiryDateUnix);
         
-        if (expiryDateUtc > DateTime.UtcNow)
+        if (expiryDateUtc > _timeProvider.GetUtcNow().DateTime)
         {
             return new ObjectResult<UserResponse> { Errors = ["This token hasn't expired yet"] };
         }
@@ -200,7 +205,7 @@ public class UserService : IUserService
             return new ObjectResult<UserResponse> { Errors = ["This refresh token doesn't exist"] };
         }
 
-        if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
+        if (_timeProvider.GetUtcNow().DateTime > storedRefreshToken.ExpiryDate)
         {
             return new ObjectResult<UserResponse> { Errors = ["Token Expired"] };
         }
@@ -226,7 +231,7 @@ public class UserService : IUserService
         await _userRepository.SaveChangesAsync();
 
         string userIdClaim = validatedToken.Claims.Single(x => x.Type == "id").Value;
-        User user = await _userRepository.GetUserById(int.Parse(userIdClaim));
+        User? user = await _userRepository.GetUserById(int.Parse(userIdClaim, CultureInfo.InvariantCulture));
 
         if (user is null)
         {
@@ -238,7 +243,7 @@ public class UserService : IUserService
         return new ObjectResult<UserResponse>
         {
             Success = true,
-            Object = _mapper.Map<UserResponse>(user)
+            Object = user.ToResponse()
         };
     }
 
@@ -246,6 +251,7 @@ public class UserService : IUserService
     {
         JwtSecurityTokenHandler tokenHandler = new();
         byte[] key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
+        DateTime now = _timeProvider.GetUtcNow().DateTime;
         
         SecurityTokenDescriptor tokenDescriptor = new()
         {
@@ -253,21 +259,21 @@ public class UserService : IUserService
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("id", user.Id.ToString())
+                new Claim("id", user.Id.ToString(CultureInfo.InvariantCulture))
             ]),
 
-            Expires = DateTime.UtcNow.AddMinutes(15),
+            Expires = now.AddMinutes(15),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
         
         SecurityToken? token = tokenHandler.CreateToken(tokenDescriptor);
 
-        user.RefreshToken = new RefreshToken()
+        user.RefreshToken = new RefreshToken
         {
             UserId = user.Id,
             JwtId = token.Id,
-            CreationDate = DateTime.UtcNow,
-            ExpiryDate = DateTime.UtcNow.AddMonths(1)
+            CreationDate = now,
+            ExpiryDate = now.AddMonths(1)
         };
         user.JwtToken = tokenHandler.WriteToken(token);
 
@@ -300,7 +306,7 @@ public class UserService : IUserService
 
         if (await _userRepository.SaveChangesAsync())
         {
-            return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
+            return new ObjectResult<UserResponse> { Success = true, Object = user.ToResponse() };
         }
 
         return new ObjectResult<UserResponse> { Errors = ["No rows were affected"] };
@@ -333,7 +339,7 @@ public class UserService : IUserService
         
         if (await _userRepository.SaveChangesAsync())
         {
-            return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
+            return new ObjectResult<UserResponse> { Success = true, Object = user.ToResponse() };
         }
 
         return new ObjectResult<UserResponse> { Errors = ["No rows were affected"] };
@@ -360,19 +366,20 @@ public class UserService : IUserService
 
         if (await _userRepository.SaveChangesAsync())
         {
-            return new ObjectResult<UserResponse> { Success = true, Object = _mapper.Map<UserResponse>(user) };
+            return new ObjectResult<UserResponse> { Success = true, Object = user.ToResponse() };
         }
 
         return new ObjectResult<UserResponse> { Errors = ["No rows were affected"] };
     }
 
-    private ClaimsPrincipal? GetPrincipalFromToken(string token)
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
+    private ClaimsPrincipal? GetPrincipalFromToken(string token, TokenValidationParameters validationParameters)
     {
         JwtSecurityTokenHandler tokenHandler = new();
 
         try
         {       
-            ClaimsPrincipal? principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out SecurityToken? validatedToken);
+            ClaimsPrincipal? principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken? validatedToken);
             if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
             {
                 return null;
@@ -382,15 +389,15 @@ public class UserService : IUserService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Token validation failed");
+            LogTokenValidationFailed(_logger, ex);
             return null;
         }
     }
 
-    private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
+    private static bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
     {
-        return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
+        return validatedToken is JwtSecurityToken jwtSecurityToken &&
                jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
-                   StringComparison.InvariantCultureIgnoreCase);
+                   StringComparison.OrdinalIgnoreCase);
     }
 }

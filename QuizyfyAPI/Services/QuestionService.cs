@@ -1,46 +1,46 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using QuizyfyAPI.Contracts.Requests;
-using QuizyfyAPI.Contracts.Responses;
-using QuizyfyAPI.Data;
-using QuizyfyAPI.Domain;
+﻿using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Caching.Hybrid;
+using QuizyfyAPI.Data.Entities;
+using QuizyfyAPI.Data.Repositories.Interfaces;
+using QuizyfyAPI.Mappers;
+using QuizyfyAPI.Services.Interfaces;
 
 namespace QuizyfyAPI.Services;
 
-public class QuestionService : IQuestionService
+internal sealed class QuestionService : IQuestionService
 {
     private readonly IQuizRepository _quizRepository;
     private readonly IQuestionRepository _questionRepository;
     private readonly IImageRepository _imageRepository;
-    private readonly IMemoryCache _cache;
-    private readonly IMapper _mapper;
+    private readonly IOutputCacheStore _outputCache;
+    private readonly HybridCache _hybridCache;
 
     public QuestionService(
         IQuizRepository quizRepository, 
         IQuestionRepository questionRepository, 
         IImageRepository imageRepository,
-        IMemoryCache cache, 
-        IMapper mapper)
+        IOutputCacheStore outputCache,
+        HybridCache hybridCache)
     {
         _quizRepository = quizRepository;
         _questionRepository = questionRepository;
         _imageRepository = imageRepository;
-        _cache = cache;
-        _mapper = mapper;
+        _outputCache = outputCache;
+        _hybridCache = hybridCache;
     }
 
     public async Task<ObjectResult<QuestionResponse[]>> GetAll(int quizId, bool includeChoices)
     {
         string cacheKey = $"Questions_Quiz_{quizId}_{includeChoices}";
 
-        ICollection<Question>? questions = await _cache.GetOrCreateAsync(cacheKey, async entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
-            return await _questionRepository.GetQuestions(quizId, includeChoices);
-        });
+        Question[] questions = await _hybridCache.GetOrCreateAsync(
+            cacheKey, 
+            async _ => await _questionRepository.GetQuestions(quizId, includeChoices),
+            options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(10) },
+            tags: [$"Quiz:{quizId}"] 
+        );
 
-        if (questions is null || questions.Count == 0)
+        if (questions.Length == 0)
         {
             Quiz? quiz = await _quizRepository.GetQuiz(quizId);
             if (quiz is null)
@@ -55,7 +55,7 @@ public class QuestionService : IQuestionService
         { 
             Found = true, 
             Success = true, 
-            Object = _mapper.Map<QuestionResponse[]>(questions) 
+            Object = questions.Select(q => q.ToResponse()).ToArray() 
         };
     }
 
@@ -63,11 +63,12 @@ public class QuestionService : IQuestionService
     {
         string cacheKey = $"Question_{questionId}_{includeChoices}";
         
-        Question? question = await _cache.GetOrCreateAsync(cacheKey, async entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-            return await _questionRepository.GetQuestion(quizId, questionId, includeChoices);
-        });
+        Question? question = await _hybridCache.GetOrCreateAsync(
+            cacheKey, 
+            async _ => await _questionRepository.GetQuestion(quizId, questionId, includeChoices),
+            options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(5) },
+            tags: [$"Quiz:{quizId}", $"Question:{questionId}"]
+        );
 
         if (question is null)
         {
@@ -76,7 +77,7 @@ public class QuestionService : IQuestionService
 
         return new ObjectResult<QuestionResponse> 
         { 
-            Object = _mapper.Map<QuestionResponse>(question), 
+            Object = question.ToResponse(),
             Found = true, 
             Success = true 
         };
@@ -90,7 +91,7 @@ public class QuestionService : IQuestionService
             return new ObjectResult<QuestionResponse> { Errors = ["Couldn't find this quiz"] };
         }
 
-        Question question = _mapper.Map<Question>(request);
+        Question question = request.ToEntity();
         question.QuizId = quiz.Id;
         
         if (request.ImageId.HasValue && request.ImageId != 0)
@@ -104,22 +105,28 @@ public class QuestionService : IQuestionService
         }
 
         _questionRepository.Add(question);
-        
-        if (await _questionRepository.SaveChangesAsync())
-        {
-            _cache.Set($"Question_{question.Id}_False", question, TimeSpan.FromMinutes(5));
-            _cache.Remove($"Questions_Quiz_{quizId}_True");
-            _cache.Remove($"Questions_Quiz_{quizId}_False");
 
-            return new ObjectResult<QuestionResponse> 
-            { 
-                Success = true, 
-                Found = true, 
-                Object = _mapper.Map<QuestionResponse>(question) 
-            };
+        if (!await _questionRepository.SaveChangesAsync())
+        {
+            return new ObjectResult<QuestionResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
         }
         
-        return new ObjectResult<QuestionResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
+        await _hybridCache.RemoveByTagAsync($"Quiz:{quizId}");
+        await _outputCache.EvictByTagAsync("quizzes", CancellationToken.None);
+        
+        await _hybridCache.SetAsync(
+            $"Question_{question.Id}_False", 
+            question, 
+            options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(5) },
+            tags: [$"Quiz:{quizId}", $"Question:{question.Id}"]
+        );
+
+        return new ObjectResult<QuestionResponse> 
+        { 
+            Success = true, 
+            Found = true, 
+            Object = question.ToResponse()
+        };
     }
 
     public async Task<ObjectResult<QuestionResponse>> Update(int quizId, int questionId, QuestionUpdateRequest request)
@@ -131,7 +138,7 @@ public class QuestionService : IQuestionService
             return new ObjectResult<QuestionResponse> { Errors = ["Couldn't find question"] };
         }
 
-        _mapper.Map(request, question);
+        question.UpdateFrom(request);
         
         if (request.ImageId.HasValue && request.ImageId != 0)
         {
@@ -145,24 +152,27 @@ public class QuestionService : IQuestionService
         
         _questionRepository.Update(question);
 
-        if (await _questionRepository.SaveChangesAsync())
+        if (!await _questionRepository.SaveChangesAsync())
         {
-            _cache.Remove($"Question_{questionId}_True");
-            _cache.Remove($"Question_{questionId}_False");
-            _cache.Remove($"Questions_Quiz_{quizId}_True");
-            _cache.Remove($"Questions_Quiz_{quizId}_False");
-            
-            _cache.Set($"Question_{question.Id}_False", question, TimeSpan.FromMinutes(5));
-
-            return new ObjectResult<QuestionResponse> 
-            { 
-                Object = _mapper.Map<QuestionResponse>(question), 
-                Found = true, 
-                Success = true 
-            };
+            return new ObjectResult<QuestionResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
         }
 
-        return new ObjectResult<QuestionResponse> { Found = true, Errors = ["Action didn't affect any rows"] };
+        await _hybridCache.RemoveByTagAsync([$"Question:{questionId}", $"Quiz:{quizId}"]);
+        await _outputCache.EvictByTagAsync("quizzes", CancellationToken.None);
+
+        await _hybridCache.SetAsync(
+            $"Question_{question.Id}_False", 
+            question, 
+            options: new HybridCacheEntryOptions { LocalCacheExpiration = TimeSpan.FromMinutes(5) },
+            tags: [$"Quiz:{quizId}", $"Question:{questionId}"]
+        );
+        
+        return new ObjectResult<QuestionResponse> 
+        { 
+            Object = question.ToResponse(), 
+            Found = true, 
+            Success = true 
+        };
     }
 
     public async Task<DetailedResult> Delete(int quizId, int questionId)
@@ -175,17 +185,15 @@ public class QuestionService : IQuestionService
         }
 
         _questionRepository.Delete(question);
-        
-        if (await _questionRepository.SaveChangesAsync())
+
+        if (!await _questionRepository.SaveChangesAsync())
         {
-            _cache.Remove($"Question_{questionId}_True");
-            _cache.Remove($"Question_{questionId}_False");
-            _cache.Remove($"Questions_Quiz_{quizId}_True");
-            _cache.Remove($"Questions_Quiz_{quizId}_False");
-            
-            return new DetailedResult { Success = true, Found = true };
+            return new DetailedResult { Found = true, Errors = ["Action didn't affect any rows"] };
         }
 
-        return new DetailedResult { Found = true, Errors = ["Action didn't affect any rows"] };
+        await _hybridCache.RemoveByTagAsync([$"Question:{questionId}", $"Quiz:{quizId}"]);
+        await _outputCache.EvictByTagAsync("quizzes", CancellationToken.None);
+            
+        return new DetailedResult { Success = true, Found = true };
     }
 }

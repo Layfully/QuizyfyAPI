@@ -1,18 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#pragma warning disable CA1852
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace QuizyfyAPI.Data;
-public class RefreshToken
+namespace QuizyfyAPI.Data.Entities;
+
+internal class RefreshToken
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public string Token { get; set; }
+    public string Token { get; set; } = null!;
+    [Required]
+    [MaxLength(500)]
+    public required string JwtId { get; set; }
 
-    public string JwtId { get; set; }
     public DateTime CreationDate { get; set; }
+    
     public DateTime ExpiryDate { get; set; }
+    
     public bool Used { get; set; }
+    
     public bool Invalidated { get; set; }
+
     public int UserId { get; set; }
-    public User User { get; set; }
+    
+    [ForeignKey(nameof(UserId))]
+    public User? User { get; set; }
 }

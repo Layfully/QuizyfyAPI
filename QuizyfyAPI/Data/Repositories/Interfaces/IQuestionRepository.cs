@@ -1,0 +1,10 @@
+﻿using QuizyfyAPI.Data.Entities;
+
+namespace QuizyfyAPI.Data.Repositories.Interfaces;
+
+internal interface IQuestionRepository : IRepository
+{
+    Task<Question[]> GetQuestions(int quizId, bool includeChoices = false);
+    
+    Task<Question?> GetQuestion(int quizId, int questionId, bool includeChoices = false);
+}
