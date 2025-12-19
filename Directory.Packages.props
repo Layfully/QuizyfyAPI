@@ -26,8 +26,8 @@
     <PackageVersion Include="Polly" Version="8.6.5" />
     <PackageVersion Include="PwnedPasswords.Client" Version="1.2.0" />
     <PackageVersion Include="reCAPTCHA.AspNetCore" Version="3.0.10" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.11.6" />
-    <PackageVersion Include="Scalar.AspNetCore.Microsoft" Version="2.11.6" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.11.8" />
+    <PackageVersion Include="Scalar.AspNetCore.Microsoft" Version="2.11.8" />
     <PackageVersion Include="Sendgrid" Version="9.29.3" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
     <PackageVersion Include="xunit.v3" Version="3.2.0" />
