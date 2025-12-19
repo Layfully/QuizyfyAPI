@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    groups:
+      microsoft-packages:
+        patterns:
+          - "Microsoft.Extensions.*"
+          - "Microsoft.AspNetCore.*"
+          - "Microsoft.EntityFrameworkCore.*"
+      opentelemetry:
+        patterns:
+          - "OpenTelemetry.*"
+      aspire-and-scalar:
+        patterns:
+          - "Aspire.*"
+          - "Scalar.*"
+          
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
