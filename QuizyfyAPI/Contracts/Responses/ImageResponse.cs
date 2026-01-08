@@ -2,7 +2,7 @@
 /// <summary>
 /// Image with id from database and url to access it.
 /// </summary>
-internal sealed record ImageResponse
+public sealed record ImageResponse
 {
     /// <summary>
     /// Image id.

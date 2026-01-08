@@ -3,7 +3,7 @@
 /// <summary>
 /// Question with text(actual question) only. Used for DTO.
 /// </summary>
-internal sealed record QuestionCreateRequest
+public sealed record QuestionCreateRequest
 {
     /// <summary>
     /// Question text.

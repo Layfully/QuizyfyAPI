@@ -3,7 +3,7 @@
 /// <summary>
 /// A question with text(actual question) and collection of choices. Used for displaying questions.
 /// </summary>
-internal sealed record QuestionResponse
+public sealed record QuestionResponse
 {
     /// <summary>
     /// Question Id.

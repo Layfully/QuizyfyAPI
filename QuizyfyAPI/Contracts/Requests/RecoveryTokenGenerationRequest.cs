@@ -3,7 +3,7 @@
 /// <summary>
 /// Request used to provide data for recovery password token generation.
 /// </summary>
-internal sealed record RecoveryTokenGenerationRequest
+public sealed record RecoveryTokenGenerationRequest
 {
     [EmailAddress]
     [Required]

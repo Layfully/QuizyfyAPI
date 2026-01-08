@@ -2,7 +2,7 @@
 /// <summary>
 /// A quiz with name, date of addition and questions properties. Used for displaying quizzes.
 /// </summary>
-internal sealed record QuizResponse
+public sealed record QuizResponse
 {
     /// <summary>
     /// Quiz id.

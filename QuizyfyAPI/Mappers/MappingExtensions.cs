@@ -2,7 +2,7 @@ using QuizyfyAPI.Data.Entities;
 
 namespace QuizyfyAPI.Mappers;
 
-internal static class MappingExtensions
+public static class MappingExtensions
 {
     // --- CHOICE EXTENSIONS ---
     
@@ -20,6 +20,8 @@ internal static class MappingExtensions
         
         public void UpdateFrom(ChoiceUpdateRequest request)
         {
+            ArgumentNullException.ThrowIfNull(request);
+            
             if (request.Text is not null)
             {
                 choice.Text = request.Text;
@@ -88,6 +90,8 @@ internal static class MappingExtensions
         
         public void UpdateFrom(QuestionUpdateRequest request)
         {
+            ArgumentNullException.ThrowIfNull(request);
+
             if (request.Text is not null)
             {
                 question.Text = request.Text;
@@ -125,6 +129,8 @@ internal static class MappingExtensions
         
         public void UpdateFrom(QuizUpdateRequest request)
         {
+            ArgumentNullException.ThrowIfNull(request);
+
             if (request.Name is not null)
             {
                 quiz.Name = request.Name;
@@ -159,6 +165,8 @@ internal static class MappingExtensions
             return new UserResponse
             {
                 Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Username = user.Username,
                 Email = user.Email,
                 Role = user.Role,
@@ -169,6 +177,8 @@ internal static class MappingExtensions
 
         public void UpdateFrom(UserUpdateRequest request)
         {
+            ArgumentNullException.ThrowIfNull(request);
+
             if (request.Username is not null)
             {
                 user.Username = request.Username;

@@ -1,6 +1,6 @@
 ﻿namespace QuizyfyAPI.Contracts.Responses;
 
-internal sealed record UserResponse
+public sealed record UserResponse
 {
     public int Id { get; init; }
     

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuizyfyAPI.Data.Entities;
 
-internal class Question
+public  class Question
 {
     [Key] 
     public int Id { get; set; }

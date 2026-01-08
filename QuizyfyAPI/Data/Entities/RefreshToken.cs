@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuizyfyAPI.Data.Entities;
 
-internal class RefreshToken
+public  class RefreshToken
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -3,7 +3,7 @@
 /// <summary>
 /// Request used for refreshing user JWT token.
 /// </summary>
-internal sealed record UserRefreshRequest
+public sealed record UserRefreshRequest
 {
     /// <summary>
     /// Refresh token which lasts for a long time.

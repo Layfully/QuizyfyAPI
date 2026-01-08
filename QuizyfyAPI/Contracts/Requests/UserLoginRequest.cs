@@ -3,7 +3,7 @@
 /// <summary>
 /// User credentials. Used for authentication
 /// </summary>
-internal sealed record UserLoginRequest : IRecaptchaRequest
+public sealed record UserLoginRequest : IRecaptchaRequest
 {
     /// <summary>
     /// User name.

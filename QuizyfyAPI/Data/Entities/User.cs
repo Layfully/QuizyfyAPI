@@ -1,7 +1,7 @@
 ﻿#pragma warning disable CA1852
 namespace QuizyfyAPI.Data.Entities;
 
-internal class User
+public  class User
 {
     [Key] 
     public int Id { get; set; }

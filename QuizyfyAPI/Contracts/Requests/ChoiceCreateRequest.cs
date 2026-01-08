@@ -3,7 +3,7 @@
 /// <summary>
 /// A choice with text(actual answer) and isRight bool. Used for displaying questions and DTO.
 /// </summary>
-internal sealed record ChoiceCreateRequest
+public sealed record ChoiceCreateRequest
 {
     /// <summary>
     /// Choice text (answer).

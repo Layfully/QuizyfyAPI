@@ -1,7 +1,7 @@
 ﻿#pragma warning disable CA1852
 namespace QuizyfyAPI.Data.Entities;
 
-internal class Like
+public class Like
 {
     [Key]
     public int Id { get; set; }

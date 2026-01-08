@@ -3,7 +3,7 @@
 /// <summary>
 /// A user with a username, password, role, and full name. Used for creating user.
 /// </summary>
-internal sealed record UserUpdateRequest
+public sealed record UserUpdateRequest
 {
     /// <summary>
     /// First name of the user owner.

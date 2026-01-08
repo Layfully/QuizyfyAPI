@@ -2,7 +2,7 @@
 /// <summary>
 /// A like of quiz which belongs to some user.
 /// </summary>
-internal sealed record LikeResponse
+public sealed record LikeResponse
 {
     /// <summary>
     /// This id specifies to which quiz like belongs to.

@@ -3,7 +3,7 @@
 /// <summary>
 /// A quiz with name and questions properties. Used for DTO.
 /// </summary>
-internal sealed record QuizCreateRequest
+public sealed record QuizCreateRequest
 {
     /// <summary>
     /// Quiz name.

@@ -3,7 +3,7 @@
 /// <summary>
 /// Error with status code and message.
 /// </summary>
-internal sealed record ErrorResponse
+public sealed record ErrorResponse
 {
     /// <summary>
     /// Int, which tells us the error status code.
